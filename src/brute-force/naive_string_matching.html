@@ -1,0 +1,1008 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Naive String Matching — Dry Run</title>
+    <style>
+      :root {
+        --bg: #f8f7f4;
+        --bg2: #f0eeea;
+        --bg3: #e8e6e1;
+        --card: #ffffff;
+        --border: rgba(0, 0, 0, 0.1);
+        --border2: rgba(0, 0, 0, 0.18);
+        --text: #1a1a18;
+        --text2: #5a5955;
+        --text3: #8a8880;
+        --mono: "JetBrains Mono", "Fira Mono", "Consolas", monospace;
+        --sans: "Inter", "Segoe UI", system-ui, sans-serif;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #18181a;
+          --bg2: #222226;
+          --bg3: #2c2c30;
+          --card: #1e1e22;
+          --border: rgba(255, 255, 255, 0.1);
+          --border2: rgba(255, 255, 255, 0.18);
+          --text: #e8e6e0;
+          --text2: #a0a098;
+          --text3: #666660;
+        }
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        font-family: var(--sans);
+        background: var(--bg);
+        color: var(--text);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        min-height: 100vh;
+        padding: 32px 20px 40px;
+      }
+
+      .page {
+        width: 100%;
+        max-width: 860px;
+      }
+
+      /* Header */
+      .header {
+        margin-bottom: 28px;
+      }
+      .header h1 {
+        font-size: 22px;
+        font-weight: 600;
+        letter-spacing: -0.3px;
+      }
+      .header p {
+        font-size: 13px;
+        color: var(--text2);
+        margin-top: 4px;
+      }
+
+      /* Input bar */
+      .input-bar {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        background: var(--card);
+        border: 1px solid var(--border2);
+        border-radius: 10px;
+        padding: 14px 16px;
+        margin-bottom: 18px;
+      }
+      .input-bar label {
+        font-size: 13px;
+        color: var(--text2);
+        white-space: nowrap;
+      }
+      .input-bar input {
+        font-family: var(--mono);
+        font-size: 15px;
+        font-weight: 600;
+        padding: 6px 10px;
+        border: 1px solid var(--border2);
+        border-radius: 6px;
+        background: var(--bg2);
+        color: var(--text);
+        width: 170px;
+        letter-spacing: 0.08em;
+      }
+      .input-bar input:focus {
+        outline: 2px solid #378add;
+        outline-offset: 1px;
+      }
+      .btn-run {
+        font-family: var(--sans);
+        font-size: 13px;
+        font-weight: 500;
+        padding: 7px 20px;
+        border: none;
+        border-radius: 6px;
+        background: #185fa5;
+        color: #fff;
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+      .btn-run:hover {
+        background: #0c447c;
+      }
+
+      /* Legend */
+      .legend {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+      }
+      .leg {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        color: var(--text2);
+      }
+      .leg-dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 4px;
+        flex-shrink: 0;
+      }
+
+      /* Visualiser */
+      .vis-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 24px 20px 18px;
+        margin-bottom: 14px;
+        overflow-x: auto;
+      }
+      .strand-label {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        color: var(--text3);
+        margin-bottom: 8px;
+        text-transform: uppercase;
+      }
+
+      .char-idx,
+      .char-row,
+      .arrow-row {
+        display: flex;
+        gap: 5px;
+      }
+      .char-idx {
+        margin-bottom: 4px;
+      }
+      .char-row {
+        margin-bottom: 4px;
+      }
+      .arrow-row {
+        margin-bottom: 14px;
+      }
+
+      .idx-cell {
+        width: 42px;
+        height: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        color: var(--text3);
+        font-family: var(--mono);
+        flex-shrink: 0;
+      }
+      .cell {
+        width: 42px;
+        height: 42px;
+        border-radius: 8px;
+        border: 1.5px solid var(--border2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--mono);
+        font-size: 18px;
+        font-weight: 700;
+        background: var(--bg2);
+        color: var(--text);
+        transition:
+          background 0.22s,
+          border-color 0.22s,
+          color 0.22s;
+        flex-shrink: 0;
+        position: relative;
+      }
+      .arrow-cell {
+        width: 42px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        color: #ba7517;
+        flex-shrink: 0;
+      }
+      .cell.inactive {
+        opacity: 0.28;
+      }
+      .cell.active-text {
+        background: #deedf8;
+        border-color: #378add;
+        color: #042c53;
+      }
+      .cell.active-pat {
+        background: #e4e2fa;
+        border-color: #7f77dd;
+        color: #26215c;
+      }
+      .cell.match {
+        background: #d8eec2;
+        border-color: #639922;
+        color: #173404;
+      }
+      .cell.mismatch {
+        background: #fadede;
+        border-color: #e24b4a;
+        color: #501313;
+      }
+      .cell.full-match {
+        background: #c7e5a0;
+        border-color: #3b6d11;
+        color: #173404;
+        box-shadow: 0 0 0 2.5px #97c45988;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        .cell.active-text {
+          background: #0c447c;
+          border-color: #378add;
+          color: #b5d4f4;
+        }
+        .cell.active-pat {
+          background: #3c3489;
+          border-color: #7f77dd;
+          color: #cecbf6;
+        }
+        .cell.match {
+          background: #1e3d0a;
+          border-color: #639922;
+          color: #c0dd97;
+        }
+        .cell.mismatch {
+          background: #4a1515;
+          border-color: #e24b4a;
+          color: #f7c1c1;
+        }
+        .cell.full-match {
+          background: #1e4008;
+          border-color: #97c459;
+          color: #c0dd97;
+          box-shadow: 0 0 0 2.5px #97c45966;
+        }
+      }
+
+      /* Info panel */
+      .info-panel {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 14px 16px;
+        font-size: 14px;
+        line-height: 1.7;
+        color: var(--text);
+        margin-bottom: 14px;
+        min-height: 56px;
+      }
+      .step-tag {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 9px;
+        border-radius: 5px;
+        margin-right: 8px;
+        vertical-align: middle;
+        letter-spacing: 0.02em;
+      }
+      .tag-compare {
+        background: #deedf8;
+        color: #0c447c;
+      }
+      .tag-match {
+        background: #d8eec2;
+        color: #27500a;
+      }
+      .tag-miss {
+        background: #fadede;
+        color: #7a1f1f;
+      }
+      .tag-found {
+        background: #c7e5a0;
+        color: #173404;
+        border: 1px solid #639922;
+      }
+      .tag-shift {
+        background: #e4e2fa;
+        color: #3c3489;
+      }
+      @media (prefers-color-scheme: dark) {
+        .tag-compare {
+          background: #0c447c;
+          color: #b5d4f4;
+        }
+        .tag-match {
+          background: #1e3d0a;
+          color: #c0dd97;
+        }
+        .tag-miss {
+          background: #4a1515;
+          color: #f7c1c1;
+        }
+        .tag-found {
+          background: #1e4008;
+          color: #c0dd97;
+          border-color: #639922;
+        }
+        .tag-shift {
+          background: #3c3489;
+          color: #cecbf6;
+        }
+      }
+
+      /* Code block */
+      .code-card {
+        background: #1e1e2e;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        padding: 16px 18px;
+        margin-bottom: 16px;
+        overflow-x: auto;
+      }
+      .code-card .lang-tag {
+        font-size: 11px;
+        color: #6c7086;
+        font-family: var(--mono);
+        margin-bottom: 10px;
+        display: block;
+      }
+      .cl {
+        font-family: var(--mono);
+        font-size: 13px;
+        padding: 2px 8px;
+        border-radius: 4px;
+        color: #cdd6f4;
+        line-height: 1.7;
+        transition:
+          background 0.2s,
+          color 0.2s;
+        display: block;
+        white-space: pre;
+      }
+      .cl .kw {
+        color: #cba6f7;
+      }
+      .cl .ty {
+        color: #89dceb;
+      }
+      .cl .fn {
+        color: #89b4fa;
+      }
+      .cl .nu {
+        color: #fab387;
+      }
+      .cl .cm {
+        color: #6c7086;
+        font-style: italic;
+      }
+      .cl.hl {
+        background: #313244;
+        color: #f5c2e7;
+        font-weight: 600;
+      }
+
+      /* Nav */
+      .nav-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+      }
+      .nav-btn {
+        font-family: var(--sans);
+        font-size: 13px;
+        font-weight: 500;
+        padding: 8px 18px;
+        border: 1px solid var(--border2);
+        border-radius: 7px;
+        background: var(--bg2);
+        color: var(--text);
+        cursor: pointer;
+        transition: background 0.14s;
+      }
+      .nav-btn:hover:not(:disabled) {
+        background: var(--bg3);
+      }
+      .nav-btn:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+      .nav-btn.primary {
+        background: #185fa5;
+        color: #fff;
+        border-color: #185fa5;
+      }
+      .nav-btn.primary:hover:not(:disabled) {
+        background: #0c447c;
+      }
+      .nav-btn.auto-on {
+        background: #3b6d11;
+        color: #eaf3de;
+        border-color: #3b6d11;
+      }
+      .step-ctr {
+        font-size: 12px;
+        color: var(--text3);
+        margin-left: 6px;
+      }
+
+      /* Speed control */
+      .speed-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: var(--text2);
+        margin-left: auto;
+      }
+      .speed-row input[type="range"] {
+        width: 90px;
+        accent-color: #185fa5;
+      }
+
+      /* Progress bar */
+      .progress-wrap {
+        background: var(--bg3);
+        border-radius: 4px;
+        height: 4px;
+        margin-bottom: 16px;
+        overflow: hidden;
+      }
+      .progress-bar {
+        background: #185fa5;
+        height: 4px;
+        border-radius: 4px;
+        transition: width 0.2s;
+      }
+
+      /* Result panel */
+      .result-panel {
+        font-size: 13px;
+        color: var(--text2);
+        min-height: 24px;
+      }
+      .hit-badge {
+        display: inline-block;
+        background: #d8eec2;
+        color: #173404;
+        border: 1px solid #97c459;
+        border-radius: 5px;
+        padding: 2px 10px;
+        font-size: 13px;
+        font-family: var(--mono);
+        font-weight: 600;
+        margin-right: 4px;
+      }
+      @media (prefers-color-scheme: dark) {
+        .hit-badge {
+          background: #1e3d0a;
+          color: #c0dd97;
+          border-color: #639922;
+        }
+      }
+
+      /* Keyboard hint */
+      .key-hint {
+        font-size: 11px;
+        color: var(--text3);
+        margin-top: 14px;
+        text-align: center;
+      }
+      .kbd {
+        display: inline-block;
+        background: var(--bg3);
+        border: 1px solid var(--border2);
+        border-radius: 4px;
+        padding: 1px 6px;
+        font-family: var(--mono);
+        font-size: 11px;
+      }
+
+      /* Variables section in summary */
+      .vars-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+      }
+      .var-chip {
+        font-family: var(--mono);
+        font-size: 13px;
+        font-weight: 600;
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 4px 12px;
+      }
+      .var-chip span {
+        color: var(--text2);
+        font-weight: 400;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="header">
+        <h1>Naive String Matching — Dry Run</h1>
+        <p>
+          Design &amp; Analysis of Algorithms &nbsp;·&nbsp; Brute Force —
+          Interactive Step-through
+        </p>
+      </div>
+
+      <div class="input-bar">
+        <label>Text T</label>
+        <input
+          id="inp-text"
+          value="AACAABA"
+          oninput="this.value = this.value.toUpperCase()"
+          placeholder="e.g. AACAABA"
+        />
+        <label>Pattern P</label>
+        <input
+          id="inp-pat"
+          value="AABA"
+          oninput="this.value = this.value.toUpperCase()"
+          placeholder="e.g. AABA"
+        />
+        <button class="btn-run" onclick="buildSteps()">▶ Run</button>
+      </div>
+
+      <div class="legend">
+        <div class="leg">
+          <div class="leg-dot" style="background: #378add"></div>
+          Active window in T
+        </div>
+        <div class="leg">
+          <div class="leg-dot" style="background: #7f77dd"></div>
+          Pattern character
+        </div>
+        <div class="leg">
+          <div class="leg-dot" style="background: #639922"></div>
+          Characters match
+        </div>
+        <div class="leg">
+          <div class="leg-dot" style="background: #e24b4a"></div>
+          Mismatch → shift
+        </div>
+        <div class="leg">
+          <div class="leg-dot" style="background: #3b6d11"></div>
+          Full match found
+        </div>
+      </div>
+
+      <div class="vars-row" id="vars-row">
+        <div class="var-chip">n = <span>7</span></div>
+        <div class="var-chip">m = <span>4</span></div>
+        <div class="var-chip">s = <span>—</span></div>
+        <div class="var-chip">j = <span>—</span></div>
+      </div>
+
+      <div class="vis-card">
+        <div class="strand-label">Text T</div>
+        <div class="char-idx" id="idx-row"></div>
+        <div class="char-row" id="text-row"></div>
+        <div class="arrow-row" id="arrow-row"></div>
+        <div class="strand-label" style="margin-top: 8px">
+          Pattern P &nbsp;<span
+            id="shift-label"
+            style="
+              font-size: 11px;
+              color: var(--text3);
+              text-transform: none;
+              font-weight: 400;
+            "
+            >(aligned at shift s)</span
+          >
+        </div>
+        <div class="char-row" id="pat-row"></div>
+      </div>
+
+      <div class="info-panel" id="info-panel">
+        Press <b>▶ Run</b> to start, then step through using the buttons below.
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+      </div>
+
+      <div class="code-card">
+        <span class="lang-tag">// Java — NaiveStringMatching.java</span>
+        <span class="cl" id="cl0"
+          ><span class="kw">for</span> (<span class="ty">int</span> s =
+          <span class="nu">0</span>; s &lt;= n − m; s++) {</span
+        >
+        <span class="cl" id="cl1">
+          <span class="ty">int</span> j = <span class="nu">0</span>;</span
+        >
+        <span class="cl" id="cl2">
+          <span class="kw">while</span> (j &lt; m &amp;&amp; T[s+j] == P[j])
+          {</span
+        >
+        <span class="cl" id="cl3"> j++;</span>
+        <span class="cl" id="cl4">
+          } <span class="cm">// mismatch or j == m</span></span
+        >
+        <span class="cl" id="cl5">
+          <span class="kw">if</span> (j == m) hits.<span class="fn">add</span
+          >(s);</span
+        >
+        <span class="cl" id="cl6">}</span>
+      </div>
+
+      <div class="nav-row">
+        <button class="nav-btn" id="btn-prev" onclick="move(-1)" disabled>
+          ◀ Prev
+        </button>
+        <button
+          class="nav-btn primary"
+          id="btn-next"
+          onclick="move(1)"
+          disabled
+        >
+          Next ▶
+        </button>
+        <button class="nav-btn" id="btn-auto" onclick="toggleAuto()">
+          ⏵ Auto
+        </button>
+        <span class="step-ctr" id="step-ctr"></span>
+        <div class="speed-row">
+          <label for="speed-sl">Speed</label>
+          <input
+            type="range"
+            id="speed-sl"
+            min="200"
+            max="1800"
+            step="100"
+            value="800"
+            oninput="updateSpeed(this.value)"
+          />
+          <span id="speed-label">0.8s</span>
+        </div>
+      </div>
+
+      <div class="result-panel" id="result-panel"></div>
+
+      <p class="key-hint">
+        Keyboard shortcuts: <span class="kbd">←</span> Prev &nbsp;
+        <span class="kbd">→</span> Next &nbsp;
+        <span class="kbd">Space</span> Auto play &nbsp;
+        <span class="kbd">R</span> Reset
+      </p>
+    </div>
+
+    <script>
+      let steps = [],
+        cur = 0,
+        autoTimer = null,
+        autoDelay = 800;
+
+      function buildSteps() {
+        clearAuto();
+        const T = document
+          .getElementById("inp-text")
+          .value.trim()
+          .toUpperCase();
+        const P = document.getElementById("inp-pat").value.trim().toUpperCase();
+        if (!T || !P) {
+          alert("Please enter both Text and Pattern.");
+          return;
+        }
+        if (P.length > T.length) {
+          alert("Pattern must be ≤ length of text.");
+          return;
+        }
+        const n = T.length,
+          m = P.length;
+        steps = [];
+
+        // Update static var chips
+        document.querySelectorAll(".var-chip")[0].innerHTML =
+          `n = <span>${n}</span>`;
+        document.querySelectorAll(".var-chip")[1].innerHTML =
+          `m = <span>${m}</span>`;
+
+        steps.push({
+          type: "init",
+          T,
+          P,
+          s: -1,
+          j: -1,
+          codeLine: 0,
+          msg:
+            '<span class="step-tag tag-shift">Start</span>Outer loop begins. s will go from <b>0</b> to <b>n−m = ' +
+            (n - m) +
+            "</b>. Total shifts = " +
+            (n - m + 1) +
+            ".",
+        });
+
+        for (let s = 0; s <= n - m; s++) {
+          steps.push({
+            type: "shift",
+            T,
+            P,
+            s,
+            j: 0,
+            codeLine: 1,
+            msg:
+              '<span class="step-tag tag-shift">Shift s=' +
+              s +
+              "</span>Align pattern at index <b>s=" +
+              s +
+              "</b>. Initialize inner pointer <b>j=0</b>.",
+          });
+
+          let j = 0;
+          while (j < m) {
+            const eq = T[s + j] === P[j];
+            steps.push({
+              type: "compare",
+              T,
+              P,
+              s,
+              j,
+              eq,
+              codeLine: eq ? 3 : 4,
+              msg: eq
+                ? '<span class="step-tag tag-match">Match ✓</span>T[<b>' +
+                  (s + j) +
+                  '</b>]="<b>' +
+                  T[s + j] +
+                  '</b>" == P[<b>' +
+                  j +
+                  '</b>]="<b>' +
+                  P[j] +
+                  '</b>" &nbsp;→ j becomes <b>' +
+                  (j + 1) +
+                  "</b>"
+                : '<span class="step-tag tag-miss">Mismatch ✗</span>T[<b>' +
+                  (s + j) +
+                  '</b>]="<b>' +
+                  T[s + j] +
+                  '</b>" ≠ P[<b>' +
+                  j +
+                  '</b>]="<b>' +
+                  P[j] +
+                  '</b>" &nbsp;→ exit inner loop, shift right',
+            });
+            if (!eq) break;
+            j++;
+          }
+
+          if (j === m) {
+            steps.push({
+              type: "found",
+              T,
+              P,
+              s,
+              j,
+              codeLine: 5,
+              msg:
+                '<span class="step-tag tag-found">Found! ★</span>j = ' +
+                j +
+                " = m. All characters matched. Pattern found at <b>s=" +
+                s +
+                "</b>. hits.add(" +
+                s +
+                ").",
+            });
+          } else {
+            steps.push({
+              type: "no-match",
+              T,
+              P,
+              s,
+              j,
+              codeLine: 5,
+              msg:
+                '<span class="step-tag tag-miss">No match</span>Inner while stopped at j=' +
+                j +
+                " (j &lt; m=" +
+                m +
+                "). Pattern does not occur at s=" +
+                s +
+                ".",
+            });
+          }
+        }
+        steps.push({
+          type: "done",
+          T,
+          P,
+          s: -1,
+          j: -1,
+          codeLine: 6,
+          msg:
+            '<span class="step-tag tag-shift">Done</span>All shifts s=0 to ' +
+            (n - m) +
+            " exhausted. Algorithm complete.",
+        });
+
+        cur = 0;
+        document.getElementById("btn-prev").disabled = false;
+        document.getElementById("btn-next").disabled = false;
+        renderStep();
+      }
+
+      function renderStep() {
+        const st = steps[cur];
+        const { T, P, s, j, type, eq } = st;
+        const n = T.length,
+          m = P.length;
+
+        // Progress bar
+        document.getElementById("progress-bar").style.width =
+          (cur / (steps.length - 1)) * 100 + "%";
+        document.getElementById("step-ctr").textContent =
+          "Step " + (cur + 1) + " / " + steps.length;
+
+        // Var chips
+        document.querySelectorAll(".var-chip")[2].innerHTML =
+          `s = <span>${s >= 0 ? s : "—"}</span>`;
+        document.querySelectorAll(".var-chip")[3].innerHTML =
+          `j = <span>${type === "compare" || type === "shift" ? j : type === "found" || type === "no-match" ? j : "—"}</span>`;
+
+        // Shift label
+        document.getElementById("shift-label").textContent =
+          s >= 0 ? "(shift s = " + s + ")" : "(aligned at shift s)";
+
+        // Index row
+        document.getElementById("idx-row").innerHTML = T.split("")
+          .map((_, i) => `<div class="idx-cell">${i}</div>`)
+          .join("");
+
+        // Text row
+        document.getElementById("text-row").innerHTML = T.split("")
+          .map((c, i) => {
+            let cls = "cell";
+            if (type === "done" || type === "init") {
+              /* no highlight */
+            } else if (type === "found") {
+              if (i >= s && i < s + m) cls += " full-match";
+            } else if (type === "compare") {
+              if (i === s + j) cls += eq ? " match" : " mismatch";
+              else if (i >= s && i < s + j) cls += " match";
+              else if (i >= s && i < s + m) cls += " active-text";
+            } else if (type === "shift" || type === "no-match") {
+              if (i >= s && i < s + m) cls += " active-text";
+            }
+            return `<div class="${cls}">${c}</div>`;
+          })
+          .join("");
+
+        // Arrow row
+        document.getElementById("arrow-row").innerHTML = T.split("")
+          .map((_, i) => {
+            let sym = "";
+            if (type === "compare" && i === s + j) sym = "↑";
+            else if ((type === "shift" || type === "no-match") && i === s)
+              sym = "↑";
+            else if (type === "found" && i === s) sym = "★";
+            return `<div class="arrow-cell">${sym}</div>`;
+          })
+          .join("");
+
+        // Pattern row — offset by s cells
+        let patHTML = "";
+        for (let k = 0; k < s && s >= 0; k++)
+          patHTML += `<div class="cell inactive">·</div>`;
+        for (let k = 0; k < m; k++) {
+          let cls = "cell";
+          if (type === "done" || type === "init" || s < 0) {
+            /* neutral */
+          } else if (type === "found") {
+            cls += " full-match";
+          } else if (type === "compare") {
+            if (k === j) cls += eq ? " match" : " mismatch";
+            else if (k < j) cls += " match";
+            else cls += " active-pat";
+          } else {
+            cls += " active-pat";
+          }
+          patHTML += `<div class="${cls}">${P[k]}</div>`;
+        }
+        document.getElementById("pat-row").innerHTML = patHTML;
+
+        // Info
+        document.getElementById("info-panel").innerHTML = st.msg;
+
+        // Code highlight
+        for (let i = 0; i <= 6; i++) {
+          const el = document.getElementById("cl" + i);
+          if (el) el.classList.toggle("hl", st.codeLine === i);
+        }
+
+        // Result
+        const hits = steps.filter((x) => x.type === "found").map((x) => x.s);
+        const rp = document.getElementById("result-panel");
+        if (type === "done") {
+          if (hits.length === 0) {
+            rp.innerHTML = "Pattern not found in text.";
+          } else {
+            rp.innerHTML =
+              "Matches found at index: " +
+              hits.map((h) => `<span class="hit-badge">${h}</span>`).join("");
+          }
+        } else {
+          rp.innerHTML = "";
+        }
+
+        document.getElementById("btn-prev").disabled = cur === 0;
+        document.getElementById("btn-next").disabled = cur === steps.length - 1;
+      }
+
+      function move(d) {
+        cur = Math.max(0, Math.min(steps.length - 1, cur + d));
+        renderStep();
+      }
+
+      function toggleAuto() {
+        const btn = document.getElementById("btn-auto");
+        if (autoTimer) {
+          clearAuto();
+          return;
+        }
+        if (!steps.length) buildSteps();
+        btn.textContent = "⏸ Pause";
+        btn.classList.add("auto-on");
+        autoTimer = setInterval(() => {
+          if (cur >= steps.length - 1) {
+            clearAuto();
+            return;
+          }
+          cur++;
+          renderStep();
+        }, autoDelay);
+      }
+
+      function clearAuto() {
+        if (autoTimer) {
+          clearInterval(autoTimer);
+          autoTimer = null;
+        }
+        const btn = document.getElementById("btn-auto");
+        btn.textContent = "⏵ Auto";
+        btn.classList.remove("auto-on");
+      }
+
+      function updateSpeed(v) {
+        autoDelay = parseInt(v);
+        document.getElementById("speed-label").textContent =
+          (v / 1000).toFixed(1) + "s";
+        if (autoTimer) {
+          clearAuto();
+          toggleAuto();
+        }
+      }
+
+      // Keyboard shortcuts
+      document.addEventListener("keydown", (e) => {
+        if (["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName)) return;
+        if (e.key === "ArrowRight") move(1);
+        else if (e.key === "ArrowLeft") move(-1);
+        else if (e.key === " ") {
+          e.preventDefault();
+          toggleAuto();
+        } else if (e.key === "r" || e.key === "R") buildSteps();
+      });
+
+      // Init on load
+      window.addEventListener("load", buildSteps);
+    </script>
+  </body>
+</html>

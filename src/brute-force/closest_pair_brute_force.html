@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Closest Pair — Brute Force Dry Run</title>
+<style>
+  :root {
+    --bg:    #f8f7f4;
+    --bg2:   #f0eeea;
+    --bg3:   #e8e6e1;
+    --card:  #ffffff;
+    --border:  rgba(0,0,0,0.10);
+    --border2: rgba(0,0,0,0.20);
+    --text:  #1a1a18;
+    --text2: #5a5955;
+    --text3: #9a9890;
+    --mono:  'JetBrains Mono','Fira Mono','Consolas',monospace;
+    --sans:  'Inter','Segoe UI',system-ui,sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:    #18181a;
+      --bg2:   #222226;
+      --bg3:   #2c2c30;
+      --card:  #1e1e22;
+      --border:  rgba(255,255,255,0.09);
+      --border2: rgba(255,255,255,0.18);
+      --text:  #e8e6e0;
+      --text2: #a0a098;
+      --text3: #606060;
+    }
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { min-height: 100vh; }
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    padding: 28px 20px 48px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .page { width: 100%; max-width: 1020px; }
+
+  /* Header */
+  .header { margin-bottom: 24px; }
+  .header h1 { font-size: 22px; font-weight: 600; letter-spacing: -.3px; }
+  .header p  { font-size: 13px; color: var(--text2); margin-top: 4px; }
+
+  /* Top bar */
+  .top-bar {
+    display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+    background: var(--card); border: 1px solid var(--border2);
+    border-radius: 10px; padding: 12px 16px; margin-bottom: 16px;
+  }
+  .top-bar label { font-size: 13px; color: var(--text2); white-space: nowrap; }
+  .pts-input {
+    font-family: var(--mono); font-size: 13px;
+    padding: 6px 10px; border: 1px solid var(--border2);
+    border-radius: 6px; background: var(--bg2); color: var(--text);
+    flex: 1; min-width: 200px;
+  }
+  .pts-input:focus { outline: 2px solid #378ADD; outline-offset: 1px; }
+  .btn {
+    font-family: var(--sans); font-size: 13px; font-weight: 500;
+    padding: 7px 18px; border: 1px solid var(--border2);
+    border-radius: 7px; background: var(--bg2); color: var(--text);
+    cursor: pointer; transition: background .14s; white-space: nowrap;
+  }
+  .btn:hover:not(:disabled) { background: var(--bg3); }
+  .btn:disabled { opacity: .35; cursor: default; }
+  .btn.primary { background: #185FA5; color: #E6F1FB; border-color: #185FA5; }
+  .btn.primary:hover:not(:disabled) { background: #0C447C; }
+  .btn.auto-on { background: #27500A; color: #EAF3DE; border-color: #27500A; }
+
+  /* Legend */
+  .legend {
+    display: flex; gap: 14px; flex-wrap: wrap;
+    margin-bottom: 14px; font-size: 12px; color: var(--text2);
+  }
+  .leg { display: flex; align-items: center; gap: 5px; }
+  .leg-dot { width: 13px; height: 13px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Two column layout */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr minmax(0, 360px);
+    gap: 14px;
+    margin-bottom: 12px;
+    align-items: start;
+  }
+  @media (max-width: 720px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* Canvas */
+  .canvas-wrap {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--bg2);
+    overflow: hidden;
+  }
+  canvas#plot { display: block; width: 100%; cursor: crosshair; }
+
+  /* Right column */
+  .right-col { display: flex; flex-direction: column; gap: 10px; }
+
+  /* Variable chips */
+  .vars-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .var-chip {
+    font-family: var(--mono); font-size: 13px; font-weight: 600;
+    padding: 4px 12px; border: 1px solid var(--border2);
+    border-radius: 6px; background: var(--bg2); color: var(--text);
+  }
+  .var-chip span { color: var(--text2); font-weight: 400; }
+
+  /* Info card */
+  .info-card {
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 13px 15px;
+    background: var(--card);
+    font-size: 13px; line-height: 1.75; min-height: 64px;
+    color: var(--text);
+  }
+  .step-tag {
+    display: inline-block; font-size: 11px; font-weight: 600;
+    padding: 2px 9px; border-radius: 5px; margin-right: 7px;
+    vertical-align: middle; letter-spacing: .02em;
+  }
+  .tag-init    { background: #E4E2FA; color: #3C3489; }
+  .tag-compare { background: #DEEDF8; color: #0C447C; }
+  .tag-better  { background: #D8EEC2; color: #27500A; }
+  .tag-same    { background: #F1EFE8; color: #444441; }
+  .tag-outer   { background: #E4E2FA; color: #3C3489; }
+  .tag-done    { background: #C7E5A0; color: #173404; border: 1px solid #639922; }
+  @media (prefers-color-scheme: dark) {
+    .tag-init    { background: #3C3489; color: #CECBF6; }
+    .tag-compare { background: #0C447C; color: #B5D4F4; }
+    .tag-better  { background: #1e3d0a; color: #C0DD97; }
+    .tag-same    { background: #2c2c2a; color: #D3D1C7; }
+    .tag-outer   { background: #3C3489; color: #CECBF6; }
+    .tag-done    { background: #1e4008; color: #C0DD97; border-color: #639922; }
+  }
+
+  /* Code block */
+  .code-card {
+    background: #1e1e2e;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 10px; padding: 13px 16px; overflow-x: auto;
+  }
+  .code-card .lang-tag {
+    display: block; font-family: var(--mono); font-size: 11px;
+    color: #585b70; margin-bottom: 8px;
+  }
+  .cl {
+    display: block; font-family: var(--mono); font-size: 12.5px;
+    color: #cdd6f4; padding: 2px 7px; border-radius: 4px;
+    line-height: 1.7; white-space: pre;
+    transition: background .18s, color .18s;
+  }
+  .cl.hl { background: #313244; color: #f5c2e7; font-weight: 600; }
+  .kw { color: #cba6f7; }
+  .ty { color: #89dceb; }
+  .fn { color: #89b4fa; }
+  .nu { color: #fab387; }
+  .cm { color: #585b70; font-style: italic; }
+
+  /* Distance table */
+  .dist-table-wrap {
+    border: 1px solid var(--border);
+    border-radius: 10px; overflow: hidden;
+    background: var(--card);
+  }
+  .dist-table-wrap h3 {
+    font-size: 11px; font-weight: 600; letter-spacing: .07em;
+    color: var(--text3); text-transform: uppercase;
+    padding: 8px 12px 6px; background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+  }
+  .dist-table {
+    width: 100%; border-collapse: collapse;
+    font-family: var(--mono); font-size: 12px;
+  }
+  .dist-table th {
+    background: var(--bg2); color: var(--text2);
+    font-size: 11px; font-weight: 500;
+    padding: 5px 8px; text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .dist-table td {
+    padding: 5px 8px; text-align: center;
+    color: var(--text); border-bottom: 1px solid var(--border);
+    transition: background .18s, color .18s;
+  }
+  .dist-table tr:last-child td { border-bottom: none; }
+  .dist-table td.inactive { color: var(--text3); }
+  .dist-table td.active   { background: #DEEDF8; color: #0C447C; font-weight: 600; }
+  .dist-table td.best-cell{ background: #D8EEC2; color: #27500A; font-weight: 600; }
+  .dist-table td.done-best{ background: #C7E5A0; color: #173404; font-weight: 700; box-shadow: inset 0 0 0 2px #639922; }
+  @media (prefers-color-scheme: dark) {
+    .dist-table td.active   { background: #0C447C; color: #B5D4F4; }
+    .dist-table td.best-cell{ background: #1e3d0a; color: #C0DD97; }
+    .dist-table td.done-best{ background: #1e4008; color: #C0DD97; box-shadow: inset 0 0 0 2px #639922; }
+  }
+
+  /* Progress */
+  .progress-wrap {
+    background: var(--bg3); border-radius: 3px;
+    height: 4px; margin-bottom: 12px; overflow: hidden;
+  }
+  .progress-bar {
+    background: #185FA5; height: 4px; border-radius: 3px;
+    transition: width .2s;
+  }
+
+  /* Nav */
+  .nav-row {
+    display: flex; gap: 8px; align-items: center;
+    flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .step-ctr { font-size: 12px; color: var(--text3); margin-left: 4px; }
+  .speed-row {
+    margin-left: auto; display: flex;
+    align-items: center; gap: 7px;
+    font-size: 12px; color: var(--text2);
+  }
+  .speed-row input[type=range] { width: 90px; accent-color: #185FA5; }
+
+  /* Result */
+  .result-panel { font-size: 13px; color: var(--text2); min-height: 22px; }
+  .hit-badge {
+    display: inline-block; background: #D8EEC2; color: #173404;
+    border: 1px solid #97C459; border-radius: 5px;
+    padding: 2px 10px; font-size: 13px;
+    font-family: var(--mono); font-weight: 600; margin-right: 4px;
+  }
+  @media (prefers-color-scheme: dark) {
+    .hit-badge { background: #1e3d0a; color: #C0DD97; border-color: #639922; }
+  }
+
+  /* Kbd hints */
+  .key-hint { font-size: 11px; color: var(--text3); margin-top: 16px; text-align: center; }
+  .kbd {
+    display: inline-block; background: var(--bg3);
+    border: 1px solid var(--border2); border-radius: 4px;
+    padding: 1px 6px; font-family: var(--mono); font-size: 11px;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <h1>Closest Pair of Points — Brute Force Dry Run</h1>
+    <p>Design &amp; Analysis of Algorithms &nbsp;·&nbsp; Brute Force — Interactive Step-through</p>
+  </div>
+
+  <div class="top-bar">
+    <label>Points (x,y)</label>
+    <input class="pts-input" id="pts-inp" value="(0,0),(2,2),(3,1),(5,4)" placeholder="e.g. (0,0),(2,2),(3,1),(5,4)">
+    <button class="btn primary" onclick="init()">▶ Run</button>
+    <button class="btn" onclick="randomPts()">Random</button>
+  </div>
+
+  <div class="legend">
+    <div class="leg"><div class="leg-dot" style="background:#185FA5"></div>Point i — outer loop</div>
+    <div class="leg"><div class="leg-dot" style="background:#534AB7"></div>Point j — inner loop</div>
+    <div class="leg"><div class="leg-dot" style="background:#E24B4A"></div>Current pair being measured</div>
+    <div class="leg"><div class="leg-dot" style="background:#3B6D11"></div>Best (closest) pair so far</div>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <div class="canvas-wrap">
+        <canvas id="plot" height="420"></canvas>
+      </div>
+    </div>
+    <div class="right-col">
+      <div class="vars-row">
+        <div class="var-chip">n = <span id="vn">4</span></div>
+        <div class="var-chip">i = <span id="vi">—</span></div>
+        <div class="var-chip">j = <span id="vj">—</span></div>
+        <div class="var-chip">best = <span id="vbest">—</span></div>
+      </div>
+
+      <div class="info-card" id="info-card">
+        Press <b>▶ Run</b> to begin, then step through each comparison.
+      </div>
+
+      <div class="code-card">
+        <span class="lang-tag">// Java — ClosestPairBruteForce.java</span>
+        <span class="cl" id="c0"><span class="kw">int</span> bestI=<span class="nu">0</span>, bestJ=<span class="nu">1</span>;</span>
+        <span class="cl" id="c1"><span class="ty">double</span> best = distance(pts[<span class="nu">0</span>], pts[<span class="nu">1</span>]);</span>
+        <span class="cl" id="c2"> </span>
+        <span class="cl" id="c3"><span class="kw">for</span> (<span class="ty">int</span> i=<span class="nu">0</span>; i&lt;n-<span class="nu">1</span>; i++) {</span>
+        <span class="cl" id="c4">  <span class="kw">for</span> (<span class="ty">int</span> j=i+<span class="nu">1</span>; j&lt;n; j++) {</span>
+        <span class="cl" id="c5">    <span class="ty">double</span> d = distance(pts[i], pts[j]);</span>
+        <span class="cl" id="c6">    <span class="kw">if</span> (d &lt; best) {</span>
+        <span class="cl" id="c7">      best=d; bestI=i; bestJ=j;</span>
+        <span class="cl" id="c8">    }</span>
+        <span class="cl" id="c9">  }</span>
+        <span class="cl" id="c10">}</span>
+        <span class="cl" id="c11"><span class="kw">return new</span> Result(bestI, bestJ, best);</span>
+      </div>
+
+      <div class="dist-table-wrap">
+        <h3>Distance matrix</h3>
+        <table class="dist-table" id="dist-table"></table>
+      </div>
+    </div>
+  </div>
+
+  <div class="progress-wrap"><div class="progress-bar" id="prog" style="width:0%"></div></div>
+
+  <div class="nav-row">
+    <button class="btn" id="btn-prev" onclick="move(-1)" disabled>◀ Prev</button>
+    <button class="btn primary" id="btn-next" onclick="move(1)" disabled>Next ▶</button>
+    <button class="btn" id="btn-auto" onclick="toggleAuto()">⏵ Auto</button>
+    <span class="step-ctr" id="sctr"></span>
+    <div class="speed-row">
+      <label for="spd">Speed</label>
+      <input type="range" id="spd" min="300" max="2200" step="100" value="900" oninput="setSpd(this.value)">
+      <span id="spd-lbl">0.9s</span>
+    </div>
+  </div>
+
+  <div class="result-panel" id="result-panel"></div>
+
+  <p class="key-hint">
+    Keyboard: <span class="kbd">←</span> Prev &nbsp;
+    <span class="kbd">→</span> Next &nbsp;
+    <span class="kbd">Space</span> Auto play &nbsp;
+    <span class="kbd">R</span> Reset &nbsp;
+    <span class="kbd">N</span> New random
+  </p>
+</div>
+
+<script>
+let steps = [], cur = 0, autoT = null, delay = 900, pts = [];
+
+function parsePts(s) {
+  const r = [];
+  for (const m of s.matchAll(/\(\s*(-?[\d.]+)\s*,\s*(-?[\d.]+)\s*\)/g))
+    r.push({ x: parseFloat(m[1]), y: parseFloat(m[2]) });
+  return r;
+}
+
+function dist(a, b) {
+  return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
+}
+
+function randomPts() {
+  const n = 4 + Math.floor(Math.random() * 4);
+  const arr = [];
+  for (let k = 0; k < n; k++)
+    arr.push(`(${(Math.random() * 8).toFixed(1)},${(Math.random() * 8).toFixed(1)})`);
+  document.getElementById('pts-inp').value = arr.join(',');
+  init();
+}
+
+function init() {
+  clearAuto();
+  pts = parsePts(document.getElementById('pts-inp').value);
+  if (pts.length < 2) { alert('Enter at least 2 points, e.g. (0,0),(3,4)'); return; }
+  const n = pts.length;
+  steps = [];
+
+  let bestI = 0, bestJ = 1;
+  let best = dist(pts[0], pts[1]);
+
+  steps.push({
+    type: 'init', i: -1, j: -1, bestI, bestJ, best, d: null, code: [0, 1],
+    msg: '<span class="step-tag tag-init">Init</span>Set bestI=0, bestJ=1, best = dist(P<sub>0</sub>,P<sub>1</sub>) = <b>' + best.toFixed(3) + '</b>. Now scan all remaining pairs.'
+  });
+
+  for (let i = 0; i < n - 1; i++) {
+    steps.push({
+      type: 'outer', i, j: -1, bestI, bestJ, best, d: null, code: [3],
+      msg: '<span class="step-tag tag-outer">Outer i=' + i + '</span>Fix P<sub>' + i + '</sub> = (' + pts[i].x + ', ' + pts[i].y + '). Inner j will go from ' + (i + 1) + ' to ' + (n - 1) + '.'
+    });
+    for (let j = i + 1; j < n; j++) {
+      const d = dist(pts[i], pts[j]);
+      steps.push({
+        type: 'compare', i, j, d, bestI, bestJ, best, code: [4, 5],
+        msg: '<span class="step-tag tag-compare">Compare i=' + i + ', j=' + j + '</span>dist(P<sub>' + i + '</sub>, P<sub>' + j + '</sub>) = <b>' + d.toFixed(3) + '</b> &nbsp; vs &nbsp; best = <b>' + best.toFixed(3) + '</b>'
+      });
+      if (d < best) {
+        best = d; bestI = i; bestJ = j;
+        steps.push({
+          type: 'better', i, j, d, bestI, bestJ, best, code: [6, 7],
+          msg: '<span class="step-tag tag-better">New best!</span>' + d.toFixed(3) + ' &lt; old best. Update → bestI=' + i + ', bestJ=' + j + ', best = <b>' + d.toFixed(3) + '</b>'
+        });
+      } else {
+        steps.push({
+          type: 'same', i, j, d, bestI, bestJ, best, code: [6, 8],
+          msg: '<span class="step-tag tag-same">No update</span>' + d.toFixed(3) + ' ≥ best (' + best.toFixed(3) + '). Current best pair (P<sub>' + bestI + '</sub>, P<sub>' + bestJ + '</sub>) unchanged.'
+        });
+      }
+    }
+  }
+
+  steps.push({
+    type: 'done', i: -1, j: -1, bestI, bestJ, best, d: null, code: [10, 11],
+    msg: '<span class="step-tag tag-done">Done ★</span>Closest pair: P<sub>' + bestI + '</sub>(' + pts[bestI].x + ',' + pts[bestI].y + ') &amp; P<sub>' + bestJ + '</sub>(' + pts[bestJ].x + ',' + pts[bestJ].y + ') &nbsp;| distance = <b>' + best.toFixed(4) + '</b>'
+  });
+
+  document.getElementById('vn').textContent = n;
+  cur = 0;
+  document.getElementById('btn-prev').disabled = false;
+  document.getElementById('btn-next').disabled = false;
+  buildTable();
+  render();
+}
+
+function buildTable() {
+  const n = pts.length;
+  let h = '<tr><th></th>';
+  for (let j = 0; j < n; j++) h += '<th>P' + j + '</th>';
+  h += '</tr>';
+  for (let i = 0; i < n; i++) {
+    h += '<tr><th>P' + i + '</th>';
+    for (let j = 0; j < n; j++) {
+      if (j <= i) h += '<td class="inactive">—</td>';
+      else h += '<td id="dc-' + i + '-' + j + '">' + dist(pts[i], pts[j]).toFixed(2) + '</td>';
+    }
+    h += '</tr>';
+  }
+  document.getElementById('dist-table').innerHTML = h;
+}
+
+function render() {
+  const st = steps[cur];
+  document.getElementById('prog').style.width = ((cur / (steps.length - 1)) * 100) + '%';
+  document.getElementById('sctr').textContent = 'Step ' + (cur + 1) + ' / ' + steps.length;
+  document.getElementById('vi').textContent   = st.i >= 0 ? st.i : '—';
+  document.getElementById('vj').textContent   = st.j >= 0 ? st.j : '—';
+  document.getElementById('vbest').textContent = st.best.toFixed(3);
+  document.getElementById('info-card').innerHTML = st.msg;
+
+  // Code highlight
+  for (let k = 0; k <= 11; k++) {
+    const el = document.getElementById('c' + k);
+    if (el) el.classList.toggle('hl', st.code.includes(k));
+  }
+
+  // Distance table
+  document.querySelectorAll('.dist-table td[id^="dc-"]').forEach(td => {
+    td.classList.remove('active', 'best-cell', 'done-best');
+    const parts = td.id.split('-');
+    const ri = parseInt(parts[1]), rj = parseInt(parts[2]);
+    if (st.type === 'done') {
+      if (ri === st.bestI && rj === st.bestJ) td.classList.add('done-best');
+    } else {
+      if (ri === st.i && rj === st.j) td.classList.add('active');
+      else if (ri === st.bestI && rj === st.bestJ) td.classList.add('best-cell');
+    }
+  });
+
+  // Result panel
+  const rp = document.getElementById('result-panel');
+  if (st.type === 'done') {
+    rp.innerHTML = 'Result: closest pair is '
+      + '<span class="hit-badge">P' + st.bestI + ' (' + pts[st.bestI].x + ', ' + pts[st.bestI].y + ')</span>'
+      + '<span class="hit-badge">P' + st.bestJ + ' (' + pts[st.bestJ].x + ', ' + pts[st.bestJ].y + ')</span>'
+      + ' &nbsp; distance = <b>' + st.best.toFixed(4) + '</b>';
+  } else {
+    rp.innerHTML = '';
+  }
+
+  drawPlot(st);
+
+  document.getElementById('btn-prev').disabled = cur === 0;
+  document.getElementById('btn-next').disabled = cur === steps.length - 1;
+}
+
+function drawPlot(st) {
+  const canvas = document.getElementById('plot');
+  const W = canvas.offsetWidth || 500;
+  const H = 420;
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+
+  const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const pad = 52;
+
+  const xs = pts.map(p => p.x), ys = pts.map(p => p.y);
+  let minX = Math.min(...xs), maxX = Math.max(...xs);
+  let minY = Math.min(...ys), maxY = Math.max(...ys);
+  const rangeX = maxX - minX || 1, rangeY = maxY - minY || 1;
+  minX -= rangeX * 0.15; maxX += rangeX * 0.15;
+  minY -= rangeY * 0.15; maxY += rangeY * 0.15;
+  const rX = maxX - minX, rY = maxY - minY;
+
+  const toC = p => ({
+    cx: pad + (p.x - minX) / rX * (W - 2 * pad),
+    cy: H - pad - (p.y - minY) / rY * (H - 2 * pad)
+  });
+
+  const gridCol  = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.06)';
+  const axisCol  = isDark ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.18)';
+  const tickCol  = isDark ? '#606060' : '#a0a098';
+  const labelCol = isDark ? '#808080' : '#9a9890';
+
+  // Grid lines
+  ctx.strokeStyle = gridCol; ctx.lineWidth = 1;
+  for (let g = 0; g <= 5; g++) {
+    const x = pad + g / 5 * (W - 2 * pad);
+    ctx.beginPath(); ctx.moveTo(x, pad); ctx.lineTo(x, H - pad); ctx.stroke();
+    const y = pad + g / 5 * (H - 2 * pad);
+    ctx.beginPath(); ctx.moveTo(pad, y); ctx.lineTo(W - pad, y); ctx.stroke();
+  }
+
+  // Axes
+  ctx.strokeStyle = axisCol; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(pad, H - pad); ctx.lineTo(W - pad, H - pad); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(pad, pad); ctx.lineTo(pad, H - pad); ctx.stroke();
+
+  // Axis tick labels
+  ctx.font = '10px monospace'; ctx.fillStyle = labelCol; ctx.textAlign = 'center';
+  for (let g = 0; g <= 5; g++) {
+    const val = (minX + g / 5 * rX).toFixed(1);
+    const x = pad + g / 5 * (W - 2 * pad);
+    ctx.fillText(val, x, H - pad + 14);
+  }
+  ctx.textAlign = 'right';
+  for (let g = 0; g <= 5; g++) {
+    const val = (minY + (1 - g / 5) * rY).toFixed(1);
+    const y = pad + g / 5 * (H - 2 * pad);
+    ctx.fillText(val, pad - 6, y + 4);
+  }
+
+  // Best pair dashed line
+  if (st.bestI >= 0 && st.bestJ >= 0 && st.type !== 'init') {
+    const a = toC(pts[st.bestI]), b = toC(pts[st.bestJ]);
+    ctx.save();
+    ctx.strokeStyle = '#639922'; ctx.lineWidth = 2;
+    ctx.setLineDash([7, 5]);
+    ctx.beginPath(); ctx.moveTo(a.cx, a.cy); ctx.lineTo(b.cx, b.cy); ctx.stroke();
+    ctx.restore();
+  }
+
+  // Current pair solid red line + distance label
+  if (st.i >= 0 && st.j >= 0 && (st.type === 'compare' || st.type === 'better' || st.type === 'same')) {
+    const a = toC(pts[st.i]), b = toC(pts[st.j]);
+    ctx.save();
+    ctx.strokeStyle = '#E24B4A'; ctx.lineWidth = 2.5; ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(a.cx, a.cy); ctx.lineTo(b.cx, b.cy); ctx.stroke();
+
+    // Distance label at midpoint
+    const mx = (a.cx + b.cx) / 2, my = (a.cy + b.cy) / 2;
+    const label = st.d.toFixed(3);
+    ctx.font = 'bold 12px monospace';
+    const tw = ctx.measureText(label).width;
+    ctx.fillStyle = isDark ? 'rgba(30,30,34,0.82)' : 'rgba(255,255,255,0.85)';
+    ctx.fillRect(mx - tw / 2 - 4, my - 16, tw + 8, 18);
+    ctx.fillStyle = '#A32D2D';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, mx, my - 3);
+    ctx.restore();
+  }
+
+  // Done: thick final green line
+  if (st.type === 'done') {
+    const a = toC(pts[st.bestI]), b = toC(pts[st.bestJ]);
+    ctx.save();
+    ctx.strokeStyle = '#3B6D11'; ctx.lineWidth = 3.5; ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(a.cx, a.cy); ctx.lineTo(b.cx, b.cy); ctx.stroke();
+    const mx = (a.cx + b.cx) / 2, my = (a.cy + b.cy) / 2;
+    const label = st.best.toFixed(3);
+    ctx.font = 'bold 12px monospace';
+    ctx.textAlign = 'center';
+    const tw = ctx.measureText(label).width;
+    ctx.fillStyle = isDark ? 'rgba(30,30,34,0.85)' : 'rgba(255,255,255,0.88)';
+    ctx.fillRect(mx - tw / 2 - 4, my - 17, tw + 8, 19);
+    ctx.fillStyle = '#27500A';
+    ctx.fillText(label, mx, my - 3);
+    ctx.restore();
+  }
+
+  // Draw all points
+  pts.forEach((p, k) => {
+    const { cx, cy } = toC(p);
+    let fill = isDark ? '#4a4a4e' : '#B4B2A9';
+    let stroke = isDark ? '#666' : '#888';
+    let r = 9;
+
+    if (st.type === 'done') {
+      if (k === st.bestI || k === st.bestJ) { fill = '#3B6D11'; stroke = '#1e3d0a'; r = 12; }
+    } else {
+      if (k === st.i)                        { fill = '#185FA5'; stroke = '#0C447C'; r = 12; }
+      else if (k === st.j)                   { fill = '#534AB7'; stroke = '#3C3489'; r = 12; }
+      else if (k === st.bestI || k === st.bestJ) { fill = '#639922'; stroke = '#3B6D11'; r = 11; }
+    }
+
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fillStyle = fill; ctx.fill();
+    ctx.strokeStyle = stroke; ctx.lineWidth = 2; ctx.stroke();
+
+    // Point label
+    ctx.font = 'bold 13px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = isDark ? '#e8e6e0' : '#1a1a18';
+    ctx.fillText('P' + k, cx + r + 4, cy - 4);
+    ctx.font = '11px monospace';
+    ctx.fillStyle = labelCol;
+    ctx.fillText('(' + p.x + ',' + p.y + ')', cx + r + 4, cy + 10);
+  });
+}
+
+function move(d) {
+  cur = Math.max(0, Math.min(steps.length - 1, cur + d));
+  render();
+}
+
+function toggleAuto() {
+  const btn = document.getElementById('btn-auto');
+  if (autoT) { clearAuto(); return; }
+  if (!steps.length) init();
+  btn.textContent = '⏸ Pause'; btn.classList.add('auto-on');
+  autoT = setInterval(() => {
+    if (cur >= steps.length - 1) { clearAuto(); return; }
+    cur++; render();
+  }, delay);
+}
+
+function clearAuto() {
+  if (autoT) { clearInterval(autoT); autoT = null; }
+  const btn = document.getElementById('btn-auto');
+  btn.textContent = '⏵ Auto'; btn.classList.remove('auto-on');
+}
+
+function setSpd(v) {
+  delay = parseInt(v);
+  document.getElementById('spd-lbl').textContent = (v / 1000).toFixed(1) + 's';
+  if (autoT) { clearAuto(); toggleAuto(); }
+}
+
+document.addEventListener('keydown', e => {
+  if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
+  if (e.key === 'ArrowRight') move(1);
+  else if (e.key === 'ArrowLeft') move(-1);
+  else if (e.key === ' ') { e.preventDefault(); toggleAuto(); }
+  else if (e.key === 'r' || e.key === 'R') init();
+  else if (e.key === 'n' || e.key === 'N') randomPts();
+});
+
+window.addEventListener('resize', () => { if (steps.length) render(); });
+window.addEventListener('load', init);
+</script>
+</body>
+</html>

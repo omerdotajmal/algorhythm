@@ -1,0 +1,1316 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Subset Enumeration — Bit Masking Dry Run</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0f1117;
+        --bg2: #181b24;
+        --bg3: #1e2130;
+        --card: #1a1d27;
+        --border: rgba(255, 255, 255, 0.08);
+        --border2: rgba(255, 255, 255, 0.15);
+        --text: #e8e6f0;
+        --text2: #8884a0;
+        --text3: #4a4860;
+        --mono: "JetBrains Mono", "Fira Mono", monospace;
+        --display: "Syne", sans-serif;
+
+        --bit-0: #1e2130;
+        --bit-0-b: rgba(255, 255, 255, 0.08);
+        --bit-1: #1a3a5c;
+        --bit-1-b: #378add;
+        --bit-active: #2a1a5c;
+        --bit-active-b: #7f77dd;
+        --bit-match: #1a3a1a;
+        --bit-match-b: #639922;
+
+        --blue: #378add;
+        --purple: #7f77dd;
+        --green: #639922;
+        --amber: #ef9f27;
+        --red: #e24b4a;
+        --teal: #1d9e75;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        font-family: var(--display);
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        padding: 32px 20px 60px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .page {
+        width: 100%;
+        max-width: 1080px;
+      }
+
+      /* ── Header ── */
+      .header {
+        margin-bottom: 28px;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 20px;
+      }
+      .header h1 {
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+        color: var(--text);
+      }
+      .header h1 span {
+        color: var(--purple);
+      }
+      .header p {
+        font-size: 13px;
+        color: var(--text2);
+        margin-top: 5px;
+        font-family: var(--mono);
+      }
+
+      /* ── Input bar ── */
+      .input-bar {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        background: var(--card);
+        border: 1px solid var(--border2);
+        border-radius: 10px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+      }
+      .input-bar label {
+        font-size: 13px;
+        color: var(--text2);
+        font-family: var(--mono);
+        white-space: nowrap;
+      }
+      .arr-input {
+        font-family: var(--mono);
+        font-size: 14px;
+        font-weight: 600;
+        padding: 6px 12px;
+        border: 1px solid var(--border2);
+        border-radius: 6px;
+        background: var(--bg3);
+        color: var(--text);
+        width: 200px;
+        letter-spacing: 0.05em;
+      }
+      .arr-input:focus {
+        outline: 2px solid var(--purple);
+        outline-offset: 1px;
+      }
+      .btn {
+        font-family: var(--display);
+        font-size: 13px;
+        font-weight: 600;
+        padding: 7px 20px;
+        border: 1px solid var(--border2);
+        border-radius: 7px;
+        background: var(--bg3);
+        color: var(--text);
+        cursor: pointer;
+        transition:
+          background 0.14s,
+          border-color 0.14s;
+        white-space: nowrap;
+      }
+      .btn:hover:not(:disabled) {
+        background: var(--bg2);
+        border-color: var(--border2);
+      }
+      .btn:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+      .btn.primary {
+        background: var(--purple);
+        color: #fff;
+        border-color: var(--purple);
+      }
+      .btn.primary:hover:not(:disabled) {
+        background: #534ab7;
+      }
+      .btn.auto-on {
+        background: var(--green);
+        color: #eaf3de;
+        border-color: var(--green);
+      }
+
+      /* ── Concept formula bar ── */
+      .formula-bar {
+        display: flex;
+        gap: 12px;
+        align-items: stretch;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
+      }
+      .formula-chip {
+        flex: 1;
+        min-width: 160px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--text2);
+      }
+      .formula-chip .val {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text);
+        display: block;
+        margin-top: 3px;
+      }
+      .formula-chip .val span {
+        color: var(--purple);
+      }
+
+      /* ── Main grid ── */
+      .main-grid {
+        display: grid;
+        grid-template-columns: 1fr minmax(0, 400px);
+        gap: 14px;
+        margin-bottom: 14px;
+        align-items: start;
+      }
+      @media (max-width: 760px) {
+        .main-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* ── Section cards ── */
+      .sec {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 16px 18px;
+      }
+      .sec-title {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text3);
+        margin-bottom: 12px;
+        font-family: var(--mono);
+      }
+
+      /* ── Bit Shift Explainer ── */
+      .shift-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 14px;
+        flex-wrap: wrap;
+      }
+      .shift-label {
+        font-size: 12px;
+        color: var(--text2);
+        font-family: var(--mono);
+        min-width: 60px;
+      }
+      .bits-group {
+        display: flex;
+        gap: 3px;
+      }
+      .bit-cell {
+        width: 34px;
+        height: 34px;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--mono);
+        font-size: 14px;
+        font-weight: 700;
+        border: 1.5px solid var(--bit-0-b);
+        background: var(--bit-0);
+        color: var(--text3);
+        transition:
+          background 0.25s,
+          border-color 0.25s,
+          color 0.25s,
+          transform 0.2s;
+        position: relative;
+      }
+      .bit-cell.on {
+        background: var(--bit-1);
+        border-color: var(--bit-1-b);
+        color: var(--blue);
+      }
+      .bit-cell.shifted {
+        background: var(--bit-active);
+        border-color: var(--bit-active-b);
+        color: var(--purple);
+        transform: scale(1.12);
+      }
+      .bit-cell.matched {
+        background: var(--bit-match);
+        border-color: var(--bit-match-b);
+        color: var(--green);
+      }
+      .bit-idx {
+        position: absolute;
+        bottom: 2px;
+        right: 3px;
+        font-size: 8px;
+        color: var(--text3);
+        font-weight: 400;
+      }
+
+      .arrow-sym {
+        font-size: 18px;
+        color: var(--amber);
+        font-family: var(--mono);
+      }
+      .eq-sym {
+        font-size: 13px;
+        color: var(--text3);
+        font-family: var(--mono);
+      }
+
+      /* result highlight */
+      .shift-result {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--text2);
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 4px 10px;
+      }
+      .shift-result b {
+        color: var(--purple);
+      }
+
+      /* AND operation row */
+      .and-section {
+        margin-top: 14px;
+      }
+      .and-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 6px;
+        flex-wrap: wrap;
+      }
+      .and-label {
+        font-size: 11px;
+        color: var(--text2);
+        font-family: var(--mono);
+        min-width: 80px;
+      }
+      .and-result-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 4px;
+      }
+      .and-sep {
+        width: 100%;
+        height: 1px;
+        background: var(--border);
+        margin: 6px 0;
+      }
+      .verdict {
+        font-family: var(--mono);
+        font-size: 13px;
+        font-weight: 700;
+        padding: 4px 14px;
+        border-radius: 6px;
+      }
+      .verdict.include {
+        background: #1a3a1a;
+        color: var(--green);
+        border: 1px solid var(--green);
+      }
+      .verdict.exclude {
+        background: #2a1a1a;
+        color: var(--red);
+        border: 1px solid var(--red);
+      }
+
+      /* ── Mask + Subset display ── */
+      .mask-display {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 14px;
+        flex-wrap: wrap;
+      }
+      .mask-dec {
+        font-family: var(--mono);
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--amber);
+        min-width: 40px;
+        text-align: center;
+      }
+      .mask-dec small {
+        font-size: 12px;
+        color: var(--text3);
+        display: block;
+      }
+      .mask-bits {
+        display: flex;
+        gap: 3px;
+      }
+
+      .subset-box {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 10px 12px;
+        min-height: 46px;
+        font-family: var(--mono);
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--green);
+        background: var(--bg3);
+        letter-spacing: 0.04em;
+      }
+      .subset-box small {
+        font-size: 11px;
+        color: var(--text3);
+        display: block;
+        margin-bottom: 4px;
+      }
+      .empty-set {
+        color: var(--text3);
+        font-weight: 400;
+      }
+
+      /* ── All subsets table ── */
+      .subsets-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+        gap: 6px;
+      }
+      .subset-chip {
+        background: var(--bg3);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 5px 8px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--text2);
+        text-align: center;
+        transition:
+          background 0.2s,
+          border-color 0.2s,
+          color 0.2s;
+      }
+      .subset-chip.active-chip {
+        background: #2a1a5c;
+        border-color: var(--purple);
+        color: #cecbf6;
+        font-weight: 700;
+      }
+      .subset-chip.done-chip {
+        background: #1a3a1a;
+        border-color: var(--green);
+        color: #c0dd97;
+      }
+      .subset-chip .chip-mask {
+        font-size: 9px;
+        color: var(--text3);
+        display: block;
+      }
+
+      /* ── Code block ── */
+      .code-wrap {
+        background: #13131e;
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 10px;
+        padding: 14px 16px;
+        overflow-x: auto;
+      }
+      .code-wrap .lang {
+        font-family: var(--mono);
+        font-size: 10px;
+        color: #585b70;
+        display: block;
+        margin-bottom: 8px;
+      }
+      .cl {
+        display: block;
+        font-family: var(--mono);
+        font-size: 12.5px;
+        color: #cdd6f4;
+        padding: 2px 8px;
+        border-radius: 4px;
+        line-height: 1.72;
+        white-space: pre;
+        transition:
+          background 0.18s,
+          color 0.18s;
+      }
+      .cl.hl {
+        background: #313244;
+        color: #f5c2e7;
+        font-weight: 700;
+      }
+      .kw {
+        color: #cba6f7;
+      }
+      .ty {
+        color: #89dceb;
+      }
+      .fn {
+        color: #89b4fa;
+      }
+      .nu {
+        color: #fab387;
+      }
+      .cm {
+        color: #585b70;
+        font-style: italic;
+      }
+      .str {
+        color: #a6e3a1;
+      }
+
+      /* ── Info panel ── */
+      .info-panel {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-left: 3px solid var(--purple);
+        border-radius: 8px;
+        padding: 12px 16px;
+        font-size: 13px;
+        line-height: 1.75;
+        color: var(--text);
+        margin-bottom: 12px;
+        min-height: 56px;
+        font-family: var(--mono);
+      }
+      .tag {
+        display: inline-block;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 4px;
+        margin-right: 8px;
+        vertical-align: middle;
+        letter-spacing: 0.04em;
+        font-family: var(--display);
+      }
+      .tag-outer {
+        background: #2a1a5c;
+        color: #cecbf6;
+      }
+      .tag-inner {
+        background: #0c447c;
+        color: #b5d4f4;
+      }
+      .tag-incl {
+        background: #1a3a1a;
+        color: #c0dd97;
+      }
+      .tag-excl {
+        background: #2a1a1a;
+        color: #f09595;
+      }
+      .tag-done {
+        background: #1a3a1a;
+        color: #c0dd97;
+        border: 1px solid var(--green);
+      }
+      .tag-init {
+        background: #1e2130;
+        color: var(--text2);
+        border: 1px solid var(--border2);
+      }
+
+      /* ── Progress & Nav ── */
+      .progress-wrap {
+        background: var(--bg3);
+        border-radius: 3px;
+        height: 3px;
+        margin-bottom: 12px;
+        overflow: hidden;
+      }
+      .progress-bar {
+        background: var(--purple);
+        height: 3px;
+        border-radius: 3px;
+        transition: width 0.2s;
+      }
+
+      .nav-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 14px;
+      }
+      .step-ctr {
+        font-size: 12px;
+        color: var(--text3);
+        font-family: var(--mono);
+        margin-left: 4px;
+      }
+      .speed-row {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 12px;
+        color: var(--text2);
+        font-family: var(--mono);
+      }
+      .speed-row input[type="range"] {
+        width: 80px;
+        accent-color: var(--purple);
+      }
+
+      /* ── Key hint ── */
+      .key-hint {
+        font-size: 11px;
+        color: var(--text3);
+        text-align: center;
+        margin-top: 18px;
+        font-family: var(--mono);
+      }
+      .kbd {
+        background: var(--bg3);
+        border: 1px solid var(--border2);
+        border-radius: 4px;
+        padding: 1px 7px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--text2);
+      }
+
+      /* ── Legend ── */
+      .legend {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+        font-size: 12px;
+        color: var(--text2);
+        font-family: var(--mono);
+      }
+      .leg {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .leg-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        flex-shrink: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <!-- Header -->
+      <div class="header">
+        <h1>Subset Enumeration via <span>Bit Masking</span></h1>
+        <p>
+          Design &amp; Analysis of Algorithms · Brute Force — Interactive Dry
+          Run
+        </p>
+      </div>
+
+      <!-- Input -->
+      <div class="input-bar">
+        <label>int[] a =</label>
+        <input
+          class="arr-input"
+          id="arr-inp"
+          value="1, 2, 3"
+          placeholder="e.g. 1, 2, 3"
+        />
+        <button class="btn primary" onclick="init()">▶ Run</button>
+        <button class="btn" id="btn-auto" onclick="toggleAuto()">⏵ Auto</button>
+        <div class="speed-row">
+          <label>Speed</label>
+          <input
+            type="range"
+            id="spd"
+            min="400"
+            max="2400"
+            step="100"
+            value="1100"
+            oninput="setSpd(this.value)"
+          />
+          <span id="spd-lbl">1.1s</span>
+        </div>
+      </div>
+
+      <!-- Formula chips -->
+      <div class="formula-bar" id="formula-bar">
+        <div class="formula-chip">
+          n (array size)
+          <div class="val" id="fc-n"><span>—</span></div>
+        </div>
+        <div class="formula-chip">
+          total = 1 &lt;&lt; n
+          <div class="val" id="fc-total"><span>—</span></div>
+        </div>
+        <div class="formula-chip">
+          current mask
+          <div class="val" id="fc-mask"><span>—</span></div>
+        </div>
+        <div class="formula-chip">
+          i (bit position)
+          <div class="val" id="fc-i"><span>—</span></div>
+        </div>
+        <div class="formula-chip">
+          1 &lt;&lt; i
+          <div class="val" id="fc-shift"><span>—</span></div>
+        </div>
+        <div class="formula-chip">
+          mask &amp; (1&lt;&lt;i)
+          <div class="val" id="fc-and"><span>—</span></div>
+        </div>
+      </div>
+
+      <!-- Info panel -->
+      <div class="info-panel" id="info-panel">
+        Press <b>▶ Run</b> to begin the dry run.
+      </div>
+
+      <!-- Main grid -->
+      <div class="main-grid">
+        <!-- LEFT: bit operations panel -->
+        <div>
+          <!-- Bit shift section -->
+          <div class="sec" style="margin-bottom: 12px">
+            <div class="sec-title">
+              Step 1 — compute 1 &lt;&lt; i (bit shift)
+            </div>
+
+            <div class="shift-row">
+              <span class="shift-label">start:</span>
+              <div class="bits-group" id="shift-start"></div>
+              <span class="eq-sym">= 1</span>
+            </div>
+
+            <div class="shift-row">
+              <span class="shift-label" id="shift-times-lbl">shift left:</span>
+              <div class="bits-group" id="shift-anim"></div>
+              <div class="shift-result">
+                1 &lt;&lt; <b id="shift-i-val">i</b> =
+                <b id="shift-result-val">?</b>
+              </div>
+            </div>
+
+            <div
+              style="
+                font-size: 11px;
+                color: var(--text3);
+                font-family: var(--mono);
+                margin-top: 4px;
+                padding-left: 4px;
+              "
+            >
+              The bit <code style="color: var(--blue)">1</code> is shifted
+              <b id="shift-explain-n">i</b> positions to the left → selects bit
+              position <b id="shift-explain-pos">i</b>
+            </div>
+          </div>
+
+          <!-- AND operation section -->
+          <div class="sec" style="margin-bottom: 12px">
+            <div class="sec-title">
+              Step 2 — check mask &amp; (1 &lt;&lt; i)
+            </div>
+            <div class="and-row">
+              <span class="and-label">mask:</span>
+              <div class="bits-group" id="and-mask-bits"></div>
+              <span
+                class="eq-sym"
+                id="and-mask-dec"
+                style="color: var(--amber); font-weight: 700"
+              ></span>
+            </div>
+            <div class="and-row">
+              <span class="and-label">1 &lt;&lt; i:</span>
+              <div class="bits-group" id="and-shift-bits"></div>
+              <span
+                class="eq-sym"
+                id="and-shift-dec"
+                style="color: var(--purple); font-weight: 700"
+              ></span>
+            </div>
+            <div class="and-sep"></div>
+            <div class="and-result-row">
+              <span
+                class="and-label"
+                style="
+                  color: var(--text2);
+                  font-family: var(--mono);
+                  font-size: 11px;
+                "
+                >AND result:</span
+              >
+              <div class="bits-group" id="and-result-bits"></div>
+              <span
+                class="eq-sym"
+                id="and-result-dec"
+                style="font-weight: 700"
+              ></span>
+              <span class="verdict" id="and-verdict"></span>
+            </div>
+          </div>
+
+          <!-- Current subset building -->
+          <div class="sec" style="margin-bottom: 12px">
+            <div class="sec-title">
+              Subset being built (mask = <span id="cur-mask-title">—</span>)
+            </div>
+            <div class="mask-display">
+              <div>
+                <div class="mask-dec" id="mask-dec-big">
+                  —<small>mask</small>
+                </div>
+              </div>
+              <div class="mask-bits" id="mask-bits-big"></div>
+            </div>
+            <div class="subset-box" id="subset-box">
+              <small>subset so far</small><span class="empty-set">{ }</span>
+            </div>
+          </div>
+
+          <!-- Code -->
+          <div class="sec">
+            <div class="sec-title">Java code</div>
+            <div class="code-wrap">
+              <span class="lang">// SubsetBitMask.java</span>
+              <span class="cl" id="cd0"
+                ><span class="ty">int</span> n = a.length;
+                <span class="cm">// n = array size</span></span
+              >
+              <span class="cl" id="cd1"
+                ><span class="ty">int</span> total =
+                <span class="nu">1</span> &lt;&lt; n;
+                <span class="cm">// 2^n subsets</span></span
+              >
+              <span class="cl" id="cd2"> </span>
+              <span class="cl" id="cd3"
+                ><span class="kw">for</span> (<span class="ty">int</span>
+                mask=<span class="nu">0</span>; mask&lt;total; mask++) {</span
+              >
+              <span class="cl" id="cd4">
+                List&lt;Integer&gt; subset =
+                <span class="kw">new</span> ArrayList&lt;&gt;();</span
+              >
+              <span class="cl" id="cd5">
+                <span class="kw">for</span> (<span class="ty">int</span> i=<span
+                  class="nu"
+                  >0</span
+                >; i&lt;n; i++) {</span
+              >
+              <span class="cl" id="cd6">
+                <span class="kw">if</span> ((mask &amp; (<span class="nu"
+                  >1</span
+                >
+                &lt;&lt; i)) != <span class="nu">0</span>)</span
+              >
+              <span class="cl" id="cd7">
+                subset.<span class="fn">add</span>(a[i]);</span
+              >
+              <span class="cl" id="cd8"> }</span>
+              <span class="cl" id="cd9">
+                res.<span class="fn">add</span>(subset);</span
+              >
+              <span class="cl" id="cd10">}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: all subsets + legend -->
+        <div
+          class="right-col"
+          style="display: flex; flex-direction: column; gap: 12px"
+        >
+          <div class="legend">
+            <div class="leg">
+              <div class="leg-dot" style="background: var(--amber)"></div>
+              current mask
+            </div>
+            <div class="leg">
+              <div class="leg-dot" style="background: var(--purple)"></div>
+              bit being shifted
+            </div>
+            <div class="leg">
+              <div class="leg-dot" style="background: var(--green)"></div>
+              bit is set → include
+            </div>
+            <div class="leg">
+              <div
+                class="leg-dot"
+                style="background: #2a1a1a; border: 1px solid var(--red)"
+              ></div>
+              bit 0 → exclude
+            </div>
+          </div>
+
+          <div class="sec">
+            <div class="sec-title">All subsets — generated gradually</div>
+            <div class="subsets-grid" id="subsets-grid"></div>
+          </div>
+
+          <!-- Complexity note -->
+          <div class="sec">
+            <div class="sec-title">Complexity</div>
+            <div
+              style="
+                font-family: var(--mono);
+                font-size: 12px;
+                color: var(--text2);
+                line-height: 1.9;
+              "
+            >
+              <div>
+                Outer loop runs
+                <b style="color: var(--amber)">2<sup>n</sup></b> times (one per
+                mask)
+              </div>
+              <div>
+                Inner loop runs <b style="color: var(--blue)">n</b> times per
+                mask
+              </div>
+              <div>
+                Total comparisons:
+                <b style="color: var(--purple)">n · 2<sup>n</sup></b>
+              </div>
+              <div style="margin-top: 8px; color: var(--text3)">
+                Time: O(n · 2<sup>n</sup>) &nbsp;
+              </div>
+            </div>
+          </div>
+
+          <!-- Array reference -->
+          <div class="sec">
+            <div class="sec-title">Array a[ ]</div>
+            <div
+              class="bits-group"
+              id="arr-display"
+              style="gap: 6px; flex-wrap: wrap"
+            ></div>
+          </div>
+
+          <!-- Nav -->
+          <div>
+            <div class="progress-wrap">
+              <div class="progress-bar" id="prog" style="width: 0%"></div>
+            </div>
+            <div class="nav-row">
+              <button class="btn" id="btn-prev" onclick="move(-1)" disabled>
+                ◀ Prev
+              </button>
+              <button
+                class="btn primary"
+                id="btn-next"
+                onclick="move(1)"
+                disabled
+              >
+                Next ▶
+              </button>
+              <span class="step-ctr" id="sctr"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="key-hint">
+        <span class="kbd">←</span> Prev &nbsp; <span class="kbd">→</span> Next
+        &nbsp; <span class="kbd">Space</span> Auto play/pause &nbsp;
+        <span class="kbd">R</span> Reset
+      </p>
+    </div>
+
+    <script>
+      let steps = [],
+        cur = 0,
+        autoT = null,
+        delay = 1100;
+      let ARR = [],
+        N = 0;
+
+      function parseArr(s) {
+        return s
+          .split(",")
+          .map((x) => parseInt(x.trim()))
+          .filter((x) => !isNaN(x));
+      }
+
+      function buildBits(val, n, highlight, matchBits) {
+        let h = "";
+        for (let b = n - 1; b >= 0; b--) {
+          const bit = (val >> b) & 1;
+          let cls = "bit-cell";
+          if (highlight !== undefined && b === highlight) cls += " shifted";
+          else if (matchBits && matchBits.has(b) && bit === 1)
+            cls += " matched";
+          else if (bit === 1) cls += " on";
+          h += `<div class="${cls}">${bit}<span class="bit-idx">${b}</span></div>`;
+        }
+        return h;
+      }
+
+      function init() {
+        clearAuto();
+        ARR = parseArr(document.getElementById("arr-inp").value);
+        if (ARR.length < 1 || ARR.length > 6) {
+          alert("Enter 1–6 integers for a clear visualization.");
+          return;
+        }
+        N = ARR.length;
+        const total = 1 << N;
+        steps = [];
+
+        // Step: init
+        steps.push({
+          type: "init",
+          mask: -1,
+          i: -1,
+          subset: [],
+          completedMasks: [],
+          code: [0, 1],
+          msg: `<span class="tag tag-init">Init</span>n = ${N}, total = 1 &lt;&lt; ${N} = <b>${total}</b>. We will iterate mask from 0 to ${total - 1}. Each mask is a binary pattern that selects which elements belong to the subset.`,
+        });
+
+        let completed = [];
+
+        for (let mask = 0; mask < total; mask++) {
+          // outer loop: new mask
+          steps.push({
+            type: "outer",
+            mask,
+            i: -1,
+            subset: [],
+            completedMasks: [...completed],
+            code: [3, 4],
+            msg: `<span class="tag tag-outer">Outer mask=${mask}</span>New mask = <b>${mask}</b> (binary: ${mask.toString(2).padStart(N, "0")}). Create empty subset. Inner loop checks each bit position i = 0 to ${N - 1}.`,
+          });
+
+          let subset = [];
+          for (let i = 0; i < N; i++) {
+            const shifted = 1 << i;
+            const andResult = mask & shifted;
+            const include = andResult !== 0;
+            if (include) subset = [...subset, ARR[i]];
+
+            steps.push({
+              type: "inner",
+              mask,
+              i,
+              shifted,
+              andResult,
+              include,
+              subset: [...subset],
+              completedMasks: [...completed],
+              code: [5, 6, include ? 7 : 8],
+              msg: include
+                ? `<span class="tag tag-incl">Include a[${i}]=${ARR[i]}</span>1 &lt;&lt; ${i} = <b>${shifted}</b> (binary: ${shifted.toString(2).padStart(N, "0")}). mask &amp; (1&lt;&lt;${i}) = <b>${andResult}</b> ≠ 0 → bit ${i} is SET → add a[${i}] = <b>${ARR[i]}</b> to subset.`
+                : `<span class="tag tag-excl">Exclude a[${i}]=${ARR[i]}</span>1 &lt;&lt; ${i} = <b>${shifted}</b> (binary: ${shifted.toString(2).padStart(N, "0")}). mask &amp; (1&lt;&lt;${i}) = <b>0</b> → bit ${i} is NOT set → skip a[${i}] = ${ARR[i]}.`,
+            });
+          }
+
+          // subset finalized
+          steps.push({
+            type: "finalize",
+            mask,
+            i: -1,
+            subset: [...subset],
+            completedMasks: [...completed],
+            code: [9],
+            msg: `<span class="tag tag-outer">Finalize mask=${mask}</span>All ${N} bits checked. Subset for mask <b>${mask}</b> = <b>{ ${subset.length ? subset.join(", ") : "∅"} }</b>. Added to results.`,
+          });
+          completed = [...completed, { mask, subset: [...subset] }];
+        }
+
+        steps.push({
+          type: "done",
+          mask: -1,
+          i: -1,
+          subset: [],
+          completedMasks: [...completed],
+          code: [10],
+          msg: `<span class="tag tag-done">Done ★</span>All <b>${total}</b> subsets (2<sup>${N}</sup>) enumerated. Every combination of the ${N} elements has been found exactly once.`,
+        });
+
+        // Build array display
+        let arrHTML = "";
+        ARR.forEach((v, idx) => {
+          arrHTML += `<div style="background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:6px 12px;font-family:var(--mono);font-size:14px;font-weight:700;color:var(--text);text-align:center">
+      <div style="font-size:9px;color:var(--text3);margin-bottom:2px">A[${idx}]</div>${v}</div>`;
+        });
+        document.getElementById("arr-display").innerHTML = arrHTML;
+
+        // Formula chips static
+        document.getElementById("fc-n").innerHTML = `<span>${N}</span>`;
+        document.getElementById("fc-total").innerHTML = `<span>${total}</span>`;
+
+        // Build subsets grid (empty chips)
+        let gridHTML = "";
+        for (let m = 0; m < total; m++) {
+          gridHTML += `<div class="subset-chip" id="chip-${m}">
+      <span class="chip-mask">${m.toString(2).padStart(N, "0")}</span>
+      <span id="chip-lbl-${m}">{ ? }</span>
+    </div>`;
+        }
+        document.getElementById("subsets-grid").innerHTML = gridHTML;
+
+        // Build shift start (value = 1, all bits shown)
+        let startH = "";
+        for (let b = N - 1; b >= 0; b--) {
+          startH += `<div class="bit-cell ${b === 0 ? "on" : ""}">
+      ${b === 0 ? "1" : "0"}<span class="bit-idx">${b}</span></div>`;
+        }
+        document.getElementById("shift-start").innerHTML = startH;
+
+        cur = 0;
+        document.getElementById("btn-prev").disabled = false;
+        document.getElementById("btn-next").disabled = false;
+        render();
+      }
+
+      function render() {
+        const st = steps[cur];
+        document.getElementById("prog").style.width =
+          (cur / (steps.length - 1)) * 100 + "%";
+        document.getElementById("sctr").textContent =
+          "Step " + (cur + 1) + " / " + steps.length;
+        document.getElementById("info-panel").innerHTML = st.msg;
+
+        // Code highlight
+        for (let k = 0; k <= 10; k++) {
+          const el = document.getElementById("cd" + k);
+          if (el) el.classList.toggle("hl", st.code && st.code.includes(k));
+        }
+
+        // Formula chips
+        document.getElementById("fc-mask").innerHTML =
+          st.mask >= 0
+            ? `<span>${st.mask}</span>`
+            : `<span style="color:var(--text3)">—</span>`;
+        document.getElementById("fc-i").innerHTML =
+          st.i >= 0
+            ? `<span>${st.i}</span>`
+            : `<span style="color:var(--text3)">—</span>`;
+        document.getElementById("fc-shift").innerHTML =
+          st.i >= 0
+            ? `<span>${1 << st.i}</span>`
+            : `<span style="color:var(--text3)">—</span>`;
+        if (st.type === "inner") {
+          document.getElementById("fc-and").innerHTML =
+            `<span style="color:${st.include ? "var(--green)" : "var(--red)"}">${st.andResult}</span>`;
+        } else {
+          document.getElementById("fc-and").innerHTML =
+            `<span style="color:var(--text3)">—</span>`;
+        }
+
+        // Mask big display
+        const maskVal = st.mask >= 0 ? st.mask : 0;
+        document.getElementById("mask-dec-big").innerHTML =
+          (st.mask >= 0 ? st.mask : "—") + "<small>mask</small>";
+        document.getElementById("cur-mask-title").textContent =
+          st.mask >= 0 ? st.mask : "—";
+        document.getElementById("mask-bits-big").innerHTML =
+          st.mask >= 0
+            ? buildBits(
+                maskVal,
+                N,
+                st.type === "inner" ? st.i : undefined,
+                null,
+              )
+            : "";
+
+        // Subset box
+        const subBox = document.getElementById("subset-box");
+        if (st.subset && st.subset.length > 0) {
+          subBox.innerHTML = `<small>subset so far</small>{ ${st.subset.join(", ")} }`;
+        } else {
+          subBox.innerHTML = `<small>subset so far</small><span class="empty-set">{ }</span>`;
+        }
+
+        // Bit shift section
+        if (st.type === "inner") {
+          const shifted = st.shifted;
+          document.getElementById("shift-times-lbl").textContent =
+            `shift ×${st.i}:`;
+          document.getElementById("shift-i-val").textContent = st.i;
+          document.getElementById("shift-result-val").textContent = shifted;
+          document.getElementById("shift-explain-n").textContent = st.i;
+          document.getElementById("shift-explain-pos").textContent = st.i;
+          document.getElementById("shift-anim").innerHTML = buildBits(
+            shifted,
+            N,
+            st.i,
+            null,
+          );
+
+          // AND section
+          const andMatchBits = new Set();
+          if (st.include) andMatchBits.add(st.i);
+          document.getElementById("and-mask-bits").innerHTML = buildBits(
+            maskVal,
+            N,
+            undefined,
+            andMatchBits,
+          );
+          document.getElementById("and-shift-bits").innerHTML = buildBits(
+            shifted,
+            N,
+            st.i,
+            null,
+          );
+          document.getElementById("and-result-bits").innerHTML = buildBits(
+            st.andResult,
+            N,
+            st.include ? st.i : undefined,
+            null,
+          );
+          document.getElementById("and-mask-dec").textContent = maskVal;
+          document.getElementById("and-shift-dec").textContent = shifted;
+          document.getElementById("and-result-dec").textContent = st.andResult;
+          document.getElementById("and-result-dec").style.color = st.include
+            ? "var(--green)"
+            : "var(--red)";
+
+          const vrd = document.getElementById("and-verdict");
+          vrd.className = "verdict " + (st.include ? "include" : "exclude");
+          vrd.textContent = st.include ? "≠ 0 → include" : "= 0 → skip";
+        } else {
+          // clear inner sections when not in inner step
+          document.getElementById("shift-anim").innerHTML = buildBits(
+            0,
+            N,
+            undefined,
+            null,
+          );
+          document.getElementById("and-mask-bits").innerHTML =
+            st.mask >= 0 ? buildBits(maskVal, N, undefined, null) : "";
+          document.getElementById("and-shift-bits").innerHTML = "";
+          document.getElementById("and-result-bits").innerHTML = "";
+          document.getElementById("and-mask-dec").textContent =
+            st.mask >= 0 ? st.mask : "";
+          document.getElementById("and-shift-dec").textContent = "";
+          document.getElementById("and-result-dec").textContent = "";
+          document.getElementById("and-verdict").className = "verdict";
+          document.getElementById("and-verdict").textContent = "";
+          document.getElementById("shift-times-lbl").textContent =
+            "shift left:";
+          document.getElementById("shift-i-val").textContent = "i";
+          document.getElementById("shift-result-val").textContent = "?";
+          document.getElementById("shift-explain-n").textContent = "i";
+          document.getElementById("shift-explain-pos").textContent = "i";
+        }
+
+        // Subsets grid
+        const total = 1 << N;
+        for (let m = 0; m < total; m++) {
+          const chip = document.getElementById("chip-" + m);
+          const lbl = document.getElementById("chip-lbl-" + m);
+          if (!chip) continue;
+          chip.classList.remove("active-chip", "done-chip");
+
+          const completed = st.completedMasks.find((c) => c.mask === m);
+          if (completed) {
+            chip.classList.add("done-chip");
+            lbl.textContent = completed.subset.length
+              ? "{ " + completed.subset.join(",") + " }"
+              : "{   }";
+          } else if (st.mask === m && st.type !== "done") {
+            chip.classList.add("active-chip");
+            lbl.textContent =
+              st.subset && st.subset.length
+                ? "{ " + st.subset.join(",") + " }"
+                : "{ ? }";
+          } else {
+            lbl.textContent = "{ ? }";
+          }
+        }
+
+        document.getElementById("btn-prev").disabled = cur === 0;
+        document.getElementById("btn-next").disabled = cur === steps.length - 1;
+      }
+
+      function move(d) {
+        cur = Math.max(0, Math.min(steps.length - 1, cur + d));
+        render();
+      }
+
+      function toggleAuto() {
+        const btn = document.getElementById("btn-auto");
+        if (autoT) {
+          clearAuto();
+          return;
+        }
+        if (!steps.length) init();
+        btn.textContent = "⏸ Pause";
+        btn.classList.add("auto-on");
+        autoT = setInterval(() => {
+          if (cur >= steps.length - 1) {
+            clearAuto();
+            return;
+          }
+          cur++;
+          render();
+        }, delay);
+      }
+
+      function clearAuto() {
+        if (autoT) {
+          clearInterval(autoT);
+          autoT = null;
+        }
+        const btn = document.getElementById("btn-auto");
+        btn.textContent = "⏵ Auto";
+        btn.classList.remove("auto-on");
+      }
+
+      function setSpd(v) {
+        delay = parseInt(v);
+        document.getElementById("spd-lbl").textContent =
+          (v / 1000).toFixed(1) + "s";
+        if (autoT) {
+          clearAuto();
+          toggleAuto();
+        }
+      }
+
+      document.addEventListener("keydown", (e) => {
+        if (["INPUT", "TEXTAREA"].includes(e.target.tagName)) return;
+        if (e.key === "ArrowRight") move(1);
+        else if (e.key === "ArrowLeft") move(-1);
+        else if (e.key === " ") {
+          e.preventDefault();
+          toggleAuto();
+        } else if (e.key === "r" || e.key === "R") init();
+      });
+
+      window.addEventListener("load", init);
+    </script>
+  </body>
+</html>
