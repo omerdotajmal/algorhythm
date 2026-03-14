@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DAA Visualizations — Brute Force</title>
+    <style>
+      :root {
+        --bg: #0b1220;
+        --panel: #111b2e;
+        --panel2: #0f1930;
+        --text: #e6eefc;
+        --muted: #b9c7e6;
+        --line: rgba(255, 255, 255, 0.08);
+        --accent: #7dd3fc;
+        --accent2: #a78bfa;
+        --good: #86efac;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family:
+          system-ui,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          Arial,
+          sans-serif;
+        background:
+          radial-gradient(
+            1000px 600px at 20% 0%,
+            rgba(125, 211, 252, 0.12),
+            transparent 60%
+          ),
+          radial-gradient(
+            900px 500px at 80% 10%,
+            rgba(167, 139, 250, 0.1),
+            transparent 55%
+          ),
+          var(--bg);
+        color: var(--text);
+        line-height: 1.45;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .wrap {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 32px 18px 56px;
+      }
+
+      header {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 18px;
+        background: rgba(17, 27, 46, 0.65);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        backdrop-filter: blur(8px);
+      }
+
+      .brand h1 {
+        margin: 0;
+        font-size: 20px;
+        letter-spacing: 0.2px;
+      }
+      .brand p {
+        margin: 6px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(125, 211, 252, 0.12);
+        border: 1px solid rgba(125, 211, 252, 0.25);
+        color: var(--text);
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
+      .hero {
+        margin-top: 18px;
+        padding: 22px 18px;
+        border-radius: 16px;
+        background: linear-gradient(
+          180deg,
+          rgba(17, 27, 46, 0.85),
+          rgba(15, 25, 48, 0.85)
+        );
+        border: 1px solid var(--line);
+      }
+
+      .hero h2 {
+        margin: 0 0 8px;
+        font-size: 18px;
+      }
+      .hero p {
+        margin: 0;
+        color: var(--muted);
+        max-width: 80ch;
+      }
+
+      .section {
+        margin-top: 24px;
+      }
+
+      .section-title {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+        margin: 0 0 12px;
+      }
+      .section-title h3 {
+        margin: 0;
+        font-size: 16px;
+      }
+      .section-title span {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 14px;
+      }
+
+      .card {
+        grid-column: span 12;
+        padding: 16px 16px;
+        border-radius: 16px;
+        background: rgba(17, 27, 46, 0.7);
+        border: 1px solid var(--line);
+        transition:
+          transform 140ms ease,
+          border-color 140ms ease,
+          background 140ms ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .card:hover {
+        transform: translateY(-2px);
+        border-color: rgba(125, 211, 252, 0.35);
+        background: rgba(17, 27, 46, 0.85);
+      }
+
+      .badge-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+      }
+
+      .badge {
+        font-size: 11px;
+        padding: 5px 9px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        color: var(--muted);
+        background: rgba(255, 255, 255, 0.03);
+      }
+      .badge.bruteforce {
+        border-color: rgba(134, 239, 172, 0.28);
+        background: rgba(134, 239, 172, 0.1);
+        color: var(--good);
+      }
+
+      .card h4 {
+        margin: 0 0 6px;
+        font-size: 16px;
+      }
+      .card p {
+        margin: 0 0 12px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .card .actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 9px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.04);
+        font-size: 13px;
+        color: var(--text);
+      }
+      .btn.primary {
+        border-color: rgba(125, 211, 252, 0.3);
+        background: rgba(125, 211, 252, 0.14);
+      }
+
+      footer {
+        margin-top: 28px;
+        padding: 14px 6px 0;
+        color: var(--muted);
+        font-size: 12px;
+        border-top: 1px solid var(--line);
+      }
+
+      @media (min-width: 860px) {
+        .card {
+          grid-column: span 4;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="brand">
+          <h1>DAA Visualizations</h1>
+          <p>Design & Analysis of Algorithms — interactive mini-pages</p>
+        </div>
+        <div class="pill" title="Current module">
+          <span>Module:</span>
+          <strong>Brute Force</strong>
+        </div>
+      </header>
+
+      <div class="hero">
+        <h2>Brute Force Visualizations</h2>
+        <p>
+          These pages demonstrate brute-force ideas (generate-and-test) with
+          clear step-by-step traces. More design techniques (Divide & Conquer,
+          Greedy, DP, etc.) will be added to this repository later.
+        </p>
+      </div>
+
+      <section class="section">
+        <div class="section-title">
+          <h3>Available Pages</h3>
+          <span>All files are in the same folder as this index.html</span>
+        </div>
+
+        <div class="grid">
+          <!-- Card 1 -->
+          <a class="card" href="./naive_string_matching.html">
+            <div class="badge-row">
+              <span class="badge bruteforce">Brute Force</span>
+              <span class="badge">Strings</span>
+            </div>
+            <h4>Naive String Matching</h4>
+            <p>
+              Try all alignments (shifts) and compare characters until mismatch
+              or full match.
+            </p>
+            <div class="actions">
+              <span class="btn primary">Open visualization</span>
+              <span class="btn" aria-hidden="true">O(n·m)</span>
+            </div>
+          </a>
+
+          <!-- Card 2 -->
+          <a class="card" href="./closest_pair_brute_force.html">
+            <div class="badge-row">
+              <span class="badge bruteforce">Brute Force</span>
+              <span class="badge">Geometry</span>
+            </div>
+            <h4>Closest Pair (2D) — Brute Force</h4>
+            <p>Check every pair of points and keep the minimum distance.</p>
+            <div class="actions">
+              <span class="btn primary">Open visualization</span>
+              <span class="btn" aria-hidden="true">Θ(n²)</span>
+            </div>
+          </a>
+
+          <!-- Card 3 -->
+          <a class="card" href="./subset_bitmask.html">
+            <div class="badge-row">
+              <span class="badge bruteforce">Brute Force</span>
+              <span class="badge">Bitmask</span>
+            </div>
+            <h4>Subset Generation (Bitmask)</h4>
+            <p>
+              Enumerate all masks from 0..(2^n−1) and decode each mask into a
+              subset.
+            </p>
+            <div class="actions">
+              <span class="btn primary">Open visualization</span>
+              <span class="btn" aria-hidden="true">Θ(n·2ⁿ)</span>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">
+          <h3>Next (coming soon)</h3>
+          <span>Planned sections</span>
+        </div>
+
+        <div class="grid">
+          <div class="card" style="grid-column: span 12">
+            <div class="badge-row">
+              <span class="badge">Divide & Conquer</span>
+              <span class="badge">Greedy</span>
+              <span class="badge">Dynamic Programming</span>
+              <span class="badge">Graph Algorithms</span>
+            </div>
+            <h4>More techniques will appear here</h4>
+            <p>
+              We'll be adding more Visualizations here as the course proceeds.
+            </p>
+            <div class="actions">
+              <span class="btn"></span>
+              <span class="btn"></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <div>
+          Tip: If you publish this folder to Netlify, your pages will be
+          accessible as:
+          <code>https://your-site.netlify.app/naive-string-matching.html</code>
+          etc.
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>
