@@ -1,4 +1,4 @@
-# Design & Analysis of Algorithms — Code + Visualizations
+# Design & Analysis of Algorithms [SP26] — Code + Visualizations
 
 This repository contains selected **code examples** and **interactive visualizations** used in the **Design & Analysis of Algorithms (DAA)** course.  
 The goal is to support learning through small, focused implementations and step-by-step algorithm traces.
