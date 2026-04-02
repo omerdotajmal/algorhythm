@@ -3,348 +3,889 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DAA Visualizations — Brute Force</title>
+    <title>DAA Visualizations</title>
     <style>
+      /* ============================================================
+         CSS VARIABLES
+      ============================================================ */
       :root {
-        --bg: #0b1220;
-        --panel: #111b2e;
-        --panel2: #0f1930;
-        --text: #e6eefc;
-        --muted: #b9c7e6;
-        --line: rgba(255, 255, 255, 0.08);
-        --accent: #7dd3fc;
-        --accent2: #a78bfa;
-        --good: #86efac;
+        --bg:         #0b1220;
+        --sidebar-bg: #070c18;
+        --panel:      #111b2e;
+        --card:       #0e1726;
+        --text:       #e6eefc;
+        --muted:      #b9c7e6;
+        --dim:        #556078;
+        --line:       rgba(255, 255, 255, 0.07);
+        --line2:      rgba(255, 255, 255, 0.13);
+
+        --accent:  #7dd3fc;   /* sky-blue  */
+        --accent2: #a78bfa;   /* violet    */
+        --good:    #86efac;   /* green     */
+        --amber:   #fbbf24;   /* amber     */
+        --teal:    #2dd4bf;   /* teal      */
+
+        --sidebar-w: 258px;
+        --topbar-h:  54px;
       }
 
-      * {
-        box-sizing: border-box;
-      }
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html { scroll-behavior: smooth; }
+
       body {
-        margin: 0;
-        font-family:
-          system-ui,
-          -apple-system,
-          Segoe UI,
-          Roboto,
-          Arial,
-          sans-serif;
+        font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
         background:
-          radial-gradient(
-            1000px 600px at 20% 0%,
-            rgba(125, 211, 252, 0.12),
-            transparent 60%
-          ),
-          radial-gradient(
-            900px 500px at 80% 10%,
-            rgba(167, 139, 250, 0.1),
-            transparent 55%
-          ),
+          radial-gradient(ellipse 900px 500px at 70% 0%,  rgba(167,139,250,0.08), transparent 60%),
+          radial-gradient(ellipse 700px 400px at 95% 40%, rgba(125,211,252,0.06), transparent 55%),
           var(--bg);
         color: var(--text);
-        line-height: 1.45;
+        line-height: 1.5;
+        min-height: 100vh;
       }
 
-      a {
-        color: inherit;
-        text-decoration: none;
-      }
+      a { color: inherit; text-decoration: none; }
 
-      .wrap {
-        max-width: 1080px;
-        margin: 0 auto;
-        padding: 32px 18px 56px;
-      }
-
-      header {
+      /* ============================================================
+         SIDEBAR
+      ============================================================ */
+      .sidebar {
+        position: fixed;
+        top: 0; left: 0;
+        width: var(--sidebar-w);
+        height: 100vh;
+        background: var(--sidebar-bg);
+        border-right: 1px solid var(--line);
         display: flex;
-        gap: 14px;
+        flex-direction: column;
+        z-index: 200;
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      /* ── Brand ── */
+      .sidebar-brand {
+        padding: 18px 16px 14px;
+        border-bottom: 1px solid var(--line);
+        flex-shrink: 0;
+      }
+      .brand-row {
+        display: flex;
         align-items: center;
-        justify-content: space-between;
-        padding: 18px 18px;
-        background: rgba(17, 27, 46, 0.65);
-        border: 1px solid var(--line);
-        border-radius: 16px;
-        backdrop-filter: blur(8px);
+        gap: 10px;
+        margin-bottom: 9px;
       }
-
-      .brand h1 {
-        margin: 0;
-        font-size: 20px;
-        letter-spacing: 0.2px;
+      .brand-icon {
+        width: 32px; height: 32px;
+        border-radius: 9px;
+        background: linear-gradient(135deg, rgba(125,211,252,0.18), rgba(167,139,250,0.18));
+        border: 1px solid rgba(125,211,252,0.2);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 15px;
+        flex-shrink: 0;
       }
-      .brand p {
-        margin: 6px 0 0;
-        color: var(--muted);
-        font-size: 13px;
-      }
-
-      .pill {
+      .brand-name  { font-size: 14px; font-weight: 700; letter-spacing: -0.2px; }
+      .brand-sub   { font-size: 10px; color: var(--dim); margin-top: 1px; }
+      .sem-pill {
         display: inline-flex;
         align-items: center;
-        gap: 8px;
-        padding: 8px 12px;
+        gap: 5px;
+        padding: 3px 9px;
         border-radius: 999px;
-        background: rgba(125, 211, 252, 0.12);
-        border: 1px solid rgba(125, 211, 252, 0.25);
+        background: rgba(125,211,252,0.07);
+        border: 1px solid rgba(125,211,252,0.16);
+        font-size: 10px;
+        color: var(--accent);
+        letter-spacing: 0.04em;
+      }
+      .sem-dot {
+        width: 5px; height: 5px;
+        border-radius: 50%;
+        background: var(--good);
+        animation: pulse 2.4s ease-in-out infinite;
+      }
+      @keyframes pulse {
+        0%,100% { opacity: 1; }
+        50%      { opacity: 0.35; }
+      }
+
+      /* ── Nav scroll area ── */
+      .sidebar-nav {
+        flex: 1;
+        overflow-y: auto;
+        padding: 8px 0 16px;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(255,255,255,0.05) transparent;
+      }
+      .sidebar-nav::-webkit-scrollbar { width: 3px; }
+      .sidebar-nav::-webkit-scrollbar-thumb {
+        background: rgba(255,255,255,0.07); border-radius: 2px;
+      }
+
+      .nav-section-label {
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--dim);
+        padding: 12px 16px 5px;
+      }
+
+      /* ── Category group ── */
+      .nav-group { margin-bottom: 1px; }
+
+      .nav-group-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 14px 7px 14px;
+        border: none;
+        border-left: 2px solid transparent;
+        background: transparent;
+        color: var(--muted);
+        font-family: inherit;
+        font-size: 12.5px;
+        font-weight: 600;
+        cursor: pointer;
+        text-align: left;
+        transition: background 0.14s, color 0.14s, border-color 0.14s;
+      }
+      .nav-group-btn:hover  { background: rgba(255,255,255,0.04); color: var(--text); }
+      .nav-group-btn.spy-on { color: var(--text); border-left-color: var(--c); }
+
+      .ngb-dot {
+        width: 7px; height: 7px; border-radius: 50%;
+        background: var(--c); opacity: 0.6; flex-shrink: 0;
+        transition: opacity 0.14s;
+      }
+      .nav-group-btn.spy-on .ngb-dot { opacity: 1; }
+      .ngb-title { flex: 1; }
+      .ngb-badge {
+        font-size: 10px; font-weight: 600;
+        padding: 2px 6px; border-radius: 999px;
+        background: rgba(255,255,255,0.05);
+        color: var(--dim);
+        white-space: nowrap;
+        transition: background 0.14s, color 0.14s;
+      }
+      .nav-group-btn.spy-on .ngb-badge { background: rgba(255,255,255,0.09); color: var(--muted); }
+      .ngb-chevron {
+        font-size: 9px; color: var(--dim);
+        transition: transform 0.22s; flex-shrink: 0;
+      }
+      .nav-group.open .ngb-chevron { transform: rotate(90deg); }
+
+      /* ── Items ── */
+      .nav-items {
+        overflow: hidden;
+        max-height: 0;
+        transition: max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .nav-group.open .nav-items { max-height: 500px; }
+
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 5px 14px 5px 32px;
+        font-size: 11.5px;
+        color: var(--dim);
+        transition: color 0.13s, background 0.13s;
+      }
+      .nav-item.live  { cursor: pointer; }
+      .nav-item.live:hover { color: var(--text); background: rgba(255,255,255,0.03); }
+      .ni-dot {
+        width: 4px; height: 4px; border-radius: 50%;
+        background: var(--c); flex-shrink: 0;
+      }
+      .nav-item.soon .ni-dot { background: rgba(255,255,255,0.1); }
+      .ni-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .ni-cpx {
+        font-size: 10px;
+        font-family: 'JetBrains Mono', 'Fira Mono', monospace;
+        opacity: 0.55; flex-shrink: 0;
+      }
+
+      /* ── Footer ── */
+      .sidebar-footer {
+        padding: 12px 16px;
+        border-top: 1px solid var(--line);
+        flex-shrink: 0;
+      }
+      .sf-row {
+        display: flex; justify-content: space-between; align-items: center;
+        font-size: 11px; color: var(--dim); margin-bottom: 6px;
+      }
+      .sf-row strong { color: var(--accent); }
+      .sf-track {
+        height: 3px; border-radius: 99px;
+        background: rgba(255,255,255,0.06); overflow: hidden;
+      }
+      .sf-fill {
+        height: 3px; border-radius: 99px;
+        background: linear-gradient(90deg, var(--accent), var(--accent2));
+        width: 14%; /* update as you add pages */
+        transition: width 0.6s;
+      }
+
+      /* ============================================================
+         MOBILE TOP BAR
+      ============================================================ */
+      .topbar {
+        display: none;
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        height: var(--topbar-h);
+        background: rgba(7, 12, 24, 0.92);
+        border-bottom: 1px solid var(--line);
+        backdrop-filter: blur(12px);
+        align-items: center;
+        gap: 12px;
+        padding: 0 16px;
+        z-index: 199;
+      }
+      .hb-btn {
+        width: 36px; height: 36px;
+        border: 1px solid var(--line2);
+        border-radius: 8px;
+        background: rgba(255,255,255,0.04);
         color: var(--text);
-        font-size: 12px;
+        cursor: pointer;
+        font-size: 16px;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+      }
+      .topbar-title { font-size: 14px; font-weight: 700; letter-spacing: -0.2px; }
+
+      .backdrop {
+        display: none;
+        position: fixed; inset: 0;
+        background: rgba(0,0,0,0.6);
+        backdrop-filter: blur(3px);
+        z-index: 199;
+      }
+
+      /* ============================================================
+         MAIN
+      ============================================================ */
+      .main {
+        margin-left: var(--sidebar-w);
+        min-height: 100vh;
+      }
+      .wrap {
+        max-width: 1020px;
+        margin: 0 auto;
+        padding: 44px 32px 88px;
+      }
+
+      /* ── Page header ── */
+      .page-header { margin-bottom: 32px; }
+
+      .eyebrow {
+        display: flex; align-items: center; gap: 8px;
+        font-size: 11px; color: var(--dim);
+        margin-bottom: 14px;
+        letter-spacing: 0.03em;
+      }
+      .eyebrow strong { color: var(--accent); }
+
+      .page-header h1 {
+        font-size: clamp(22px, 3.5vw, 28px);
+        font-weight: 700;
+        letter-spacing: -0.6px;
+        line-height: 1.2;
+        margin-bottom: 14px;
+      }
+      .page-header h1 em {
+        font-style: normal;
+        background: linear-gradient(100deg, var(--accent) 0%, var(--accent2) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      .lead {
+        font-size: 13.5px;
+        color: var(--muted);
+        max-width: 66ch;
+        line-height: 1.75;
+      }
+
+      /* ── Stats ── */
+      .stats-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        margin-bottom: 30px;
+      }
+      .stat {
+        background: rgba(17,27,46,0.65);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 14px 16px;
+      }
+      .stat-val {
+        font-size: 26px; font-weight: 700;
+        letter-spacing: -0.5px; line-height: 1;
+        margin-bottom: 3px;
+      }
+      .stat-lbl {
+        font-size: 10px; color: var(--dim);
+        text-transform: uppercase; letter-spacing: 0.07em;
+      }
+
+      /* ── How-to ── */
+      .how-box {
+        background: rgba(17,27,46,0.5);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 18px 20px;
+        margin-bottom: 36px;
+      }
+      .how-box h3 {
+        font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+        text-transform: uppercase; color: var(--accent);
+        margin-bottom: 13px;
+      }
+      .how-items {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        gap: 13px;
+      }
+      .how-item { display: flex; gap: 10px; align-items: flex-start; }
+      .how-num {
+        width: 20px; height: 20px; border-radius: 6px; flex-shrink: 0;
+        background: rgba(125,211,252,0.1);
+        border: 1px solid rgba(125,211,252,0.2);
+        color: var(--accent); font-size: 10px; font-weight: 700;
+        display: flex; align-items: center; justify-content: center;
+        margin-top: 1px;
+      }
+      .how-text { font-size: 12px; color: var(--muted); line-height: 1.65; }
+      .how-text b { color: var(--text); font-weight: 600; }
+
+      /* ── Algorithm sections ── */
+      .algo-section { margin-bottom: 42px; scroll-margin-top: 16px; }
+
+      .sec-head {
+        display: flex; align-items: center; gap: 10px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--line);
+        margin-bottom: 13px;
+      }
+      .sec-pip { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+      .sec-head h2 { font-size: 16px; font-weight: 700; letter-spacing: -0.1px; flex: 1; }
+
+      .sec-badge {
+        font-size: 10px; font-weight: 600;
+        padding: 3px 10px; border-radius: 999px;
         white-space: nowrap;
       }
-
-      .hero {
-        margin-top: 18px;
-        padding: 22px 18px;
-        border-radius: 16px;
-        background: linear-gradient(
-          180deg,
-          rgba(17, 27, 46, 0.85),
-          rgba(15, 25, 48, 0.85)
-        );
+      .sec-badge.live {
+        background: rgba(134,239,172,0.1);
+        border: 1px solid rgba(134,239,172,0.22);
+        color: var(--good);
+      }
+      .sec-badge.soon {
+        background: rgba(255,255,255,0.04);
         border: 1px solid var(--line);
+        color: var(--dim);
       }
 
-      .hero h2 {
-        margin: 0 0 8px;
-        font-size: 18px;
-      }
-      .hero p {
-        margin: 0;
-        color: var(--muted);
-        max-width: 80ch;
+      .sec-desc {
+        font-size: 12.5px; color: var(--muted);
+        max-width: 68ch; margin-bottom: 13px; line-height: 1.65;
       }
 
-      .section {
-        margin-top: 24px;
-      }
-
-      .section-title {
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        gap: 12px;
-        margin: 0 0 12px;
-      }
-      .section-title h3 {
-        margin: 0;
-        font-size: 16px;
-      }
-      .section-title span {
-        color: var(--muted);
-        font-size: 12px;
-      }
-
-      .grid {
+      /* ── Cards ── */
+      .cards {
         display: grid;
-        grid-template-columns: repeat(12, 1fr);
-        gap: 14px;
+        grid-template-columns: repeat(auto-fill, minmax(252px, 1fr));
+        gap: 11px;
       }
 
       .card {
-        grid-column: span 12;
-        padding: 16px 16px;
-        border-radius: 16px;
-        background: rgba(17, 27, 46, 0.7);
+        background: rgba(14,23,38,0.9);
         border: 1px solid var(--line);
-        transition:
-          transform 140ms ease,
-          border-color 140ms ease,
-          background 140ms ease;
+        border-radius: 14px;
+        padding: 15px;
         position: relative;
         overflow: hidden;
+        transition: transform 150ms ease, border-color 150ms ease, background 150ms ease;
       }
-
-      .card:hover {
+      .card::after {
+        content: '';
+        position: absolute;
+        inset: 0; top: auto;
+        height: 1px;
+        top: 0;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+      }
+      .card.live { cursor: pointer; }
+      .card.live:hover {
         transform: translateY(-2px);
-        border-color: rgba(125, 211, 252, 0.35);
-        background: rgba(17, 27, 46, 0.85);
+        border-color: rgba(125,211,252,0.28);
+        background: rgba(14,23,38,1);
       }
+      .card.locked { opacity: 0.4; }
 
-      .badge-row {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-        flex-wrap: wrap;
-        margin-bottom: 10px;
+      .card-tags {
+        display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 9px;
       }
-
-      .badge {
-        font-size: 11px;
-        padding: 5px 9px;
+      .tag {
+        font-size: 10px; padding: 2px 8px;
         border-radius: 999px;
         border: 1px solid var(--line);
-        color: var(--muted);
-        background: rgba(255, 255, 255, 0.03);
+        color: var(--dim);
+        background: rgba(255,255,255,0.025);
       }
-      .badge.bruteforce {
-        border-color: rgba(134, 239, 172, 0.28);
-        background: rgba(134, 239, 172, 0.1);
-        color: var(--good);
-      }
-
-      .card h4 {
-        margin: 0 0 6px;
-        font-size: 16px;
+      .card h3 {
+        font-size: 13.5px; font-weight: 600;
+        letter-spacing: -0.1px; margin-bottom: 5px;
       }
       .card p {
-        margin: 0 0 12px;
-        color: var(--muted);
-        font-size: 13px;
+        font-size: 11.5px; color: var(--muted);
+        line-height: 1.6; margin-bottom: 12px;
       }
-
-      .card .actions {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-        flex-wrap: wrap;
+      .card-foot {
+        display: flex; align-items: center;
+        justify-content: space-between; gap: 8px;
       }
-
-      .btn {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        padding: 9px 12px;
-        border-radius: 10px;
+      .open-btn {
+        font-size: 11.5px; padding: 5px 11px;
+        border-radius: 7px;
+        border: 1px solid rgba(125,211,252,0.24);
+        background: rgba(125,211,252,0.1);
+        color: var(--accent); font-weight: 500;
+      }
+      .soon-lbl { font-size: 11px; color: var(--dim); }
+      .cpx {
+        font-size: 10.5px;
+        font-family: 'JetBrains Mono', 'Fira Mono', monospace;
+        color: var(--dim);
+        background: rgba(255,255,255,0.04);
         border: 1px solid var(--line);
-        background: rgba(255, 255, 255, 0.04);
-        font-size: 13px;
-        color: var(--text);
-      }
-      .btn.primary {
-        border-color: rgba(125, 211, 252, 0.3);
-        background: rgba(125, 211, 252, 0.14);
+        padding: 3px 8px; border-radius: 6px;
       }
 
-      footer {
-        margin-top: 28px;
-        padding: 14px 6px 0;
-        color: var(--muted);
-        font-size: 12px;
-        border-top: 1px solid var(--line);
-      }
-
-      @media (min-width: 860px) {
-        .card {
-          grid-column: span 4;
+      /* ============================================================
+         RESPONSIVE
+      ============================================================ */
+      @media (max-width: 860px) {
+        .sidebar { transform: translateX(calc(-1 * var(--sidebar-w))); }
+        .sidebar.open {
+          transform: translateX(0);
+          box-shadow: 6px 0 32px rgba(0,0,0,0.55);
         }
+        .backdrop.show { display: block; }
+        .main { margin-left: 0; padding-top: var(--topbar-h); }
+        .topbar { display: flex; }
+        .wrap { padding: 24px 16px 64px; }
+        .stats-row { grid-template-columns: repeat(2, 1fr); }
       }
     </style>
   </head>
-
   <body>
-    <div class="wrap">
-      <header>
-        <div class="brand">
-          <h1>DAA Visualizations</h1>
-          <p>Design & Analysis of Algorithms — interactive mini-pages</p>
-        </div>
-        <div class="pill" title="Current module">
-          <span>Module:</span>
-          <strong>Brute Force</strong>
-        </div>
-      </header>
 
-      <div class="hero">
-        <h2>Brute Force Visualizations</h2>
-        <p>
-          These pages demonstrate brute-force ideas (generate-and-test) with
-          clear step-by-step traces. More design techniques (Divide & Conquer,
-          Greedy, DP, etc.) will be added to this repository later.
-        </p>
+    <!-- ── Mobile top bar ── -->
+    <header class="topbar">
+      <button class="hb-btn" id="hb" aria-label="Open navigation">☰</button>
+      <span class="topbar-title">DAA Visualizations</span>
+    </header>
+
+    <!-- ── Backdrop (mobile) ── -->
+    <div class="backdrop" id="backdrop"></div>
+
+    <!-- ================================================================
+         SIDEBAR
+         HOW TO ADD A NEW CATEGORY:
+           1. Copy a .nav-group block below and paste it here.
+           2. Set style="--c: var(--YOUR-COLOR)" on the group + items.
+           3. Set data-target="sec-YOURID" on the button.
+           4. Add the matching <section id="sec-YOURID"> in main below.
+
+         HOW TO ADD A NEW ALGORITHM TO AN EXISTING CATEGORY:
+           1. Find the right .nav-group.
+           2. Copy a .nav-item.live (or .soon) and update href, label, complexity.
+           3. Add the matching .card inside the section's .cards grid.
+    ================================================================ -->
+    <aside class="sidebar" id="sidebar">
+
+      <div class="sidebar-brand">
+        <div class="brand-row">
+          <div class="brand-icon">◈</div>
+          <div>
+            <div class="brand-name">DAA Visualizations</div>
+            <div class="brand-sub">Design &amp; Analysis of Algorithms</div>
+          </div>
+        </div>
+        <span class="sem-pill">
+          <span class="sem-dot"></span>
+          In progress · Spring 2025
+        </span>
       </div>
 
-      <section class="section">
-        <div class="section-title">
-          <h3>Available Pages</h3>
-          <span>All files are in the same folder as this index.html</span>
+      <nav class="sidebar-nav" aria-label="Algorithm categories">
+
+        <div class="nav-section-label">Algorithm Techniques</div>
+
+        <!-- ── Brute Force ── -->
+        <div class="nav-group open" id="ng-bf" style="--c: var(--good)">
+          <button class="nav-group-btn spy-on" data-target="sec-bf" onclick="toggleGroup(this)">
+            <span class="ngb-dot"></span>
+            <span class="ngb-title">Brute Force</span>
+            <span class="ngb-badge">3 done</span>
+            <span class="ngb-chevron">▸</span>
+          </button>
+          <div class="nav-items">
+            <a class="nav-item live" href="./naive_string_matching.html" style="--c: var(--good)">
+              <span class="ni-dot"></span>
+              <span class="ni-label">Naive String Matching</span>
+              <span class="ni-cpx">O(nm)</span>
+            </a>
+            <a class="nav-item live" href="./closest_pair_brute_force.html" style="--c: var(--good)">
+              <span class="ni-dot"></span>
+              <span class="ni-label">Closest Pair (2D)</span>
+              <span class="ni-cpx">Θ(n²)</span>
+            </a>
+            <a class="nav-item live" href="./subset_bitmask.html" style="--c: var(--good)">
+              <span class="ni-dot"></span>
+              <span class="ni-label">Subset Generation</span>
+              <span class="ni-cpx">Θ(n·2ⁿ)</span>
+            </a>
+          </div>
         </div>
 
-        <div class="grid">
-          <!-- Card 1 -->
-          <a class="card" href="./naive_string_matching.html">
-            <div class="badge-row">
-              <span class="badge bruteforce">Brute Force</span>
-              <span class="badge">Strings</span>
-            </div>
-            <h4>Naive String Matching</h4>
-            <p>
-              Try all alignments (shifts) and compare characters until mismatch
-              or full match.
-            </p>
-            <div class="actions">
-              <span class="btn primary">Open visualization</span>
-              <span class="btn" aria-hidden="true">O(n·m)</span>
-            </div>
-          </a>
-
-          <!-- Card 2 -->
-          <a class="card" href="./closest_pair_brute_force.html">
-            <div class="badge-row">
-              <span class="badge bruteforce">Brute Force</span>
-              <span class="badge">Geometry</span>
-            </div>
-            <h4>Closest Pair (2D) — Brute Force</h4>
-            <p>Check every pair of points and keep the minimum distance.</p>
-            <div class="actions">
-              <span class="btn primary">Open visualization</span>
-              <span class="btn" aria-hidden="true">Θ(n²)</span>
-            </div>
-          </a>
-
-          <!-- Card 3 -->
-          <a class="card" href="./subset_bitmask.html">
-            <div class="badge-row">
-              <span class="badge bruteforce">Brute Force</span>
-              <span class="badge">Bitmask</span>
-            </div>
-            <h4>Subset Generation (Bitmask)</h4>
-            <p>
-              Enumerate all masks from 0..(2^n−1) and decode each mask into a
-              subset.
-            </p>
-            <div class="actions">
-              <span class="btn primary">Open visualization</span>
-              <span class="btn" aria-hidden="true">Θ(n·2ⁿ)</span>
-            </div>
-          </a>
-        </div>
-      </section>
-
-      <section class="section">
-        <div class="section-title">
-          <h3>Next (coming soon)</h3>
-          <span>Planned sections</span>
+        <!-- ── Divide & Conquer ── -->
+        <div class="nav-group" id="ng-dc" style="--c: var(--accent)">
+          <button class="nav-group-btn" data-target="sec-dc" onclick="toggleGroup(this)">
+            <span class="ngb-dot"></span>
+            <span class="ngb-title">Divide &amp; Conquer</span>
+            <span class="ngb-badge">coming soon</span>
+            <span class="ngb-chevron">▸</span>
+          </button>
+          <div class="nav-items">
+            <span class="nav-item soon" style="--c: var(--accent)"><span class="ni-dot"></span><span class="ni-label">Merge Sort</span><span class="ni-cpx">Θ(n log n)</span></span>
+            <span class="nav-item soon" style="--c: var(--accent)"><span class="ni-dot"></span><span class="ni-label">Quick Sort</span></span>
+            <span class="nav-item soon" style="--c: var(--accent)"><span class="ni-dot"></span><span class="ni-label">Binary Search</span><span class="ni-cpx">Θ(log n)</span></span>
+            <span class="nav-item soon" style="--c: var(--accent)"><span class="ni-dot"></span><span class="ni-label">Closest Pair D&amp;C</span><span class="ni-cpx">Θ(n log n)</span></span>
+            <span class="nav-item soon" style="--c: var(--accent)"><span class="ni-dot"></span><span class="ni-label">Strassen's Matrix</span></span>
+          </div>
         </div>
 
-        <div class="grid">
-          <div class="card" style="grid-column: span 12">
-            <div class="badge-row">
-              <span class="badge">Divide & Conquer</span>
-              <span class="badge">Greedy</span>
-              <span class="badge">Dynamic Programming</span>
-              <span class="badge">Graph Algorithms</span>
+        <!-- ── Greedy ── -->
+        <div class="nav-group" id="ng-gr" style="--c: var(--amber)">
+          <button class="nav-group-btn" data-target="sec-gr" onclick="toggleGroup(this)">
+            <span class="ngb-dot"></span>
+            <span class="ngb-title">Greedy</span>
+            <span class="ngb-badge">coming soon</span>
+            <span class="ngb-chevron">▸</span>
+          </button>
+          <div class="nav-items">
+            <span class="nav-item soon" style="--c: var(--amber)"><span class="ni-dot"></span><span class="ni-label">Activity Selection</span><span class="ni-cpx">Θ(n log n)</span></span>
+            <span class="nav-item soon" style="--c: var(--amber)"><span class="ni-dot"></span><span class="ni-label">Huffman Coding</span></span>
+            <span class="nav-item soon" style="--c: var(--amber)"><span class="ni-dot"></span><span class="ni-label">Kruskal's MST</span><span class="ni-cpx">O(E log E)</span></span>
+            <span class="nav-item soon" style="--c: var(--amber)"><span class="ni-dot"></span><span class="ni-label">Prim's MST</span></span>
+            <span class="nav-item soon" style="--c: var(--amber)"><span class="ni-dot"></span><span class="ni-label">Dijkstra's SSSP</span></span>
+          </div>
+        </div>
+
+        <!-- ── Dynamic Programming ── -->
+        <div class="nav-group" id="ng-dp" style="--c: var(--accent2)">
+          <button class="nav-group-btn" data-target="sec-dp" onclick="toggleGroup(this)">
+            <span class="ngb-dot"></span>
+            <span class="ngb-title">Dynamic Programming</span>
+            <span class="ngb-badge">coming soon</span>
+            <span class="ngb-chevron">▸</span>
+          </button>
+          <div class="nav-items">
+            <span class="nav-item soon" style="--c: var(--accent2)"><span class="ni-dot"></span><span class="ni-label">0/1 Knapsack</span><span class="ni-cpx">Θ(nW)</span></span>
+            <span class="nav-item soon" style="--c: var(--accent2)"><span class="ni-dot"></span><span class="ni-label">Longest Common Subseq.</span></span>
+            <span class="nav-item soon" style="--c: var(--accent2)"><span class="ni-dot"></span><span class="ni-label">Matrix Chain Multiply</span></span>
+            <span class="nav-item soon" style="--c: var(--accent2)"><span class="ni-dot"></span><span class="ni-label">Floyd-Warshall APSP</span><span class="ni-cpx">Θ(V³)</span></span>
+            <span class="nav-item soon" style="--c: var(--accent2)"><span class="ni-dot"></span><span class="ni-label">Edit Distance</span></span>
+          </div>
+        </div>
+
+        <!-- ── Graph Algorithms ── -->
+        <div class="nav-group" id="ng-ga" style="--c: var(--teal)">
+          <button class="nav-group-btn" data-target="sec-ga" onclick="toggleGroup(this)">
+            <span class="ngb-dot"></span>
+            <span class="ngb-title">Graph Algorithms</span>
+            <span class="ngb-badge">coming soon</span>
+            <span class="ngb-chevron">▸</span>
+          </button>
+          <div class="nav-items">
+            <span class="nav-item soon" style="--c: var(--teal)"><span class="ni-dot"></span><span class="ni-label">BFS</span><span class="ni-cpx">Θ(V+E)</span></span>
+            <span class="nav-item soon" style="--c: var(--teal)"><span class="ni-dot"></span><span class="ni-label">DFS</span><span class="ni-cpx">Θ(V+E)</span></span>
+            <span class="nav-item soon" style="--c: var(--teal)"><span class="ni-dot"></span><span class="ni-label">Topological Sort</span></span>
+            <span class="nav-item soon" style="--c: var(--teal)"><span class="ni-dot"></span><span class="ni-label">Bellman-Ford SSSP</span><span class="ni-cpx">Θ(VE)</span></span>
+          </div>
+        </div>
+
+      </nav><!-- /sidebar-nav -->
+
+      <div class="sidebar-footer">
+        <div class="sf-row">
+          <span>3 of 22 visualizations</span>
+          <strong>14%</strong>
+        </div>
+        <!-- update width % above as you add pages -->
+        <div class="sf-track"><div class="sf-fill"></div></div>
+      </div>
+
+    </aside><!-- /sidebar -->
+
+    <!-- ================================================================
+         MAIN CONTENT
+    ================================================================ -->
+    <main class="main">
+      <div class="wrap">
+
+        <!-- ── Page header ── -->
+        <div class="page-header">
+          <div class="eyebrow">
+            <strong>DAA Visualizations</strong>
+            <span>·</span>
+            <span>CS Course · Spring 2025</span>
+          </div>
+          <h1>Interactive <em>Algorithm</em><br>Visualizations</h1>
+          <p class="lead">
+            A living reference built alongside the course — every algorithm we study gets its own
+            interactive dry-run page where you can step forward and backward through each
+            comparison, swap, and decision at your own pace. New technique modules are added
+            as the semester progresses.
+          </p>
+        </div>
+
+        <!-- ── Stats ── -->
+        <div class="stats-row">
+          <div class="stat">
+            <div class="stat-val" style="color:var(--good)">3</div>
+            <div class="stat-lbl">Available now</div>
+          </div>
+          <div class="stat">
+            <div class="stat-val" style="color:var(--accent)">22</div>
+            <div class="stat-lbl">Planned total</div>
+          </div>
+          <div class="stat">
+            <div class="stat-val" style="color:var(--accent2)">5</div>
+            <div class="stat-lbl">Technique modules</div>
+          </div>
+          <div class="stat">
+            <div class="stat-val" style="color:var(--amber)">1</div>
+            <div class="stat-lbl">Modules active</div>
+          </div>
+        </div>
+
+        <!-- ── How to use ── -->
+        <div class="how-box">
+          <h3>How to use</h3>
+          <div class="how-items">
+            <div class="how-item">
+              <div class="how-num">1</div>
+              <div class="how-text"><b>Choose an algorithm</b> from the sidebar or a card below. Greyed-out cards are coming soon.</div>
             </div>
-            <h4>More techniques will appear here</h4>
-            <p>
-              We'll be adding more Visualizations here as the course proceeds.
-            </p>
-            <div class="actions">
-              <span class="btn"></span>
-              <span class="btn"></span>
+            <div class="how-item">
+              <div class="how-num">2</div>
+              <div class="how-text"><b>Enter your own input</b> — text, point set, or array — and press ▶ Run.</div>
+            </div>
+            <div class="how-item">
+              <div class="how-num">3</div>
+              <div class="how-text"><b>Step through</b> with ← → arrow keys or Prev / Next buttons to trace every operation.</div>
+            </div>
+            <div class="how-item">
+              <div class="how-num">4</div>
+              <div class="how-text"><b>Auto-play</b> at any speed using the slider for a hands-free walkthrough.</div>
             </div>
           </div>
         </div>
-      </section>
 
-      <footer>
-        <div>
-          Tip: If you publish this folder to Netlify, your pages will be
-          accessible as:
-          <code>https://your-site.netlify.app/naive-string-matching.html</code>
-          etc.
-        </div>
-      </footer>
-    </div>
+        <!-- ================================================================
+             BRUTE FORCE
+        ================================================================ -->
+        <section class="algo-section" id="sec-bf">
+          <div class="sec-head">
+            <div class="sec-pip" style="background:var(--good)"></div>
+            <h2>Brute Force</h2>
+            <span class="sec-badge live">● 3 available</span>
+          </div>
+          <p class="sec-desc">
+            Generate every possible candidate and test each one.
+            Conceptually simple and a natural starting point — complexity is the cost.
+          </p>
+          <div class="cards">
+            <a class="card live" href="./naive_string_matching.html">
+              <div class="card-tags">
+                <span class="tag" style="color:var(--good);border-color:rgba(134,239,172,0.22);background:rgba(134,239,172,0.06)">Brute Force</span>
+                <span class="tag">Strings</span>
+              </div>
+              <h3>Naive String Matching</h3>
+              <p>Slide the pattern over the text one position at a time, checking for a character-by-character match at each shift.</p>
+              <div class="card-foot">
+                <span class="open-btn">Open →</span>
+                <span class="cpx">O(n·m)</span>
+              </div>
+            </a>
+            <a class="card live" href="./closest_pair_brute_force.html">
+              <div class="card-tags">
+                <span class="tag" style="color:var(--good);border-color:rgba(134,239,172,0.22);background:rgba(134,239,172,0.06)">Brute Force</span>
+                <span class="tag">Geometry</span>
+              </div>
+              <h3>Closest Pair of Points</h3>
+              <p>Compute the Euclidean distance for every pair of 2D points and track the running minimum.</p>
+              <div class="card-foot">
+                <span class="open-btn">Open →</span>
+                <span class="cpx">Θ(n²)</span>
+              </div>
+            </a>
+            <a class="card live" href="./subset_bitmask.html">
+              <div class="card-tags">
+                <span class="tag" style="color:var(--good);border-color:rgba(134,239,172,0.22);background:rgba(134,239,172,0.06)">Brute Force</span>
+                <span class="tag">Bitmask</span>
+              </div>
+              <h3>Subset Generation</h3>
+              <p>Iterate masks from 0…(2ⁿ−1); decode each bit pattern to determine which elements belong to the subset.</p>
+              <div class="card-foot">
+                <span class="open-btn">Open →</span>
+                <span class="cpx">Θ(n·2ⁿ)</span>
+              </div>
+            </a>
+          </div>
+        </section>
+
+        <!-- ================================================================
+             DIVIDE & CONQUER
+        ================================================================ -->
+        <section class="algo-section" id="sec-dc">
+          <div class="sec-head">
+            <div class="sec-pip" style="background:var(--accent)"></div>
+            <h2>Divide &amp; Conquer</h2>
+            <span class="sec-badge soon">Coming soon</span>
+          </div>
+          <p class="sec-desc">
+            Split the problem recursively into smaller subproblems, solve each independently, then combine.
+            Often breaks the quadratic barrier of brute force.
+          </p>
+          <div class="cards">
+            <div class="card locked"><div class="card-tags"><span class="tag">Sorting</span></div><h3>Merge Sort</h3><p>Recursively split the array in half, sort each half, then merge the two sorted halves in linear time.</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">Θ(n log n)</span></div></div>
+            <div class="card locked"><div class="card-tags"><span class="tag">Sorting</span></div><h3>Quick Sort</h3><p>Partition around a pivot so all smaller elements precede it, then recurse on both sides.</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">Avg Θ(n log n)</span></div></div>
+            <div class="card locked"><div class="card-tags"><span class="tag">Search</span></div><h3>Binary Search</h3><p>Repeatedly halve the search space on a sorted array until the target is found or excluded.</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">Θ(log n)</span></div></div>
+            <div class="card locked"><div class="card-tags"><span class="tag">Geometry</span></div><h3>Closest Pair — D&amp;C</h3><p>Optimal divide-and-conquer version that beats the brute-force quadratic bound.</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">Θ(n log n)</span></div></div>
+            <div class="card locked"><div class="card-tags"><span class="tag">Matrix</span></div><h3>Strassen's Matrix Multiply</h3><p>Recursively multiply 2×2 sub-blocks using 7 multiplications instead of 8.</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">O(n^2.807)</span></div></div>
+          </div>
+        </section>
+
+        <!-- ================================================================
+             GREEDY
+        ================================================================ -->
+        <section class="algo-section" id="sec-gr">
+          <div class="sec-head">
+            <div class="sec-pip" style="background:var(--amber)"></div>
+            <h2>Greedy</h2>
+            <span class="sec-badge soon">Coming soon</span>
+          </div>
+          <p class="sec-desc">
+            Commit to the locally best choice at every step.
+            Efficient and often elegant — correctness requires a proof of the greedy property.
+          </p>
+          <div class="cards">
+            <div class="card locked"><div class="card-tags"><span class="tag">Scheduling</span></div><h3>Activity Selection</h3><p>Greedily pick the maximum number of mutually compatible (non-overlapping) activities.</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">Θ(n log n)</span></div></div>
+            <div class="card locked"><div class="card-tags"><span class="tag">Compression</span></div><h3>Huffman Coding</h3><p>Build a minimum-redundancy prefix-free code using a greedy priority queue over symbol frequencies.</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">O(n log n)</span></div></div>
+            <div class="card locked"><div class="card-tags"><span class="tag">Graph · MST</span></div><h3>Kruskal's MST</h3><p>Sort edges by weight; greedily include each edge that doesn't form a cycle (Union-Find).</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">O(E log E)</span></div></div>
+            <div class="card locked"><div class="card-tags"><span class="tag">Graph · MST</span></div><h3>Prim's MST</h3><p>Grow the spanning tree one vertex at a time by always extending via the minimum-weight edge.</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">O(E log V)</span></div></div>
+            <div class="card locked"><div class="card-tags"><span class="tag">Graph · SSSP</span></div><h3>Dijkstra's Shortest Path</h3><p>Single-source shortest paths on graphs with non-negative weights via a min-priority queue.</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">O((V+E) log V)</span></div></div>
+          </div>
+        </section>
+
+        <!-- ================================================================
+             DYNAMIC PROGRAMMING
+        ================================================================ -->
+        <section class="algo-section" id="sec-dp">
+          <div class="sec-head">
+            <div class="sec-pip" style="background:var(--accent2)"></div>
+            <h2>Dynamic Programming</h2>
+            <span class="sec-badge soon">Coming soon</span>
+          </div>
+          <p class="sec-desc">
+            Decompose into overlapping subproblems, store each solution, reuse instead of recomputing.
+            Transforms exponential brute-force search into polynomial time.
+          </p>
+          <div class="cards">
+            <div class="card locked"><div class="card-tags"><span class="tag">Optimization</span></div><h3>0/1 Knapsack</h3><p>Maximize total item value within a weight capacity; each item is either included or excluded.</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">Θ(nW)</span></div></div>
+            <div class="card locked"><div class="card-tags"><span class="tag">Strings</span></div><h3>Longest Common Subsequence</h3><p>Find the longest subsequence present in both strings by filling a 2D DP table.</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">Θ(mn)</span></div></div>
+            <div class="card locked"><div class="card-tags"><span class="tag">Matrix</span></div><h3>Matrix Chain Multiplication</h3><p>Determine the optimal parenthesization to minimize the total number of scalar multiplications.</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">Θ(n³)</span></div></div>
+            <div class="card locked"><div class="card-tags"><span class="tag">Graph · APSP</span></div><h3>Floyd-Warshall</h3><p>All-pairs shortest paths via a 3-loop DP relaxing through each intermediate vertex.</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">Θ(V³)</span></div></div>
+            <div class="card locked"><div class="card-tags"><span class="tag">Strings</span></div><h3>Edit Distance</h3><p>Minimum insertions, deletions, and substitutions needed to transform one string into another.</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">Θ(mn)</span></div></div>
+          </div>
+        </section>
+
+        <!-- ================================================================
+             GRAPH ALGORITHMS
+        ================================================================ -->
+        <section class="algo-section" id="sec-ga">
+          <div class="sec-head">
+            <div class="sec-pip" style="background:var(--teal)"></div>
+            <h2>Graph Algorithms</h2>
+            <span class="sec-badge soon">Coming soon</span>
+          </div>
+          <p class="sec-desc">
+            Fundamental traversals and shortest-path algorithms on directed and undirected graphs.
+            The backbone of networking, scheduling, and search.
+          </p>
+          <div class="cards">
+            <div class="card locked"><div class="card-tags"><span class="tag">Traversal</span></div><h3>Breadth-First Search</h3><p>Visit vertices level by level via a queue; computes shortest paths on unweighted graphs.</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">Θ(V+E)</span></div></div>
+            <div class="card locked"><div class="card-tags"><span class="tag">Traversal</span></div><h3>Depth-First Search</h3><p>Explore as far down a branch as possible before backtracking; reveals tree/back/cross edges.</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">Θ(V+E)</span></div></div>
+            <div class="card locked"><div class="card-tags"><span class="tag">DAG</span></div><h3>Topological Sort</h3><p>Linear ordering of vertices in a DAG such that every edge (u, v) has u before v.</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">Θ(V+E)</span></div></div>
+            <div class="card locked"><div class="card-tags"><span class="tag">SSSP</span></div><h3>Bellman-Ford</h3><p>Single-source shortest paths tolerating negative-weight edges; detects negative cycles.</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">Θ(VE)</span></div></div>
+          </div>
+        </section>
+
+      </div><!-- /wrap -->
+    </main><!-- /main -->
+
+    <script>
+      /* ── Sidebar toggle (collapse/expand category) ── */
+      function toggleGroup(btn) {
+        const group = btn.closest('.nav-group');
+        group.classList.toggle('open');
+
+        // Scroll to section
+        const target = document.getElementById(btn.dataset.target);
+        if (target) {
+          setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }), 30);
+        }
+      }
+
+      /* ── Mobile hamburger ── */
+      const sidebar  = document.getElementById('sidebar');
+      const backdrop = document.getElementById('backdrop');
+      const hb       = document.getElementById('hb');
+
+      hb.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+        backdrop.classList.toggle('show');
+      });
+      backdrop.addEventListener('click', () => {
+        sidebar.classList.remove('open');
+        backdrop.classList.remove('show');
+      });
+
+      /* ── Scroll-spy: highlight active section in sidebar ── */
+      const sections   = document.querySelectorAll('.algo-section');
+      const navBtns    = document.querySelectorAll('.nav-group-btn');
+
+      const spy = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          const id = entry.target.id;
+          navBtns.forEach(btn => {
+            const on = btn.dataset.target === id;
+            btn.classList.toggle('spy-on', on);
+          });
+        });
+      }, { threshold: 0.2, rootMargin: '-50px 0px -55% 0px' });
+
+      sections.forEach(s => spy.observe(s));
+    </script>
+
   </body>
 </html>
