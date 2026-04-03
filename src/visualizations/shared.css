@@ -1,0 +1,115 @@
+/* ================================================================
+   shared.css — Common styles across all DAA Visualization pages
+   Covers: Catppuccin code block, syntax tokens, progress bar,
+           keyboard hints, step counter, speed row.
+
+   Pages set their own CSS variables (:root) for theming;
+   these rules reference them via var(--...) with safe fallbacks.
+================================================================ */
+
+/* ── Catppuccin-dark code block ──────────────────────────────── */
+.code-card,
+.code-wrap {
+  background: #1e1e2e;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+}
+
+/* Language tag (comment above code) */
+.code-card .lang-tag,
+.code-wrap .lang,
+.code-wrap .lang-tag {
+  display: block;
+  font-family: 'JetBrains Mono', 'Fira Mono', 'Consolas', monospace;
+  font-size: 10.5px;
+  color: #585b70;
+  margin-bottom: 8px;
+}
+
+/* Code line */
+.cl {
+  display: block;
+  font-family: 'JetBrains Mono', 'Fira Mono', 'Consolas', monospace;
+  font-size: 12.5px;
+  color: #cdd6f4;
+  padding: 2px 8px;
+  border-radius: 4px;
+  line-height: 1.72;
+  white-space: pre;
+  transition: background 0.18s, color 0.18s;
+}
+.cl.hl {
+  background: #313244;
+  color: #f5c2e7;
+  font-weight: 700;
+}
+
+/* Syntax token colours (Catppuccin Mocha) */
+.kw  { color: #cba6f7; }          /* keyword  — purple  */
+.ty  { color: #89dceb; }          /* type     — sky     */
+.fn  { color: #89b4fa; }          /* function — blue    */
+.nu  { color: #fab387; }          /* number   — peach   */
+.cm  { color: #585b70; font-style: italic; }  /* comment  — overlay */
+.str { color: #a6e3a1; }          /* string   — green   */
+
+/* ── Progress bar ────────────────────────────────────────────── */
+/*
+   Pages that want a different fill colour should set
+   --progress-color in their :root, e.g.
+     :root { --progress-color: #a78bfa; }
+*/
+.progress-wrap {
+  background: var(--bg3, #2c2c30);
+  border-radius: 4px;
+  height: 4px;
+  margin-bottom: 14px;
+  overflow: hidden;
+}
+.progress-bar {
+  height: 4px;
+  border-radius: 4px;
+  background: var(--progress-color, #185fa5);
+  transition: width 0.2s;
+}
+
+/* ── Step counter ────────────────────────────────────────────── */
+.step-ctr {
+  font-size: 12px;
+  color: var(--text3);
+  font-family: 'JetBrains Mono', 'Fira Mono', monospace;
+  margin-left: 4px;
+}
+
+/* ── Speed control row ───────────────────────────────────────── */
+.speed-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text2);
+  margin-left: auto;
+}
+.speed-row input[type="range"] {
+  width: 90px;
+  accent-color: var(--progress-color, #185fa5);
+}
+
+/* ── Keyboard shortcuts hint ─────────────────────────────────── */
+.key-hint {
+  font-size: 11px;
+  color: var(--text3);
+  margin-top: 16px;
+  text-align: center;
+}
+.kbd {
+  display: inline-block;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-family: 'JetBrains Mono', 'Fira Mono', monospace;
+  font-size: 11px;
+}

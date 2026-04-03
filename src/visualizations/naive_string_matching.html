@@ -4,6 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Naive String Matching — Dry Run</title>
+    <link rel="stylesheet" href="shared-nav.css">
+    <link rel="stylesheet" href="shared.css">
     <style>
       :root {
         --bg: #f8f7f4;
@@ -343,56 +345,7 @@
         }
       }
 
-      /* Code block */
-      .code-card {
-        background: #1e1e2e;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 10px;
-        padding: 16px 18px;
-        margin-bottom: 16px;
-        overflow-x: auto;
-      }
-      .code-card .lang-tag {
-        font-size: 11px;
-        color: #6c7086;
-        font-family: var(--mono);
-        margin-bottom: 10px;
-        display: block;
-      }
-      .cl {
-        font-family: var(--mono);
-        font-size: 13px;
-        padding: 2px 8px;
-        border-radius: 4px;
-        color: #cdd6f4;
-        line-height: 1.7;
-        transition:
-          background 0.2s,
-          color 0.2s;
-        display: block;
-        white-space: pre;
-      }
-      .cl .kw {
-        color: #cba6f7;
-      }
-      .cl .ty {
-        color: #89dceb;
-      }
-      .cl .fn {
-        color: #89b4fa;
-      }
-      .cl .nu {
-        color: #fab387;
-      }
-      .cl .cm {
-        color: #6c7086;
-        font-style: italic;
-      }
-      .cl.hl {
-        background: #313244;
-        color: #f5c2e7;
-        font-weight: 600;
-      }
+      /* Code block → shared.css */
 
       /* Nav */
       .nav-row {
@@ -440,34 +393,9 @@
         margin-left: 6px;
       }
 
-      /* Speed control */
-      .speed-row {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 12px;
-        color: var(--text2);
-        margin-left: auto;
-      }
-      .speed-row input[type="range"] {
-        width: 90px;
-        accent-color: #185fa5;
-      }
+      /* step-ctr, speed-row → shared.css */
 
-      /* Progress bar */
-      .progress-wrap {
-        background: var(--bg3);
-        border-radius: 4px;
-        height: 4px;
-        margin-bottom: 16px;
-        overflow: hidden;
-      }
-      .progress-bar {
-        background: #185fa5;
-        height: 4px;
-        border-radius: 4px;
-        transition: width 0.2s;
-      }
+      /* Progress bar → shared.css */
 
       /* Result panel */
       .result-panel {
@@ -495,22 +423,7 @@
         }
       }
 
-      /* Keyboard hint */
-      .key-hint {
-        font-size: 11px;
-        color: var(--text3);
-        margin-top: 14px;
-        text-align: center;
-      }
-      .kbd {
-        display: inline-block;
-        background: var(--bg3);
-        border: 1px solid var(--border2);
-        border-radius: 4px;
-        padding: 1px 6px;
-        font-family: var(--mono);
-        font-size: 11px;
-      }
+      /* Keyboard hint → shared.css */
 
       /* Variables section in summary */
       .vars-row {
@@ -535,6 +448,54 @@
     </style>
   </head>
   <body>
+    <!-- ══ Shared Side Nav ══ -->
+    <aside class="snav">
+      <a class="snav-home" href="./index.html" title="All Visualizations">
+        <span class="snav-logo">◈</span>
+        <span class="snav-home-text">DAA Visualizations</span>
+      </a>
+      <div class="snav-scroll">
+        <div class="snav-group" data-cat="bf">
+          <div class="snav-cat-row"><span class="snav-cat-pip"></span><span class="snav-cat-name">Brute Force</span></div>
+          <a class="snav-link" href="./naive_string_matching.html" data-page="naive_string_matching"><span class="snav-link-pip"></span><span class="snav-link-name">Naive String Matching</span><span class="snav-link-cpx">O(nm)</span></a>
+          <a class="snav-link" href="./closest_pair_brute_force.html" data-page="closest_pair_brute_force"><span class="snav-link-pip"></span><span class="snav-link-name">Closest Pair (2D)</span><span class="snav-link-cpx">Θ(n²)</span></a>
+          <a class="snav-link" href="./subset_bitmask.html" data-page="subset_bitmask"><span class="snav-link-pip"></span><span class="snav-link-name">Subset Generation</span><span class="snav-link-cpx">Θ(n·2ⁿ)</span></a>
+        </div>
+        <div class="snav-sep"></div>
+        <div class="snav-group snav-soon" data-cat="dc">
+          <div class="snav-cat-row"><span class="snav-cat-pip"></span><span class="snav-cat-name">Divide &amp; Conquer</span></div>
+          <span class="snav-link"><span class="snav-link-pip"></span><span class="snav-link-name">Merge Sort</span><span class="snav-link-cpx">Θ(n log n)</span></span>
+          <span class="snav-link"><span class="snav-link-pip"></span><span class="snav-link-name">Quick Sort</span></span>
+          <span class="snav-link"><span class="snav-link-pip"></span><span class="snav-link-name">Binary Search</span><span class="snav-link-cpx">Θ(log n)</span></span>
+        </div>
+        <div class="snav-sep"></div>
+        <div class="snav-group snav-soon" data-cat="gr">
+          <div class="snav-cat-row"><span class="snav-cat-pip"></span><span class="snav-cat-name">Greedy</span></div>
+          <span class="snav-link"><span class="snav-link-pip"></span><span class="snav-link-name">Activity Selection</span></span>
+          <span class="snav-link"><span class="snav-link-pip"></span><span class="snav-link-name">Huffman Coding</span></span>
+          <span class="snav-link"><span class="snav-link-pip"></span><span class="snav-link-name">Dijkstra's SSSP</span></span>
+        </div>
+        <div class="snav-sep"></div>
+        <div class="snav-group snav-soon" data-cat="dp">
+          <div class="snav-cat-row"><span class="snav-cat-pip"></span><span class="snav-cat-name">Dynamic Programming</span></div>
+          <span class="snav-link"><span class="snav-link-pip"></span><span class="snav-link-name">0/1 Knapsack</span><span class="snav-link-cpx">Θ(nW)</span></span>
+          <span class="snav-link"><span class="snav-link-pip"></span><span class="snav-link-name">LCS</span></span>
+          <span class="snav-link"><span class="snav-link-pip"></span><span class="snav-link-name">Floyd-Warshall</span><span class="snav-link-cpx">Θ(V³)</span></span>
+        </div>
+        <div class="snav-sep"></div>
+        <div class="snav-group snav-soon" data-cat="ga">
+          <div class="snav-cat-row"><span class="snav-cat-pip"></span><span class="snav-cat-name">Graph Algorithms</span></div>
+          <span class="snav-link"><span class="snav-link-pip"></span><span class="snav-link-name">BFS</span><span class="snav-link-cpx">Θ(V+E)</span></span>
+          <span class="snav-link"><span class="snav-link-pip"></span><span class="snav-link-name">DFS</span><span class="snav-link-cpx">Θ(V+E)</span></span>
+          <span class="snav-link"><span class="snav-link-pip"></span><span class="snav-link-name">Topological Sort</span></span>
+        </div>
+      </div>
+      <div class="snav-foot">
+        <span class="snav-foot-icon">3/22</span>
+        <span class="snav-foot-text">3 of 22 live</span>
+      </div>
+    </aside>
+    <script>(function(){var p=location.pathname.split('/').pop().replace('.html','');var el=document.querySelector('.snav-link[data-page="'+p+'"]');if(el)el.classList.add('snav-current');})();</script>
     <div class="page">
       <div class="header">
         <h1>Naive String Matching — Dry Run</h1>

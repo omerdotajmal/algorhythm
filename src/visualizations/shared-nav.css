@@ -1,0 +1,234 @@
+/* ================================================================
+   shared-nav.css — Collapsible side navigation
+   Used by all DAA Visualization pages.
+
+   HOW TO ADD A NEW ALGORITHM:
+     1. Add a .snav-link inside the correct .snav-group in each page.
+     2. Set data-page="filename-without-extension" on the <a>.
+
+   HOW TO ADD A NEW CATEGORY:
+     1. Copy a .snav-group block. Set data-cat to a new key.
+     2. Add the color for that key in the [data-cat] block below.
+     3. Add a .snav-sep before it.
+================================================================ */
+
+/* Reserve 52 px for collapsed nav — overrides any page padding-left */
+body { padding-left: 52px !important; }
+
+/* ── Nav shell ──────────────────────────────────────────────── */
+.snav {
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  width: 52px;
+  background: #07090f;
+  border-right: 1px solid rgba(255, 255, 255, 0.07);
+  display: flex;
+  flex-direction: column;
+  z-index: 500;
+  overflow: hidden;
+  transition: width 0.26s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.snav:hover {
+  width: 240px;
+  box-shadow: 5px 0 36px rgba(0, 0, 0, 0.6);
+}
+
+/* ── Home / brand link ──────────────────────────────────────── */
+.snav-home {
+  display: flex;
+  align-items: center;
+  height: 52px;
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  text-decoration: none;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.snav-logo {
+  width: 52px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: rgba(125, 211, 252, 0.55);
+  transition: color 0.15s;
+}
+.snav-home:hover .snav-logo { color: #7dd3fc; }
+
+.snav-home-text {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #e6eefc;
+  letter-spacing: -0.1px;
+  opacity: 0;
+  transition: opacity 0.18s 0.06s;
+  white-space: nowrap;
+}
+.snav:hover .snav-home-text { opacity: 1; }
+
+/* ── Scroll body ────────────────────────────────────────────── */
+.snav-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 6px 0 10px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.05) transparent;
+}
+.snav-scroll::-webkit-scrollbar { width: 3px; }
+.snav-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 2px;
+}
+
+/* ── Separator ──────────────────────────────────────────────── */
+.snav-sep {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.05);
+  margin: 5px 0;
+}
+
+/* ── Category group ─────────────────────────────────────────── */
+/* Category accent colors — extend as needed */
+.snav-group[data-cat="bf"] { --c: #86efac; } /* green  — Brute Force         */
+.snav-group[data-cat="dc"] { --c: #7dd3fc; } /* blue   — Divide & Conquer    */
+.snav-group[data-cat="gr"] { --c: #fbbf24; } /* amber  — Greedy              */
+.snav-group[data-cat="dp"] { --c: #a78bfa; } /* violet — Dynamic Programming */
+.snav-group[data-cat="ga"] { --c: #2dd4bf; } /* teal   — Graph Algorithms    */
+
+.snav-soon { opacity: 0.32; pointer-events: none; }
+
+/* ── Category header row ────────────────────────────────────── */
+.snav-cat-row {
+  display: flex;
+  align-items: center;
+  height: 34px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.snav-cat-pip {
+  width: 52px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.snav-cat-pip::before {
+  content: '';
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--c, #556078);
+  opacity: 0.6;
+  display: block;
+  transition: opacity 0.15s, transform 0.15s;
+}
+.snav-group:has(.snav-current) .snav-cat-pip::before { opacity: 1; transform: scale(1.15); }
+.snav:hover .snav-cat-pip::before { opacity: 0.85; }
+
+.snav-cat-name {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #4a5870;
+  opacity: 0;
+  transition: opacity 0.18s 0.06s;
+  white-space: nowrap;
+}
+.snav:hover .snav-cat-name { opacity: 1; }
+
+/* ── Algorithm links ────────────────────────────────────────── */
+.snav-link {
+  display: flex;
+  align-items: center;
+  height: 28px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-decoration: none;
+  color: #36455a;
+  transition: color 0.13s, background 0.13s;
+}
+a.snav-link:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #b9c7e6;
+}
+
+.snav-link-pip {
+  width: 52px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.snav-link-pip::before {
+  content: '';
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: var(--c, #556078);
+  opacity: 0.3;
+  display: block;
+  transition: opacity 0.13s;
+}
+a.snav-link:hover .snav-link-pip::before { opacity: 0.75; }
+
+/* Active / current page */
+.snav-link.snav-current {
+  color: #e6eefc;
+  border-left: 2px solid var(--c, #7dd3fc);
+  background: rgba(255, 255, 255, 0.04);
+}
+.snav-link.snav-current .snav-link-pip { width: 50px; } /* compensate 2px border */
+.snav-link.snav-current .snav-link-pip::before { opacity: 1; transform: scale(1.2); }
+
+.snav-link-name {
+  flex: 1;
+  font-size: 11.5px;
+  opacity: 0;
+  transition: opacity 0.18s 0.05s;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.snav:hover .snav-link-name { opacity: 1; }
+
+.snav-link-cpx {
+  font-size: 9.5px;
+  font-family: 'JetBrains Mono', 'Fira Mono', monospace;
+  color: #2e3d52;
+  padding-right: 10px;
+  opacity: 0;
+  transition: opacity 0.18s 0.05s;
+}
+.snav:hover .snav-link-cpx { opacity: 1; }
+
+/* ── Footer ─────────────────────────────────────────────────── */
+.snav-foot {
+  flex-shrink: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  height: 40px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.snav-foot-icon {
+  width: 52px;
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  color: #232e3f;
+}
+.snav-foot-text {
+  font-size: 10px;
+  color: #2e3d52;
+  opacity: 0;
+  transition: opacity 0.18s;
+}
+.snav:hover .snav-foot-text { opacity: 1; }
+
+/* ── Mobile: hide nav ────────────────────────────────────────── */
+@media (max-width: 680px) {
+  body    { padding-left: 0 !important; }
+  .snav   { display: none; }
+}
