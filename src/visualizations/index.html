@@ -24,6 +24,7 @@
         --good:    #86efac;   /* green     */
         --amber:   #fbbf24;   /* amber     */
         --teal:    #2dd4bf;   /* teal      */
+        --rose:    #fb7185;   /* rose      — Decrease & Conquer */
 
         --sidebar-w: 258px;
         --topbar-h:  54px;
@@ -554,6 +555,25 @@
           </div>
         </div>
 
+        <!-- ── Decrease & Conquer ── -->
+        <div class="nav-group" id="ng-dnc" style="--c: var(--rose)">
+          <button class="nav-group-btn" data-target="sec-dnc" onclick="toggleGroup(this)">
+            <span class="ngb-dot"></span>
+            <span class="ngb-title">Decrease &amp; Conquer</span>
+            <span class="ngb-badge">1 done</span>
+            <span class="ngb-chevron">▸</span>
+          </button>
+          <div class="nav-items">
+            <a class="nav-item live" href="./insertion_sort.html" style="--c: var(--rose)">
+              <span class="ni-dot"></span>
+              <span class="ni-label">Insertion Sort</span>
+              <span class="ni-cpx">O(n²)</span>
+            </a>
+            <span class="nav-item soon" style="--c: var(--rose)"><span class="ni-dot"></span><span class="ni-label">Selection Sort</span><span class="ni-cpx">Θ(n²)</span></span>
+            <span class="nav-item soon" style="--c: var(--rose)"><span class="ni-dot"></span><span class="ni-label">Binary Search</span><span class="ni-cpx">Θ(log n)</span></span>
+          </div>
+        </div>
+
         <!-- ── Divide & Conquer ── -->
         <div class="nav-group" id="ng-dc" style="--c: var(--accent)">
           <button class="nav-group-btn" data-target="sec-dc" onclick="toggleGroup(this)">
@@ -625,11 +645,11 @@
 
       <div class="sidebar-footer">
         <div class="sf-row">
-          <span>3 of 22 visualizations</span>
-          <strong>14%</strong>
+          <span>4 of 22 visualizations</span>
+          <strong>18%</strong>
         </div>
         <!-- update width % above as you add pages -->
-        <div class="sf-track"><div class="sf-fill"></div></div>
+        <div class="sf-track"><div class="sf-fill" style="width:18%"></div></div>
       </div>
 
     </aside><!-- /sidebar -->
@@ -659,7 +679,7 @@
         <!-- ── Stats ── -->
         <div class="stats-row">
           <div class="stat">
-            <div class="stat-val" style="color:var(--good)">3</div>
+            <div class="stat-val" style="color:var(--good)">4</div>
             <div class="stat-lbl">Available now</div>
           </div>
           <div class="stat">
@@ -671,7 +691,7 @@
             <div class="stat-lbl">Technique modules</div>
           </div>
           <div class="stat">
-            <div class="stat-val" style="color:var(--amber)">1</div>
+            <div class="stat-val" style="color:var(--amber)">2</div>
             <div class="stat-lbl">Modules active</div>
           </div>
         </div>
@@ -749,6 +769,47 @@
                 <span class="cpx">Θ(n·2ⁿ)</span>
               </div>
             </a>
+          </div>
+        </section>
+
+        <!-- ================================================================
+             DECREASE & CONQUER
+        ================================================================ -->
+        <section class="algo-section" id="sec-dnc">
+          <div class="sec-head">
+            <div class="sec-pip" style="background:var(--rose)"></div>
+            <h2>Decrease &amp; Conquer</h2>
+            <span class="sec-badge live">● 1 available</span>
+          </div>
+          <p class="sec-desc">
+            Reduce the problem to a single smaller instance of itself, solve that, then extend
+            the solution back. Simpler than divide &amp; conquer — no merging step required.
+          </p>
+          <div class="cards">
+            <a class="card live" href="./insertion_sort.html">
+              <div class="card-tags">
+                <span class="tag" style="color:var(--rose);border-color:rgba(251,113,133,0.28);background:rgba(251,113,133,0.07)">Decrease &amp; Conquer</span>
+                <span class="tag">Sorting</span>
+              </div>
+              <h3>Insertion Sort</h3>
+              <p>Grow a sorted sub-array one element at a time — pick the next element and shift larger elements right until the correct position is found.</p>
+              <div class="card-foot">
+                <span class="open-btn">Open →</span>
+                <span class="cpx">O(n²)</span>
+              </div>
+            </a>
+            <div class="card locked">
+              <div class="card-tags"><span class="tag">Sorting</span></div>
+              <h3>Selection Sort</h3>
+              <p>Repeatedly find the minimum of the unsorted suffix and swap it into its final position at the front.</p>
+              <div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">Θ(n²)</span></div>
+            </div>
+            <div class="card locked">
+              <div class="card-tags"><span class="tag">Search</span></div>
+              <h3>Binary Search</h3>
+              <p>Discard half the search space each step by comparing the target with the midpoint of the sorted array.</p>
+              <div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">Θ(log n)</span></div>
+            </div>
           </div>
         </section>
 
