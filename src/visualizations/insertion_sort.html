@@ -8,35 +8,44 @@
     <link rel="stylesheet" href="shared.css" />
     <style>
       :root {
-        --bg:      #f8f7f4;
-        --bg2:     #f0eeea;
-        --bg3:     #e8e6e1;
-        --card:    #ffffff;
-        --border:  rgba(0, 0, 0, 0.10);
+        --bg: #f8f7f4;
+        --bg2: #f0eeea;
+        --bg3: #e8e6e1;
+        --card: #ffffff;
+        --border: rgba(0, 0, 0, 0.1);
         --border2: rgba(0, 0, 0, 0.18);
-        --text:    #1a1a18;
-        --text2:   #5a5955;
-        --text3:   #8a8880;
-        --mono:    'JetBrains Mono', 'Fira Mono', 'Consolas', monospace;
-        --sans:    'Inter', 'Segoe UI', system-ui, sans-serif;
+        --text: #1a1a18;
+        --text2: #5a5955;
+        --text3: #8a8880;
+        --mono: "JetBrains Mono", "Fira Mono", "Consolas", monospace;
+        --sans: "Inter", "Segoe UI", system-ui, sans-serif;
         --progress-color: #185fa5;
       }
       @media (prefers-color-scheme: dark) {
         :root {
-          --bg:      #18181a;
-          --bg2:     #222226;
-          --bg3:     #2c2c30;
-          --card:    #1e1e22;
-          --border:  rgba(255, 255, 255, 0.09);
+          --bg: #18181a;
+          --bg2: #222226;
+          --bg3: #2c2c30;
+          --card: #1e1e22;
+          --border: rgba(255, 255, 255, 0.09);
           --border2: rgba(255, 255, 255, 0.18);
-          --text:    #e8e6e0;
-          --text2:   #a0a098;
-          --text3:   #606060;
+          --text: #e8e6e0;
+          --text2: #a0a098;
+          --text3: #606060;
         }
       }
 
-      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-      html, body { height: 100%; }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html,
+      body {
+        height: 100%;
+      }
       body {
         font-family: var(--sans);
         background: var(--bg);
@@ -47,189 +56,424 @@
         min-height: 100vh;
         padding: 32px 20px 48px;
       }
-      .page { width: 100%; max-width: 920px; }
+      .page {
+        width: 100%;
+        max-width: 920px;
+      }
 
       /* ── Header ── */
-      .header { margin-bottom: 24px; }
-      .header h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.3px; }
-      .header p  { font-size: 13px; color: var(--text2); margin-top: 4px; }
+      .header {
+        margin-bottom: 24px;
+      }
+      .header h1 {
+        font-size: 22px;
+        font-weight: 600;
+        letter-spacing: -0.3px;
+      }
+      .header p {
+        font-size: 13px;
+        color: var(--text2);
+        margin-top: 4px;
+      }
 
       /* ── Input bar ── */
       .input-bar {
-        display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
-        background: var(--card); border: 1px solid var(--border2);
-        border-radius: 10px; padding: 12px 16px; margin-bottom: 16px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        background: var(--card);
+        border: 1px solid var(--border2);
+        border-radius: 10px;
+        padding: 12px 16px;
+        margin-bottom: 16px;
       }
-      .input-bar label { font-size: 13px; color: var(--text2); white-space: nowrap; }
+      .input-bar label {
+        font-size: 13px;
+        color: var(--text2);
+        white-space: nowrap;
+      }
       .arr-input {
-        font-family: var(--mono); font-size: 14px; font-weight: 600;
-        padding: 6px 10px; border: 1px solid var(--border2);
-        border-radius: 6px; background: var(--bg2); color: var(--text);
-        flex: 1; min-width: 160px; letter-spacing: 0.05em;
+        font-family: var(--mono);
+        font-size: 14px;
+        font-weight: 600;
+        padding: 6px 10px;
+        border: 1px solid var(--border2);
+        border-radius: 6px;
+        background: var(--bg2);
+        color: var(--text);
+        flex: 1;
+        min-width: 160px;
+        letter-spacing: 0.05em;
       }
-      .arr-input:focus { outline: 2px solid #378add; outline-offset: 1px; }
+      .arr-input:focus {
+        outline: 2px solid #378add;
+        outline-offset: 1px;
+      }
       .btn-run {
-        font-family: var(--sans); font-size: 13px; font-weight: 500;
-        padding: 7px 20px; border: none; border-radius: 6px;
-        background: #185fa5; color: #fff; cursor: pointer;
-        transition: background 0.15s; white-space: nowrap;
+        font-family: var(--sans);
+        font-size: 13px;
+        font-weight: 500;
+        padding: 7px 20px;
+        border: none;
+        border-radius: 6px;
+        background: #185fa5;
+        color: #fff;
+        cursor: pointer;
+        transition: background 0.15s;
+        white-space: nowrap;
       }
-      .btn-run:hover { background: #0c447c; }
+      .btn-run:hover {
+        background: #0c447c;
+      }
 
       /* ── Var chips ── */
       .vars-row {
-        display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
         margin-bottom: 14px;
       }
       .var-chip {
-        font-family: var(--mono); font-size: 13px; font-weight: 600;
-        background: var(--bg2); border: 1px solid var(--border);
-        border-radius: 6px; padding: 4px 12px;
+        font-family: var(--mono);
+        font-size: 13px;
+        font-weight: 600;
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 4px 12px;
       }
-      .var-chip span { color: var(--text2); font-weight: 400; }
+      .var-chip span {
+        color: var(--text2);
+        font-weight: 400;
+      }
       .key-chip {
-        font-family: var(--mono); font-size: 13px; font-weight: 700;
-        padding: 4px 14px; border-radius: 6px;
-        background: #fef3c7; border: 1px solid #f59e0b; color: #78350f;
-        transition: background 0.2s, color 0.2s, border-color 0.2s;
+        font-family: var(--mono);
+        font-size: 13px;
+        font-weight: 700;
+        padding: 4px 14px;
+        border-radius: 6px;
+        background: #fef3c7;
+        border: 1px solid #f59e0b;
+        color: #78350f;
+        transition:
+          background 0.2s,
+          color 0.2s,
+          border-color 0.2s;
       }
       .key-chip.inactive {
-        background: var(--bg2); border-color: var(--border);
-        color: var(--text2); font-weight: 400;
+        background: var(--bg2);
+        border-color: var(--border);
+        color: var(--text2);
+        font-weight: 400;
       }
       @media (prefers-color-scheme: dark) {
-        .key-chip { background: #451a03; border-color: #f59e0b; color: #fde68a; }
+        .key-chip {
+          background: #451a03;
+          border-color: #f59e0b;
+          color: #fde68a;
+        }
       }
 
       /* ── Legend ── */
       .legend {
-        display: flex; gap: 14px; flex-wrap: wrap;
-        margin-bottom: 16px; font-size: 12px; color: var(--text2);
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+        font-size: 12px;
+        color: var(--text2);
       }
-      .leg { display: flex; align-items: center; gap: 5px; }
-      .leg-dot { width: 13px; height: 13px; border-radius: 3px; flex-shrink: 0; }
+      .leg {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .leg-dot {
+        width: 13px;
+        height: 13px;
+        border-radius: 3px;
+        flex-shrink: 0;
+      }
 
       /* ── Bar chart ── */
       .bars-card {
-        background: var(--card); border: 1px solid var(--border);
-        border-radius: 12px; padding: 20px 20px 14px;
-        margin-bottom: 14px; overflow-x: auto;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px 20px 14px;
+        margin-bottom: 14px;
+        overflow-x: auto;
       }
       .bars-wrap {
-        display: flex; align-items: flex-end; gap: 7px;
+        display: flex;
+        align-items: flex-end;
+        gap: 7px;
         min-height: 190px;
       }
       .bar-col {
-        flex: 1; min-width: 34px;
-        display: flex; flex-direction: column; align-items: center;
+        flex: 1;
+        min-width: 34px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
         gap: 0;
       }
       /* value label above bar */
       .bar-val {
-        font-family: var(--mono); font-size: 12px; font-weight: 700;
-        margin-bottom: 4px; line-height: 1;
-        color: var(--text2); min-height: 16px;
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 4px;
+        line-height: 1;
+        color: var(--text2);
+        min-height: 16px;
       }
       /* the bar itself */
       .bar {
-        width: 100%; border-radius: 6px 6px 2px 2px;
+        width: 100%;
+        border-radius: 6px 6px 2px 2px;
         border: 2px solid;
-        transition: height 0.2s, background 0.2s, border-color 0.2s;
+        transition:
+          height 0.2s,
+          background 0.2s,
+          border-color 0.2s;
       }
       /* index below */
       .bar-idx {
-        font-size: 10px; font-family: var(--mono);
-        color: var(--text3); margin-top: 5px;
+        font-size: 10px;
+        font-family: var(--mono);
+        color: var(--text3);
+        margin-top: 5px;
       }
 
       /* ── Bar state colours – light ── */
-      .b-default      { background: var(--bg2);  border-color: var(--border2);          }
-      .b-sorted       { background: #d8eec2;      border-color: #639922;                 }
-      .b-key          { background: #fef3c7;      border-color: #f59e0b;                 }
-      .b-comparing    { background: #deedf8;      border-color: #378add;                 }
-      .b-shift-from   { background: #fadede;      border-color: #e24b4a;                 }
-      .b-shift-to     { background: #fed7aa;      border-color: #f97316;                 }
-      .b-shifted-zone { background: #ede9fe;      border-color: #8b5cf6;                 }
-      .b-inserted     { background: #c7e5a0;      border-color: #3b6d11;
-                        box-shadow: 0 0 0 2.5px #97c45966;                               }
+      .b-default {
+        background: var(--bg2);
+        border-color: var(--border2);
+      }
+      .b-sorted {
+        background: #d8eec2;
+        border-color: #639922;
+      }
+      .b-key {
+        background: #fef3c7;
+        border-color: #f59e0b;
+      }
+      .b-comparing {
+        background: #deedf8;
+        border-color: #378add;
+      }
+      .b-shift-from {
+        background: #fadede;
+        border-color: #e24b4a;
+      }
+      .b-shift-to {
+        background: #fed7aa;
+        border-color: #f97316;
+      }
+      .b-shifted-zone {
+        background: #ede9fe;
+        border-color: #8b5cf6;
+      }
+      .b-inserted {
+        background: #c7e5a0;
+        border-color: #3b6d11;
+        box-shadow: 0 0 0 2.5px #97c45966;
+      }
 
       /* ── Bar state colours – dark ── */
       @media (prefers-color-scheme: dark) {
-        .b-default      { background: var(--bg3); border-color: rgba(255,255,255,0.15);  }
-        .b-sorted       { background: #1e3d0a;    border-color: #639922;                 }
-        .b-key          { background: #451a03;    border-color: #f59e0b;                 }
-        .b-comparing    { background: #0c447c;    border-color: #378add;                 }
-        .b-shift-from   { background: #4a1515;    border-color: #e24b4a;                 }
-        .b-shift-to     { background: #431407;    border-color: #f97316;                 }
-        .b-shifted-zone { background: #2e1065;    border-color: #8b5cf6;                 }
-        .b-inserted     { background: #1e4008;    border-color: #97c459;
-                          box-shadow: 0 0 0 2.5px #97c45966;                             }
+        .b-default {
+          background: var(--bg3);
+          border-color: rgba(255, 255, 255, 0.15);
+        }
+        .b-sorted {
+          background: #1e3d0a;
+          border-color: #639922;
+        }
+        .b-key {
+          background: #451a03;
+          border-color: #f59e0b;
+        }
+        .b-comparing {
+          background: #0c447c;
+          border-color: #378add;
+        }
+        .b-shift-from {
+          background: #4a1515;
+          border-color: #e24b4a;
+        }
+        .b-shift-to {
+          background: #431407;
+          border-color: #f97316;
+        }
+        .b-shifted-zone {
+          background: #2e1065;
+          border-color: #8b5cf6;
+        }
+        .b-inserted {
+          background: #1e4008;
+          border-color: #97c459;
+          box-shadow: 0 0 0 2.5px #97c45966;
+        }
       }
 
       /* ── Two-column layout (info | code) ── */
       .two-col {
         display: grid;
         grid-template-columns: 1fr minmax(0, 390px);
-        gap: 14px; margin-bottom: 12px; align-items: start;
+        gap: 14px;
+        margin-bottom: 12px;
+        align-items: start;
       }
-      @media (max-width: 740px) { .two-col { grid-template-columns: 1fr; } }
+      @media (max-width: 740px) {
+        .two-col {
+          grid-template-columns: 1fr;
+        }
+      }
 
       /* ── Info panel ── */
       .info-panel {
-        background: var(--card); border: 1px solid var(--border);
-        border-radius: 10px; padding: 14px 16px;
-        font-size: 13.5px; line-height: 1.75; color: var(--text);
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 14px 16px;
+        font-size: 13.5px;
+        line-height: 1.75;
+        color: var(--text);
         min-height: 60px;
       }
 
       /* ── Step tags ── */
       .step-tag {
-        display: inline-block; font-size: 11px; font-weight: 600;
-        padding: 2px 9px; border-radius: 5px; margin-right: 8px;
-        vertical-align: middle; letter-spacing: 0.02em;
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 9px;
+        border-radius: 5px;
+        margin-right: 8px;
+        vertical-align: middle;
+        letter-spacing: 0.02em;
       }
-      .tag-init    { background: var(--bg3); color: var(--text2); border: 1px solid var(--border2); }
-      .tag-outer   { background: #e4e2fa;    color: #3c3489; }
-      .tag-compare { background: #deedf8;    color: #0c447c; }
-      .tag-shift   { background: #fed7aa;    color: #7c3d12; }
-      .tag-insert  { background: #d8eec2;    color: #27500a; }
-      .tag-done    { background: #c7e5a0;    color: #173404; border: 1px solid #639922; }
+      .tag-init {
+        background: var(--bg3);
+        color: var(--text2);
+        border: 1px solid var(--border2);
+      }
+      .tag-outer {
+        background: #e4e2fa;
+        color: #3c3489;
+      }
+      .tag-compare {
+        background: #deedf8;
+        color: #0c447c;
+      }
+      .tag-shift {
+        background: #fed7aa;
+        color: #7c3d12;
+      }
+      .tag-insert {
+        background: #d8eec2;
+        color: #27500a;
+      }
+      .tag-done {
+        background: #c7e5a0;
+        color: #173404;
+        border: 1px solid #639922;
+      }
       @media (prefers-color-scheme: dark) {
-        .tag-outer   { background: #3c3489; color: #cecbf6; }
-        .tag-compare { background: #0c447c; color: #b5d4f4; }
-        .tag-shift   { background: #431407; color: #fed7aa; }
-        .tag-insert  { background: #1e3d0a; color: #c0dd97; }
-        .tag-done    { background: #1e4008; color: #c0dd97; border-color: #639922; }
+        .tag-outer {
+          background: #3c3489;
+          color: #cecbf6;
+        }
+        .tag-compare {
+          background: #0c447c;
+          color: #b5d4f4;
+        }
+        .tag-shift {
+          background: #431407;
+          color: #fed7aa;
+        }
+        .tag-insert {
+          background: #1e3d0a;
+          color: #c0dd97;
+        }
+        .tag-done {
+          background: #1e4008;
+          color: #c0dd97;
+          border-color: #639922;
+        }
       }
 
       /* ── Result panel ── */
-      .result-panel { font-size: 13px; color: var(--text2); min-height: 22px; margin-top: 10px; }
+      .result-panel {
+        font-size: 13px;
+        color: var(--text2);
+        min-height: 22px;
+        margin-top: 10px;
+      }
       .sorted-badge {
-        display: inline-block; background: #d8eec2; color: #173404;
-        border: 1px solid #97c459; border-radius: 5px;
-        padding: 2px 10px; font-size: 13px;
-        font-family: var(--mono); font-weight: 600; margin-right: 4px;
+        display: inline-block;
+        background: #d8eec2;
+        color: #173404;
+        border: 1px solid #97c459;
+        border-radius: 5px;
+        padding: 2px 10px;
+        font-size: 13px;
+        font-family: var(--mono);
+        font-weight: 600;
+        margin-right: 4px;
       }
       @media (prefers-color-scheme: dark) {
-        .sorted-badge { background: #1e3d0a; color: #c0dd97; border-color: #639922; }
+        .sorted-badge {
+          background: #1e3d0a;
+          color: #c0dd97;
+          border-color: #639922;
+        }
       }
 
       /* ── Nav buttons ── */
       .nav-row {
-        display: flex; gap: 8px; align-items: center;
-        flex-wrap: wrap; margin-bottom: 12px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
       }
       .nav-btn {
-        font-family: var(--sans); font-size: 13px; font-weight: 500;
-        padding: 8px 18px; border: 1px solid var(--border2);
-        border-radius: 7px; background: var(--bg2); color: var(--text);
-        cursor: pointer; transition: background 0.14s;
+        font-family: var(--sans);
+        font-size: 13px;
+        font-weight: 500;
+        padding: 8px 18px;
+        border: 1px solid var(--border2);
+        border-radius: 7px;
+        background: var(--bg2);
+        color: var(--text);
+        cursor: pointer;
+        transition: background 0.14s;
       }
-      .nav-btn:hover:not(:disabled) { background: var(--bg3); }
-      .nav-btn:disabled { opacity: 0.35; cursor: default; }
-      .nav-btn.primary { background: #185fa5; color: #fff; border-color: #185fa5; }
-      .nav-btn.primary:hover:not(:disabled) { background: #0c447c; }
-      .nav-btn.auto-on { background: #3b6d11; color: #eaf3de; border-color: #3b6d11; }
+      .nav-btn:hover:not(:disabled) {
+        background: var(--bg3);
+      }
+      .nav-btn:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+      .nav-btn.primary {
+        background: #185fa5;
+        color: #fff;
+        border-color: #185fa5;
+      }
+      .nav-btn.primary:hover:not(:disabled) {
+        background: #0c447c;
+      }
+      .nav-btn.auto-on {
+        background: #3b6d11;
+        color: #eaf3de;
+        border-color: #3b6d11;
+      }
     </style>
   </head>
 
@@ -242,39 +486,114 @@
       </a>
       <div class="snav-scroll">
         <div class="snav-group" data-cat="bf">
-          <div class="snav-cat-row"><span class="snav-cat-pip"></span><span class="snav-cat-name">Brute Force</span></div>
-          <a class="snav-link" href="./naive_string_matching.html" data-page="naive_string_matching"><span class="snav-link-pip"></span><span class="snav-link-name">Naive String Matching</span><span class="snav-link-cpx">O(nm)</span></a>
-          <a class="snav-link" href="./closest_pair_brute_force.html" data-page="closest_pair_brute_force"><span class="snav-link-pip"></span><span class="snav-link-name">Closest Pair (2D)</span><span class="snav-link-cpx">Θ(n²)</span></a>
-          <a class="snav-link" href="./subset_bitmask.html" data-page="subset_bitmask"><span class="snav-link-pip"></span><span class="snav-link-name">Subset Generation</span><span class="snav-link-cpx">Θ(n·2ⁿ)</span></a>
+          <div class="snav-cat-row">
+            <span class="snav-cat-pip"></span
+            ><span class="snav-cat-name">Brute Force</span>
+          </div>
+          <a
+            class="snav-link"
+            href="./naive_string_matching.html"
+            data-page="naive_string_matching"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Naive String Matching</span
+            ><span class="snav-link-cpx">O(nm)</span></a
+          >
+          <a
+            class="snav-link"
+            href="./closest_pair_brute_force.html"
+            data-page="closest_pair_brute_force"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Closest Pair (2D)</span
+            ><span class="snav-link-cpx">Θ(n²)</span></a
+          >
+          <a
+            class="snav-link"
+            href="./subset_bitmask.html"
+            data-page="subset_bitmask"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Subset Generation</span
+            ><span class="snav-link-cpx">Θ(n·2ⁿ)</span></a
+          >
         </div>
         <div class="snav-sep"></div>
         <div class="snav-group" data-cat="dc">
-          <div class="snav-cat-row"><span class="snav-cat-pip"></span><span class="snav-cat-name">Decrease &amp; Conquer</span></div>
-          <a class="snav-link" href="./insertion_sort.html" data-page="insertion_sort"><span class="snav-link-pip"></span><span class="snav-link-name">Insertion Sort</span><span class="snav-link-cpx">O(n²)</span></a>
+          <div class="snav-cat-row">
+            <span class="snav-cat-pip"></span
+            ><span class="snav-cat-name">Decrease &amp; Conquer</span>
+          </div>
+          <a
+            class="snav-link"
+            href="./insertion_sort.html"
+            data-page="insertion_sort"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Insertion Sort</span
+            ><span class="snav-link-cpx">O(n²)</span></a
+          >
         </div>
         <div class="snav-sep"></div>
         <div class="snav-group snav-soon" data-cat="dc">
-          <div class="snav-cat-row"><span class="snav-cat-pip"></span><span class="snav-cat-name">Divide &amp; Conquer</span></div>
-          <span class="snav-link"><span class="snav-link-pip"></span><span class="snav-link-name">Merge Sort</span><span class="snav-link-cpx">Θ(n log n)</span></span>
-          <span class="snav-link"><span class="snav-link-pip"></span><span class="snav-link-name">Binary Search</span><span class="snav-link-cpx">Θ(log n)</span></span>
+          <div class="snav-cat-row">
+            <span class="snav-cat-pip"></span
+            ><span class="snav-cat-name">Divide &amp; Conquer</span>
+          </div>
+          <span class="snav-link"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Merge Sort</span
+            ><span class="snav-link-cpx">Θ(n log n)</span></span
+          >
+          <span class="snav-link"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Binary Search</span
+            ><span class="snav-link-cpx">Θ(log n)</span></span
+          >
         </div>
         <div class="snav-sep"></div>
         <div class="snav-group snav-soon" data-cat="gr">
-          <div class="snav-cat-row"><span class="snav-cat-pip"></span><span class="snav-cat-name">Greedy</span></div>
-          <span class="snav-link"><span class="snav-link-pip"></span><span class="snav-link-name">Activity Selection</span></span>
-          <span class="snav-link"><span class="snav-link-pip"></span><span class="snav-link-name">Dijkstra's SSSP</span></span>
+          <div class="snav-cat-row">
+            <span class="snav-cat-pip"></span
+            ><span class="snav-cat-name">Greedy</span>
+          </div>
+          <span class="snav-link"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Activity Selection</span></span
+          >
+          <span class="snav-link"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Dijkstra's SSSP</span></span
+          >
         </div>
         <div class="snav-sep"></div>
         <div class="snav-group snav-soon" data-cat="dp">
-          <div class="snav-cat-row"><span class="snav-cat-pip"></span><span class="snav-cat-name">Dynamic Programming</span></div>
-          <span class="snav-link"><span class="snav-link-pip"></span><span class="snav-link-name">0/1 Knapsack</span><span class="snav-link-cpx">Θ(nW)</span></span>
-          <span class="snav-link"><span class="snav-link-pip"></span><span class="snav-link-name">LCS</span></span>
+          <div class="snav-cat-row">
+            <span class="snav-cat-pip"></span
+            ><span class="snav-cat-name">Dynamic Programming</span>
+          </div>
+          <span class="snav-link"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">0/1 Knapsack</span
+            ><span class="snav-link-cpx">Θ(nW)</span></span
+          >
+          <span class="snav-link"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">LCS</span></span
+          >
         </div>
         <div class="snav-sep"></div>
         <div class="snav-group snav-soon" data-cat="ga">
-          <div class="snav-cat-row"><span class="snav-cat-pip"></span><span class="snav-cat-name">Graph Algorithms</span></div>
-          <span class="snav-link"><span class="snav-link-pip"></span><span class="snav-link-name">BFS</span><span class="snav-link-cpx">Θ(V+E)</span></span>
-          <span class="snav-link"><span class="snav-link-pip"></span><span class="snav-link-name">DFS</span><span class="snav-link-cpx">Θ(V+E)</span></span>
+          <div class="snav-cat-row">
+            <span class="snav-cat-pip"></span
+            ><span class="snav-cat-name">Graph Algorithms</span>
+          </div>
+          <span class="snav-link"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">BFS</span
+            ><span class="snav-link-cpx">Θ(V+E)</span></span
+          >
+          <span class="snav-link"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">DFS</span
+            ><span class="snav-link-cpx">Θ(V+E)</span></span
+          >
         </div>
       </div>
       <div class="snav-foot">
@@ -282,20 +601,32 @@
         <span class="snav-foot-text">4 of 22 live</span>
       </div>
     </aside>
-    <script>(function(){var p=location.pathname.split('/').pop().replace('.html','');var el=document.querySelector('.snav-link[data-page="'+p+'"]');if(el)el.classList.add('snav-current');})();</script>
+    <script>
+      (function () {
+        var p = location.pathname.split("/").pop().replace(".html", "");
+        var el = document.querySelector('.snav-link[data-page="' + p + '"]');
+        if (el) el.classList.add("snav-current");
+      })();
+    </script>
 
     <div class="page">
-
       <div class="header">
         <h1>Insertion Sort — Dry Run</h1>
-        <p>Design &amp; Analysis of Algorithms &nbsp;·&nbsp; Decrease &amp; Conquer — Interactive Step-through</p>
+        <p>
+          Design &amp; Analysis of Algorithms &nbsp;·&nbsp; Decrease &amp;
+          Conquer — Interactive Step-through
+        </p>
       </div>
 
       <!-- Input -->
       <div class="input-bar">
         <label>int[] a =</label>
-        <input class="arr-input" id="inp-arr" value="5, 2, 4, 6, 1, 3"
-               placeholder="e.g. 5, 2, 4, 6, 1, 3" />
+        <input
+          class="arr-input"
+          id="inp-arr"
+          value="5, 2, 4, 6, 1, 3"
+          placeholder="e.g. 5, 2, 4, 6, 1, 3"
+        />
         <button class="btn-run" onclick="buildSteps()">▶ Run</button>
       </div>
 
@@ -309,12 +640,30 @@
 
       <!-- Legend -->
       <div class="legend">
-        <div class="leg"><div class="leg-dot" style="background:#639922"></div>Sorted</div>
-        <div class="leg"><div class="leg-dot" style="background:#f59e0b"></div>key = a[i]</div>
-        <div class="leg"><div class="leg-dot" style="background:#378add"></div>a[j] — comparing</div>
-        <div class="leg"><div class="leg-dot" style="background:#e24b4a"></div>Shift source a[j]</div>
-        <div class="leg"><div class="leg-dot" style="background:#f97316"></div>Shift target a[j+1]</div>
-        <div class="leg"><div class="leg-dot" style="background:#8b5cf6"></div>Shifted zone</div>
+        <div class="leg">
+          <div class="leg-dot" style="background: #639922"></div>
+          Sorted
+        </div>
+        <div class="leg">
+          <div class="leg-dot" style="background: #f59e0b"></div>
+          key = a[i]
+        </div>
+        <div class="leg">
+          <div class="leg-dot" style="background: #378add"></div>
+          a[j] — comparing
+        </div>
+        <div class="leg">
+          <div class="leg-dot" style="background: #e24b4a"></div>
+          Shift source a[j]
+        </div>
+        <div class="leg">
+          <div class="leg-dot" style="background: #f97316"></div>
+          Shift target a[j+1]
+        </div>
+        <div class="leg">
+          <div class="leg-dot" style="background: #8b5cf6"></div>
+          Shifted zone
+        </div>
       </div>
 
       <!-- Bar chart -->
@@ -326,21 +675,38 @@
       <div class="two-col">
         <div>
           <div class="info-panel" id="info-panel">
-            Press <b>▶ Run</b> to start, then step through using the buttons below.
+            Press <b>▶ Run</b> to start, then step through using the buttons
+            below.
           </div>
           <div class="result-panel" id="result-panel"></div>
         </div>
 
         <div class="code-card">
           <span class="lang-tag">// Java — InsertionSort.java</span>
-          <span class="cl" id="cl0"><span class="kw">for</span> (<span class="ty">int</span> i = <span class="nu">1</span>; i &lt; n; i++) {</span>
-          <span class="cl" id="cl1">    <span class="ty">int</span> key = a[i];</span>
-          <span class="cl" id="cl2">    <span class="ty">int</span> j = i <span class="nu">- 1</span>;</span>
-          <span class="cl" id="cl3">    <span class="kw">while</span> (j &gt;= <span class="nu">0</span> &amp;&amp; a[j] &gt; key) {</span>
-          <span class="cl" id="cl4">        a[j <span class="nu">+ 1</span>] = a[j]; <span class="cm">// shift right</span></span>
-          <span class="cl" id="cl5">        j<span class="nu">--</span>;</span>
-          <span class="cl" id="cl6">    }</span>
-          <span class="cl" id="cl7">    a[j <span class="nu">+ 1</span>] = key;   <span class="cm">// insert</span></span>
+          <span class="cl" id="cl0"
+            ><span class="kw">for</span> (<span class="ty">int</span> i =
+            <span class="nu">1</span>; i &lt; n; i++) {</span
+          >
+          <span class="cl" id="cl1">
+            <span class="ty">int</span> key = a[i];</span
+          >
+          <span class="cl" id="cl2">
+            <span class="ty">int</span> j = i <span class="nu">- 1</span>;</span
+          >
+          <span class="cl" id="cl3">
+            <span class="kw">while</span> (j &gt;=
+            <span class="nu">0</span> &amp;&amp; a[j] &gt; key) {</span
+          >
+          <span class="cl" id="cl4">
+            a[j <span class="nu">+ 1</span>] = a[j];
+            <span class="cm">// shift right</span></span
+          >
+          <span class="cl" id="cl5"> j<span class="nu">--</span>;</span>
+          <span class="cl" id="cl6"> }</span>
+          <span class="cl" id="cl7">
+            a[j <span class="nu">+ 1</span>] = key;
+            <span class="cm">// insert</span></span
+          >
           <span class="cl" id="cl8">}</span>
         </div>
       </div>
@@ -351,14 +717,32 @@
       </div>
 
       <div class="nav-row">
-        <button class="nav-btn"         id="btn-prev" onclick="move(-1)" disabled>◀ Prev</button>
-        <button class="nav-btn primary" id="btn-next" onclick="move(1)"  disabled>Next ▶</button>
-        <button class="nav-btn"         id="btn-auto" onclick="toggleAuto()">⏵ Auto</button>
+        <button class="nav-btn" id="btn-prev" onclick="move(-1)" disabled>
+          ◀ Prev
+        </button>
+        <button
+          class="nav-btn primary"
+          id="btn-next"
+          onclick="move(1)"
+          disabled
+        >
+          Next ▶
+        </button>
+        <button class="nav-btn" id="btn-auto" onclick="toggleAuto()">
+          ⏵ Auto
+        </button>
         <span class="step-ctr" id="step-ctr"></span>
         <div class="speed-row">
           <label for="speed-sl">Speed</label>
-          <input type="range" id="speed-sl" min="200" max="2000" step="100" value="900"
-                 oninput="updateSpeed(this.value)" />
+          <input
+            type="range"
+            id="speed-sl"
+            min="200"
+            max="2000"
+            step="100"
+            value="900"
+            oninput="updateSpeed(this.value)"
+          />
           <span id="speed-label">0.9s</span>
         </div>
       </div>
@@ -369,16 +753,22 @@
         <span class="kbd">Space</span> Auto play &nbsp;
         <span class="kbd">R</span> Reset
       </p>
-
-    </div><!-- /page -->
+    </div>
+    <!-- /page -->
 
     <script>
-      'use strict';
-      let steps = [], cur = 0, autoTimer = null, autoDelay = 900;
+      "use strict";
+      let steps = [],
+        cur = 0,
+        autoTimer = null,
+        autoDelay = 900;
 
       /* ── Parse input ── */
       function parseArr(s) {
-        return s.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+        return s
+          .split(",")
+          .map((x) => parseInt(x.trim()))
+          .filter((x) => !isNaN(x));
       }
 
       /* ── Compute per-element bar classes for a given step ──
@@ -387,56 +777,56 @@
          'shift-from' | 'shift-to' | 'shifted-zone' | 'inserted'
       ── */
       function barClasses(type, i, j, shiftSrc, n) {
-        const c = new Array(n).fill('default');
+        const c = new Array(n).fill("default");
         switch (type) {
-
-          case 'init': break;
-
-          case 'pick-key':
-            // 0..i-1 already sorted; i = key being extracted
-            for (let k = 0; k < i; k++) c[k] = 'sorted';
-            c[i] = 'key';
+          case "init":
             break;
 
-          case 'compare-true':
+          case "pick-key":
+            // 0..i-1 already sorted; i = key being extracted
+            for (let k = 0; k < i; k++) c[k] = "sorted";
+            c[i] = "key";
+            break;
+
+          case "compare-true":
             // Sorted: 0..j-1. Comparing: j. Shifted zone: j+1..i-1.
             // Position i: 'key' only on the very first compare of this pass
             // (j === i-1 means no shifts have happened yet, arr[i] still = key).
-            for (let k = 0; k < j; k++) c[k] = 'sorted';
-            c[j] = 'comparing';
-            for (let k = j + 1; k < i; k++) c[k] = 'shifted-zone';
-            c[i] = (j === i - 1) ? 'key' : 'shifted-zone';
+            for (let k = 0; k < j; k++) c[k] = "sorted";
+            c[j] = "comparing";
+            for (let k = j + 1; k < i; k++) c[k] = "shifted-zone";
+            c[i] = j === i - 1 ? "key" : "shifted-zone";
             break;
 
-          case 'shift':
+          case "shift":
             // shiftSrc = j BEFORE decrement. a[shiftSrc+1] ← a[shiftSrc] just happened.
-            for (let k = 0; k < shiftSrc; k++) c[k] = 'sorted';
-            c[shiftSrc]     = 'shift-from';
-            c[shiftSrc + 1] = 'shift-to';
-            for (let k = shiftSrc + 2; k <= i; k++) c[k] = 'shifted-zone';
+            for (let k = 0; k < shiftSrc; k++) c[k] = "sorted";
+            c[shiftSrc] = "shift-from";
+            c[shiftSrc + 1] = "shift-to";
+            for (let k = shiftSrc + 2; k <= i; k++) c[k] = "shifted-zone";
             break;
 
-          case 'compare-false':
+          case "compare-false":
             // a[j] <= key → loop exits; insertion point is j+1
-            for (let k = 0; k <= j; k++) c[k] = 'sorted';
-            c[j + 1] = 'key';                              // will receive key
-            for (let k = j + 2; k <= i; k++) c[k] = 'shifted-zone';
+            for (let k = 0; k <= j; k++) c[k] = "sorted";
+            c[j + 1] = "key"; // will receive key
+            for (let k = j + 2; k <= i; k++) c[k] = "shifted-zone";
             break;
 
-          case 'compare-oob':
+          case "compare-oob":
             // j < 0 → key smaller than everything; insertion point is 0
-            c[0] = 'key';
-            for (let k = 1; k <= i; k++) c[k] = 'shifted-zone';
+            c[0] = "key";
+            for (let k = 1; k <= i; k++) c[k] = "shifted-zone";
             break;
 
-          case 'insert':
+          case "insert":
             // a[j+1] = key just happened; 0..i all sorted now
-            for (let k = 0; k <= i; k++) c[k] = 'sorted';
-            c[j + 1] = 'inserted';                         // glowing green
+            for (let k = 0; k <= i; k++) c[k] = "sorted";
+            c[j + 1] = "inserted"; // glowing green
             break;
 
-          case 'done':
-            for (let k = 0; k < n; k++) c[k] = 'sorted';
+          case "done":
+            for (let k = 0; k < n; k++) c[k] = "sorted";
             break;
         }
         return c;
@@ -445,25 +835,32 @@
       /* ── Build step list ── */
       function buildSteps() {
         clearAuto();
-        const raw = document.getElementById('inp-arr').value;
+        const raw = document.getElementById("inp-arr").value;
         const input = parseArr(raw);
         if (input.length < 2 || input.length > 14) {
-          alert('Enter between 2 and 14 integers, e.g. 5, 2, 4, 6, 1, 3');
+          alert("Enter between 2 and 14 integers, e.g. 5, 2, 4, 6, 1, 3");
           return;
         }
         const n = input.length;
         const a = [...input];
         steps = [];
 
-        document.getElementById('v-n').textContent = n;
+        document.getElementById("v-n").textContent = n;
 
         /* Init step */
         steps.push({
-          type: 'init', arr: [...a], n, i: -1, j: null, shiftSrc: null, key: null,
+          type: "init",
+          arr: [...a],
+          n,
+          i: -1,
+          j: null,
+          shiftSrc: null,
+          key: null,
           codeLine: [],
-          msg: `<span class="step-tag tag-init">Start</span>`
-             + `Array has <b>${n}</b> elements. Insertion sort grows a sorted region`
-             + ` a[0..0] one element at a time. Outer loop: <b>i</b> from <b>1</b> to <b>${n - 1}</b>.`
+          msg:
+            `<span class="step-tag tag-init">Start</span>` +
+            `Array has <b>${n}</b> elements. Insertion sort grows a sorted region` +
+            ` a[0..0] one element at a time. Outer loop: <b>i</b> from <b>1</b> to <b>${n - 1}</b>.`,
         });
 
         for (let i = 1; i < n; i++) {
@@ -472,152 +869,199 @@
 
           /* ── Pick key ── */
           steps.push({
-            type: 'pick-key', arr: [...a], n, i, j, shiftSrc: null, key,
+            type: "pick-key",
+            arr: [...a],
+            n,
+            i,
+            j,
+            shiftSrc: null,
+            key,
             codeLine: [0, 1, 2],
-            msg: `<span class="step-tag tag-outer">i = ${i}</span>`
-               + `Pick <b>key = a[${i}] = ${key}</b>. Set <b>j = ${j}</b>.`
-               + ` Sorted region is a[0..${i - 1}]. Find where ${key} belongs.`
+            msg:
+              `<span class="step-tag tag-outer">i = ${i}</span>` +
+              `Pick <b>key = a[${i}] = ${key}</b>. Set <b>j = ${j}</b>.` +
+              ` Sorted region is a[0..${i - 1}]. Find where ${key} belongs.`,
           });
 
           /* ── Inner while ── */
           while (j >= 0 && a[j] > key) {
-
             /* Compare (condition true) */
             steps.push({
-              type: 'compare-true', arr: [...a], n, i, j, shiftSrc: null, key,
+              type: "compare-true",
+              arr: [...a],
+              n,
+              i,
+              j,
+              shiftSrc: null,
+              key,
               codeLine: [3],
-              msg: `<span class="step-tag tag-compare">Compare j = ${j}</span>`
-                 + `a[${j}] = <b>${a[j]}</b> &gt; key = <b>${key}</b> → <b>true</b>.`
-                 + ` Shift a[${j}] one position right to a[${j + 1}].`
+              msg:
+                `<span class="step-tag tag-compare">Compare j = ${j}</span>` +
+                `a[${j}] = <b>${a[j]}</b> &gt; key = <b>${key}</b> → <b>true</b>.` +
+                ` Shift a[${j}] one position right to a[${j + 1}].`,
             });
 
             /* Shift: a[j+1] = a[j] */
             a[j + 1] = a[j];
-            const shiftSrc = j;   // source index (before j--)
+            const shiftSrc = j; // source index (before j--)
             j--;
 
             steps.push({
-              type: 'shift', arr: [...a], n, i,
-              j,              // post-decrement (shown in var chip)
-              shiftSrc,       // pre-decrement (used for bar colouring)
+              type: "shift",
+              arr: [...a],
+              n,
+              i,
+              j, // post-decrement (shown in var chip)
+              shiftSrc, // pre-decrement (used for bar colouring)
               key,
               codeLine: [4, 5],
-              msg: `<span class="step-tag tag-shift">Shift</span>`
-                 + `a[${shiftSrc + 1}] ← a[${shiftSrc}] = <b>${a[shiftSrc + 1]}</b>.`
-                 + ` j decremented to <b>${j}</b>.`
+              msg:
+                `<span class="step-tag tag-shift">Shift</span>` +
+                `a[${shiftSrc + 1}] ← a[${shiftSrc}] = <b>${a[shiftSrc + 1]}</b>.` +
+                ` j decremented to <b>${j}</b>.`,
             });
           }
 
           /* ── Loop exit ── */
           if (j >= 0) {
             steps.push({
-              type: 'compare-false', arr: [...a], n, i, j, shiftSrc: null, key,
+              type: "compare-false",
+              arr: [...a],
+              n,
+              i,
+              j,
+              shiftSrc: null,
+              key,
               codeLine: [3],
-              msg: `<span class="step-tag tag-compare">Compare j = ${j}</span>`
-                 + `a[${j}] = <b>${a[j]}</b> ≤ key = <b>${key}</b> → <b>false</b>.`
-                 + ` Loop exits. Insert key at a[${j + 1}].`
+              msg:
+                `<span class="step-tag tag-compare">Compare j = ${j}</span>` +
+                `a[${j}] = <b>${a[j]}</b> ≤ key = <b>${key}</b> → <b>false</b>.` +
+                ` Loop exits. Insert key at a[${j + 1}].`,
             });
           } else {
             steps.push({
-              type: 'compare-oob', arr: [...a], n, i, j, shiftSrc: null, key,
+              type: "compare-oob",
+              arr: [...a],
+              n,
+              i,
+              j,
+              shiftSrc: null,
+              key,
               codeLine: [3],
-              msg: `<span class="step-tag tag-compare">j = ${j}</span>`
-                 + `j &lt; 0 → loop exits. <b>${key}</b> is smaller than all`
-                 + ` sorted elements. It will be placed at a[0].`
+              msg:
+                `<span class="step-tag tag-compare">j = ${j}</span>` +
+                `j &lt; 0 → loop exits. <b>${key}</b> is smaller than all` +
+                ` sorted elements. It will be placed at a[0].`,
             });
           }
 
           /* ── Insert ── */
           a[j + 1] = key;
           steps.push({
-            type: 'insert', arr: [...a], n, i, j, shiftSrc: null, key,
+            type: "insert",
+            arr: [...a],
+            n,
+            i,
+            j,
+            shiftSrc: null,
+            key,
             codeLine: [7],
-            msg: `<span class="step-tag tag-insert">Insert</span>`
-               + `a[${j + 1}] ← key = <b>${key}</b>.`
-               + ` Sorted region now covers a[0..${i}] = [${a.slice(0, i + 1).join(', ')}].`
+            msg:
+              `<span class="step-tag tag-insert">Insert</span>` +
+              `a[${j + 1}] ← key = <b>${key}</b>.` +
+              ` Sorted region now covers a[0..${i}] = [${a.slice(0, i + 1).join(", ")}].`,
           });
         }
 
         /* ── Done ── */
         steps.push({
-          type: 'done', arr: [...a], n, i: -1, j: null, shiftSrc: null, key: null,
+          type: "done",
+          arr: [...a],
+          n,
+          i: -1,
+          j: null,
+          shiftSrc: null,
+          key: null,
           codeLine: [8],
-          msg: `<span class="step-tag tag-done">Done ★</span>`
-             + `All <b>${n}</b> elements sorted. `
-             + `Total passes: ${n - 1}. The array is fully ordered.`
+          msg:
+            `<span class="step-tag tag-done">Done ★</span>` +
+            `All <b>${n}</b> elements sorted. ` +
+            `Total passes: ${n - 1}. The array is fully ordered.`,
         });
 
         cur = 0;
-        document.getElementById('btn-prev').disabled = false;
-        document.getElementById('btn-next').disabled = false;
+        document.getElementById("btn-prev").disabled = false;
+        document.getElementById("btn-next").disabled = false;
         renderStep();
       }
 
       /* ── Render current step ── */
       function renderStep() {
-        const st   = steps[cur];
+        const st = steps[cur];
         const { arr, n, i, j, shiftSrc, key, type } = st;
 
         /* Progress */
-        document.getElementById('progress-bar').style.width =
-          (cur / (steps.length - 1)) * 100 + '%';
-        document.getElementById('step-ctr').textContent =
-          'Step ' + (cur + 1) + ' / ' + steps.length;
+        document.getElementById("progress-bar").style.width =
+          (cur / (steps.length - 1)) * 100 + "%";
+        document.getElementById("step-ctr").textContent =
+          "Step " + (cur + 1) + " / " + steps.length;
 
         /* Var chips */
-        document.getElementById('v-i').textContent =
-          (i >= 0) ? i : '—';
-        document.getElementById('v-j').textContent =
-          (type !== 'init' && type !== 'done' && j !== null) ? j : '—';
+        document.getElementById("v-i").textContent = i >= 0 ? i : "—";
+        document.getElementById("v-j").textContent =
+          type !== "init" && type !== "done" && j !== null ? j : "—";
 
-        const keyEl = document.getElementById('v-key');
-        if (key !== null && type !== 'init' && type !== 'done') {
-          keyEl.textContent = 'key = ' + key;
-          keyEl.classList.remove('inactive');
+        const keyEl = document.getElementById("v-key");
+        if (key !== null && type !== "init" && type !== "done") {
+          keyEl.textContent = "key = " + key;
+          keyEl.classList.remove("inactive");
         } else {
-          keyEl.textContent = 'key = —';
-          keyEl.classList.add('inactive');
+          keyEl.textContent = "key = —";
+          keyEl.classList.add("inactive");
         }
 
         /* Info panel */
-        document.getElementById('info-panel').innerHTML = st.msg;
+        document.getElementById("info-panel").innerHTML = st.msg;
 
         /* Code highlight */
         for (let k = 0; k <= 8; k++) {
-          const el = document.getElementById('cl' + k);
-          if (el) el.classList.toggle('hl', st.codeLine.includes(k));
+          const el = document.getElementById("cl" + k);
+          if (el) el.classList.toggle("hl", st.codeLine.includes(k));
         }
 
         /* Bar chart */
         const maxVal = Math.max(...arr);
-        const MAX_H  = 150;
-        const MIN_H  = 28;
+        const MAX_H = 150;
+        const MIN_H = 28;
 
         // Pass the right j for bar colouring:
         // - 'shift' uses shiftSrc (before j--), all others use j directly
-        const colorJ = (type === 'shift') ? shiftSrc : j;
-        const cls    = barClasses(type, i, colorJ, shiftSrc, n);
+        const colorJ = type === "shift" ? shiftSrc : j;
+        const cls = barClasses(type, i, colorJ, shiftSrc, n);
 
-        document.getElementById('bars-wrap').innerHTML = arr.map((val, idx) => {
-          const h = Math.max(MIN_H, Math.round((val / maxVal) * MAX_H));
-          return `<div class="bar-col">
+        document.getElementById("bars-wrap").innerHTML = arr
+          .map((val, idx) => {
+            const h = Math.max(MIN_H, Math.round((val / maxVal) * MAX_H));
+            return `<div class="bar-col">
             <div class="bar-val">${val}</div>
             <div class="bar b-${cls[idx]}" style="height:${h}px"></div>
             <div class="bar-idx">${idx}</div>
           </div>`;
-        }).join('');
+          })
+          .join("");
 
         /* Result panel */
-        const rp = document.getElementById('result-panel');
-        if (type === 'done') {
-          rp.innerHTML = 'Result: '
-            + arr.map(v => `<span class="sorted-badge">${v}</span>`).join('');
+        const rp = document.getElementById("result-panel");
+        if (type === "done") {
+          rp.innerHTML =
+            "Result: " +
+            arr.map((v) => `<span class="sorted-badge">${v}</span>`).join("");
         } else {
-          rp.innerHTML = '';
+          rp.innerHTML = "";
         }
 
-        document.getElementById('btn-prev').disabled = (cur === 0);
-        document.getElementById('btn-next').disabled = (cur === steps.length - 1);
+        document.getElementById("btn-prev").disabled = cur === 0;
+        document.getElementById("btn-next").disabled = cur === steps.length - 1;
       }
 
       /* ── Navigation ── */
@@ -627,41 +1071,57 @@
       }
 
       function toggleAuto() {
-        const btn = document.getElementById('btn-auto');
-        if (autoTimer) { clearAuto(); return; }
+        const btn = document.getElementById("btn-auto");
+        if (autoTimer) {
+          clearAuto();
+          return;
+        }
         if (!steps.length) buildSteps();
-        btn.textContent = '⏸ Pause';
-        btn.classList.add('auto-on');
+        btn.textContent = "⏸ Pause";
+        btn.classList.add("auto-on");
         autoTimer = setInterval(() => {
-          if (cur >= steps.length - 1) { clearAuto(); return; }
+          if (cur >= steps.length - 1) {
+            clearAuto();
+            return;
+          }
           cur++;
           renderStep();
         }, autoDelay);
       }
 
       function clearAuto() {
-        if (autoTimer) { clearInterval(autoTimer); autoTimer = null; }
-        const btn = document.getElementById('btn-auto');
-        btn.textContent = '⏵ Auto';
-        btn.classList.remove('auto-on');
+        if (autoTimer) {
+          clearInterval(autoTimer);
+          autoTimer = null;
+        }
+        const btn = document.getElementById("btn-auto");
+        btn.textContent = "⏵ Auto";
+        btn.classList.remove("auto-on");
       }
 
       function updateSpeed(v) {
-        autoDelay = parseInt(v);
-        document.getElementById('speed-label').textContent = (v / 1000).toFixed(1) + 's';
-        if (autoTimer) { clearAuto(); toggleAuto(); }
+        const sl = document.getElementById("speed-sl");
+        autoDelay = parseInt(sl.max) + parseInt(sl.min) - parseInt(v);
+        document.getElementById("speed-label").textContent =
+          (v / 1000).toFixed(1) + "s";
+        if (autoTimer) {
+          clearAuto();
+          toggleAuto();
+        }
       }
 
       /* ── Keyboard shortcuts ── */
-      document.addEventListener('keydown', e => {
-        if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
-        if      (e.key === 'ArrowRight') move(1);
-        else if (e.key === 'ArrowLeft')  move(-1);
-        else if (e.key === ' ')          { e.preventDefault(); toggleAuto(); }
-        else if (e.key === 'r' || e.key === 'R') buildSteps();
+      document.addEventListener("keydown", (e) => {
+        if (["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName)) return;
+        if (e.key === "ArrowRight") move(1);
+        else if (e.key === "ArrowLeft") move(-1);
+        else if (e.key === " ") {
+          e.preventDefault();
+          toggleAuto();
+        } else if (e.key === "r" || e.key === "R") buildSteps();
       });
 
-      window.addEventListener('load', buildSteps);
+      window.addEventListener("load", buildSteps);
     </script>
   </body>
 </html>
