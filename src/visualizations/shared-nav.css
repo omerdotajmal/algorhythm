@@ -92,7 +92,8 @@ body { padding-left: 52px !important; }
 /* ── Category group ─────────────────────────────────────────── */
 /* Category accent colors — extend as needed */
 .snav-group[data-cat="bf"] { --c: #86efac; } /* green  — Brute Force         */
-.snav-group[data-cat="dc"] { --c: #7dd3fc; } /* blue   — Divide & Conquer    */
+.snav-group[data-cat="dc"] { --c: #fb7185; } /* rose   — Decrease & Conquer  */
+.snav-group[data-cat="dq"] { --c: #7dd3fc; } /* blue   — Divide & Conquer    */
 .snav-group[data-cat="gr"] { --c: #fbbf24; } /* amber  — Greedy              */
 .snav-group[data-cat="dp"] { --c: #a78bfa; } /* violet — Dynamic Programming */
 .snav-group[data-cat="ga"] { --c: #2dd4bf; } /* teal   — Graph Algorithms    */

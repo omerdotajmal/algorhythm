@@ -1,0 +1,1546 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Merge Sort — Dry Run</title>
+    <link rel="stylesheet" href="shared-nav.css" />
+    <link rel="stylesheet" href="shared.css" />
+    <style>
+      :root {
+        --bg: #f8f7f4;
+        --bg2: #f0eeea;
+        --bg3: #e8e6e1;
+        --card: #ffffff;
+        --border: rgba(0, 0, 0, 0.1);
+        --border2: rgba(0, 0, 0, 0.18);
+        --text: #1a1a18;
+        --text2: #5a5955;
+        --text3: #8a8880;
+        --mono: "JetBrains Mono", "Fira Mono", "Consolas", monospace;
+        --sans: "Inter", "Segoe UI", system-ui, sans-serif;
+        --progress-color: #0369a1;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #18181a;
+          --bg2: #222226;
+          --bg3: #2c2c30;
+          --card: #1e1e22;
+          --border: rgba(255, 255, 255, 0.09);
+          --border2: rgba(255, 255, 255, 0.18);
+          --text: #e8e6e0;
+          --text2: #a0a098;
+          --text3: #606060;
+        }
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        font-family: var(--sans);
+        background: var(--bg);
+        color: var(--text);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        padding: 32px 20px 48px;
+      }
+      .page {
+        width: 100%;
+        max-width: 920px;
+      }
+
+      /* ── Header ── */
+      .header {
+        margin-bottom: 24px;
+      }
+      .header h1 {
+        font-size: 22px;
+        font-weight: 600;
+        letter-spacing: -0.3px;
+      }
+      .header p {
+        font-size: 13px;
+        color: var(--text2);
+        margin-top: 4px;
+      }
+
+      /* ── Input bar ── */
+      .input-bar {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        background: var(--card);
+        border: 1px solid var(--border2);
+        border-radius: 10px;
+        padding: 12px 16px;
+        margin-bottom: 16px;
+      }
+      .input-bar label {
+        font-size: 13px;
+        color: var(--text2);
+        white-space: nowrap;
+      }
+      .arr-input {
+        font-family: var(--mono);
+        font-size: 14px;
+        font-weight: 600;
+        padding: 6px 10px;
+        border: 1px solid var(--border2);
+        border-radius: 6px;
+        background: var(--bg2);
+        color: var(--text);
+        flex: 1;
+        min-width: 160px;
+        letter-spacing: 0.05em;
+      }
+      .arr-input:focus {
+        outline: 2px solid #378add;
+        outline-offset: 1px;
+      }
+      .btn-run {
+        font-family: var(--sans);
+        font-size: 13px;
+        font-weight: 500;
+        padding: 7px 20px;
+        border: none;
+        border-radius: 6px;
+        background: #185fa5;
+        color: #fff;
+        cursor: pointer;
+        transition: background 0.15s;
+        white-space: nowrap;
+      }
+      .btn-run:hover {
+        background: #0c447c;
+      }
+
+      /* ── Legend ── */
+      .legend {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+        font-size: 12px;
+        color: var(--text2);
+      }
+      .leg {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .leg-dot {
+        width: 13px;
+        height: 13px;
+        border-radius: 3px;
+        flex-shrink: 0;
+      }
+
+      /* ── Var chips ── */
+      .vars-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 14px;
+      }
+      .var-chip {
+        font-family: var(--mono);
+        font-size: 13px;
+        font-weight: 600;
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 4px 12px;
+      }
+      .var-chip span {
+        color: var(--text2);
+        font-weight: 400;
+      }
+
+      /* ── Bar chart card ── */
+      .bars-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 20px 20px 14px;
+        margin-bottom: 14px;
+        overflow-x: auto;
+      }
+
+      /* Call-stack frames — conveys recursion depth */
+      .stack-row {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .frame {
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 600;
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 3px 9px;
+        color: var(--text2);
+      }
+      .frame.cur {
+        background: #ede9fe;
+        border-color: #8b5cf6;
+        color: #3c3489;
+      }
+      .frame-arrow {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--text3);
+      }
+      @media (prefers-color-scheme: dark) {
+        .frame.cur {
+          background: #2e1065;
+          border-color: #8b5cf6;
+          color: #cecbf6;
+        }
+      }
+
+      /* Active-range caption */
+      .range-cap {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--text2);
+        margin-bottom: 6px;
+        min-height: 16px;
+      }
+
+      /* Band over the active sub-range — aligned to the bar columns */
+      .band-row {
+        display: flex;
+        align-items: flex-end;
+        gap: 7px;
+        margin-bottom: 7px;
+      }
+      .band-cell {
+        flex: 1;
+        min-width: 34px;
+        height: 9px;
+        border-radius: 3px;
+        border: 1px solid transparent;
+        background: transparent;
+        transition:
+          background 0.2s,
+          border-color 0.2s;
+      }
+      .band-cell.n-range {
+        background: #ede9fe;
+        border-color: #8b5cf6;
+      }
+      .band-cell.n-left {
+        background: #deedf8;
+        border-color: #378add;
+      }
+      .band-cell.n-right {
+        background: #fed7aa;
+        border-color: #f97316;
+      }
+      @media (prefers-color-scheme: dark) {
+        .band-cell.n-range {
+          background: #2e1065;
+          border-color: #8b5cf6;
+        }
+        .band-cell.n-left {
+          background: #0c447c;
+          border-color: #378add;
+        }
+        .band-cell.n-right {
+          background: #431407;
+          border-color: #f97316;
+        }
+      }
+
+      .bars-wrap {
+        display: flex;
+        align-items: flex-end;
+        gap: 7px;
+        min-height: 190px;
+      }
+      .bar-col {
+        flex: 1;
+        min-width: 34px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0;
+      }
+      /* value label above bar */
+      .bar-val {
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 4px;
+        line-height: 1;
+        color: var(--text2);
+        min-height: 16px;
+      }
+      /* stale slot — value no longer meaningful, original is safe in L/R */
+      .bar-val.stale {
+        color: var(--text3);
+        font-weight: 400;
+      }
+      /* the bar itself */
+      .bar {
+        width: 100%;
+        border-radius: 6px 6px 2px 2px;
+        border: 2px solid;
+        transition:
+          height 0.2s,
+          background 0.2s,
+          border-color 0.2s;
+      }
+      /* index below */
+      .bar-idx {
+        font-size: 10px;
+        font-family: var(--mono);
+        color: var(--text3);
+        margin-top: 5px;
+      }
+
+      /* k write-pointer row — aligned to the bar columns */
+      .ptr-row {
+        display: flex;
+        gap: 7px;
+        margin-top: 2px;
+      }
+      .ptr-cell {
+        flex: 1;
+        min-width: 34px;
+        text-align: center;
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--text3);
+        min-height: 14px;
+      }
+      .ptr-cell.on {
+        color: #78350f;
+        font-weight: 700;
+      }
+      @media (prefers-color-scheme: dark) {
+        .ptr-cell.on {
+          color: #fde68a;
+        }
+      }
+
+      /* ── L / R temp arrays (merge phase) ── */
+      .temp-row {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        align-items: flex-start;
+      }
+      .temp-row.on {
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px solid var(--border);
+      }
+      .temp-box {
+        flex: 1;
+        min-width: 210px;
+      }
+      .temp-head {
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text2);
+        margin-bottom: 6px;
+      }
+      .temp-head span {
+        font-weight: 400;
+        color: var(--text3);
+      }
+      .temp-cells {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .temp-col {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .temp-cell {
+        min-width: 34px;
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 700;
+        border: 2px solid;
+        border-radius: 6px;
+        padding: 6px 7px;
+        text-align: center;
+        line-height: 1;
+        transition:
+          background 0.2s,
+          border-color 0.2s;
+      }
+      .temp-idx {
+        font-size: 10px;
+        font-family: var(--mono);
+        color: var(--text3);
+        margin-top: 4px;
+        min-height: 14px;
+      }
+      .temp-note {
+        font-size: 11px;
+        color: var(--text3);
+        margin-top: 10px;
+        flex-basis: 100%;
+      }
+
+      /* ── State colours – light ── */
+      .b-default {
+        background: var(--bg2);
+        border-color: var(--border2);
+      }
+      .b-range {
+        background: #ede9fe;
+        border-color: #8b5cf6;
+      }
+      .b-left {
+        background: #deedf8;
+        border-color: #378add;
+      }
+      .b-right {
+        background: #fed7aa;
+        border-color: #f97316;
+      }
+      .b-comparing {
+        background: #fef3c7;
+        border-color: #f59e0b;
+      }
+      .b-merged {
+        background: #d8eec2;
+        border-color: #639922;
+      }
+      .b-inserted {
+        background: #c7e5a0;
+        border-color: #3b6d11;
+        box-shadow: 0 0 0 2.5px #97c45966;
+      }
+      .b-spent {
+        background: var(--bg2);
+        border-color: var(--border);
+        color: var(--text3);
+      }
+
+      /* ── State colours – dark ── */
+      @media (prefers-color-scheme: dark) {
+        .b-default {
+          background: var(--bg3);
+          border-color: rgba(255, 255, 255, 0.15);
+        }
+        .b-range {
+          background: #2e1065;
+          border-color: #8b5cf6;
+        }
+        .b-left {
+          background: #0c447c;
+          border-color: #378add;
+        }
+        .b-right {
+          background: #431407;
+          border-color: #f97316;
+        }
+        .b-comparing {
+          background: #451a03;
+          border-color: #f59e0b;
+        }
+        .b-merged {
+          background: #1e3d0a;
+          border-color: #639922;
+        }
+        .b-inserted {
+          background: #1e4008;
+          border-color: #97c459;
+          box-shadow: 0 0 0 2.5px #97c45966;
+        }
+        .b-spent {
+          background: var(--bg3);
+          border-color: var(--border);
+          color: var(--text3);
+        }
+      }
+
+      /* ── Info panel ── */
+      .info-panel {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 14px 16px;
+        font-size: 13.5px;
+        line-height: 1.75;
+        color: var(--text);
+        min-height: 60px;
+        margin-bottom: 12px;
+      }
+
+      /* ── Step tags ── */
+      .step-tag {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 9px;
+        border-radius: 5px;
+        margin-right: 8px;
+        vertical-align: middle;
+        letter-spacing: 0.02em;
+      }
+      .tag-init {
+        background: var(--bg3);
+        color: var(--text2);
+        border: 1px solid var(--border2);
+      }
+      .tag-outer {
+        background: #e4e2fa;
+        color: #3c3489;
+      }
+      .tag-compare {
+        background: #deedf8;
+        color: #0c447c;
+      }
+      .tag-shift {
+        background: #fed7aa;
+        color: #7c3d12;
+      }
+      .tag-insert {
+        background: #d8eec2;
+        color: #27500a;
+      }
+      .tag-done {
+        background: #c7e5a0;
+        color: #173404;
+        border: 1px solid #639922;
+      }
+      @media (prefers-color-scheme: dark) {
+        .tag-outer {
+          background: #3c3489;
+          color: #cecbf6;
+        }
+        .tag-compare {
+          background: #0c447c;
+          color: #b5d4f4;
+        }
+        .tag-shift {
+          background: #431407;
+          color: #fed7aa;
+        }
+        .tag-insert {
+          background: #1e3d0a;
+          color: #c0dd97;
+        }
+        .tag-done {
+          background: #1e4008;
+          color: #c0dd97;
+          border-color: #639922;
+        }
+      }
+
+      /* ── Result panel ── */
+      .result-panel {
+        font-size: 13px;
+        color: var(--text2);
+        min-height: 22px;
+        margin-top: 10px;
+      }
+      .sorted-badge {
+        display: inline-block;
+        background: #d8eec2;
+        color: #173404;
+        border: 1px solid #97c459;
+        border-radius: 5px;
+        padding: 2px 10px;
+        font-size: 13px;
+        font-family: var(--mono);
+        font-weight: 600;
+        margin-right: 4px;
+      }
+      @media (prefers-color-scheme: dark) {
+        .sorted-badge {
+          background: #1e3d0a;
+          color: #c0dd97;
+          border-color: #639922;
+        }
+      }
+
+      /* ── Nav buttons ── */
+      .nav-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+      }
+      .nav-btn {
+        font-family: var(--sans);
+        font-size: 13px;
+        font-weight: 500;
+        padding: 8px 18px;
+        border: 1px solid var(--border2);
+        border-radius: 7px;
+        background: var(--bg2);
+        color: var(--text);
+        cursor: pointer;
+        transition: background 0.14s;
+      }
+      .nav-btn:hover:not(:disabled) {
+        background: var(--bg3);
+      }
+      .nav-btn:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+      .nav-btn.primary {
+        background: #185fa5;
+        color: #fff;
+        border-color: #185fa5;
+      }
+      .nav-btn.primary:hover:not(:disabled) {
+        background: #0c447c;
+      }
+      .nav-btn.auto-on {
+        background: #3b6d11;
+        color: #eaf3de;
+        border-color: #3b6d11;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- ══ Shared Side Nav ══ -->
+    <aside class="snav">
+      <a class="snav-home" href="./index.html" title="All Visualizations">
+        <span class="snav-logo">◈</span>
+        <span class="snav-home-text">DAA Visualizations</span>
+      </a>
+      <div class="snav-scroll">
+        <div class="snav-group" data-cat="bf">
+          <div class="snav-cat-row">
+            <span class="snav-cat-pip"></span
+            ><span class="snav-cat-name">Brute Force</span>
+          </div>
+          <a
+            class="snav-link"
+            href="./naive_string_matching.html"
+            data-page="naive_string_matching"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Naive String Matching</span
+            ><span class="snav-link-cpx">O(nm)</span></a
+          >
+          <a
+            class="snav-link"
+            href="./closest_pair_brute_force.html"
+            data-page="closest_pair_brute_force"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Closest Pair (2D)</span
+            ><span class="snav-link-cpx">Θ(n²)</span></a
+          >
+          <a
+            class="snav-link"
+            href="./subset_bitmask.html"
+            data-page="subset_bitmask"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Subset Generation</span
+            ><span class="snav-link-cpx">Θ(n·2ⁿ)</span></a
+          >
+        </div>
+        <div class="snav-sep"></div>
+        <div class="snav-group" data-cat="dc">
+          <div class="snav-cat-row">
+            <span class="snav-cat-pip"></span
+            ><span class="snav-cat-name">Decrease &amp; Conquer</span>
+          </div>
+          <a
+            class="snav-link"
+            href="./insertion_sort.html"
+            data-page="insertion_sort"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Insertion Sort</span
+            ><span class="snav-link-cpx">O(n²)</span></a
+          >
+          <a
+            class="snav-link"
+            href="./insertion_sort_cards.html"
+            data-page="insertion_sort_cards"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Insertion Sort — Card Table</span></a
+          >
+        </div>
+        <div class="snav-sep"></div>
+        <div class="snav-group" data-cat="dq">
+          <div class="snav-cat-row">
+            <span class="snav-cat-pip"></span
+            ><span class="snav-cat-name">Divide &amp; Conquer</span>
+          </div>
+          <a class="snav-link" href="./merge_sort.html" data-page="merge_sort"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Merge Sort</span
+            ><span class="snav-link-cpx">Θ(n log n)</span></a
+          >
+          <span class="snav-link snav-soon"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Quick Sort</span></span
+          >
+          <span class="snav-link snav-soon"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Binary Search</span
+            ><span class="snav-link-cpx">Θ(log n)</span></span
+          >
+        </div>
+        <div class="snav-sep"></div>
+        <div class="snav-group snav-soon" data-cat="gr">
+          <div class="snav-cat-row">
+            <span class="snav-cat-pip"></span
+            ><span class="snav-cat-name">Greedy</span>
+          </div>
+          <span class="snav-link"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Activity Selection</span></span
+          >
+          <span class="snav-link"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Huffman Coding</span></span
+          >
+          <span class="snav-link"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Dijkstra's SSSP</span></span
+          >
+        </div>
+        <div class="snav-sep"></div>
+        <div class="snav-group snav-soon" data-cat="dp">
+          <div class="snav-cat-row">
+            <span class="snav-cat-pip"></span
+            ><span class="snav-cat-name">Dynamic Programming</span>
+          </div>
+          <span class="snav-link"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">0/1 Knapsack</span
+            ><span class="snav-link-cpx">Θ(nW)</span></span
+          >
+          <span class="snav-link"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">LCS</span></span
+          >
+          <span class="snav-link"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Floyd-Warshall</span
+            ><span class="snav-link-cpx">Θ(V³)</span></span
+          >
+        </div>
+        <div class="snav-sep"></div>
+        <div class="snav-group snav-soon" data-cat="ga">
+          <div class="snav-cat-row">
+            <span class="snav-cat-pip"></span
+            ><span class="snav-cat-name">Graph Algorithms</span>
+          </div>
+          <span class="snav-link"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">BFS</span
+            ><span class="snav-link-cpx">Θ(V+E)</span></span
+          >
+          <span class="snav-link"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">DFS</span
+            ><span class="snav-link-cpx">Θ(V+E)</span></span
+          >
+          <span class="snav-link"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Topological Sort</span></span
+          >
+        </div>
+      </div>
+      <div class="snav-foot">
+        <span class="snav-foot-icon">6/22</span>
+        <span class="snav-foot-text">6 of 22 live</span>
+      </div>
+    </aside>
+    <script>
+      (function () {
+        var p = location.pathname.split("/").pop().replace(".html", "");
+        var el = document.querySelector('.snav-link[data-page="' + p + '"]');
+        if (el) el.classList.add("snav-current");
+      })();
+    </script>
+
+    <div class="page">
+      <div class="header">
+        <h1>Merge Sort — Dry Run</h1>
+        <p>
+          Design &amp; Analysis of Algorithms &nbsp;·&nbsp; Divide &amp; Conquer
+          — Interactive Step-through
+        </p>
+      </div>
+
+      <!-- Input -->
+      <div class="input-bar">
+        <label>int[] a =</label>
+        <input
+          class="arr-input"
+          id="inp-arr"
+          value="38, 27, 43, 3, 9, 82, 10"
+          placeholder="e.g. 38, 27, 43, 3, 9, 82, 10"
+        />
+        <button class="btn-run" onclick="buildSteps()">▶ Run</button>
+      </div>
+
+      <!-- Legend -->
+      <div class="legend">
+        <div class="leg">
+          <div class="leg-dot" style="background: #8b5cf6"></div>
+          Active sub-range
+        </div>
+        <div class="leg">
+          <div class="leg-dot" style="background: #378add"></div>
+          Left half L[]
+        </div>
+        <div class="leg">
+          <div class="leg-dot" style="background: #f97316"></div>
+          Right half R[]
+        </div>
+        <div class="leg">
+          <div class="leg-dot" style="background: #f59e0b"></div>
+          Comparing
+        </div>
+        <div class="leg">
+          <div class="leg-dot" style="background: #639922"></div>
+          Merged / placed
+        </div>
+        <div class="leg">
+          <div class="leg-dot" style="background: #3b6d11"></div>
+          Fully sorted
+        </div>
+      </div>
+
+      <!-- Variable chips -->
+      <div class="vars-row" id="vars-row">
+        <div class="var-chip">n = <span id="v-n">7</span></div>
+        <div class="var-chip">left = <span id="v-left">—</span></div>
+        <div class="var-chip">mid = <span id="v-mid">—</span></div>
+        <div class="var-chip">right = <span id="v-right">—</span></div>
+        <div class="var-chip">depth = <span id="v-depth">—</span></div>
+        <div class="var-chip">i = <span id="v-i">—</span></div>
+        <div class="var-chip">j = <span id="v-j">—</span></div>
+        <div class="var-chip">k = <span id="v-k">—</span></div>
+      </div>
+
+      <!-- Visual card: call stack + range band + bars + k pointer + L/R temps -->
+      <div class="bars-card">
+        <div class="stack-row" id="stack-row"></div>
+        <div class="range-cap" id="range-cap"></div>
+        <div class="band-row" id="band-row"></div>
+        <div class="bars-wrap" id="bars-wrap"></div>
+        <div class="ptr-row" id="ptr-row"></div>
+        <div class="temp-row" id="temp-row"></div>
+      </div>
+
+      <!-- Info -->
+      <div class="info-panel" id="info-panel">
+        Press <b>▶ Run</b> to start, then step through using the buttons below.
+      </div>
+
+      <!-- Progress -->
+      <div class="progress-wrap">
+        <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+      </div>
+
+      <!-- Code -->
+      <div class="code-card">
+        <span class="lang-tag">// Java — MergeSort.java</span>
+        <!-- prettier-ignore-start -->
+        <!-- Each .cl must stay on ONE source line: .cl is white-space: pre,
+             so a line break in the markup becomes a line break on screen. -->
+        <span class="cl" id="cl0"><span class="ty">void</span> <span class="fn">mergeSort</span>(<span class="ty">int</span>[] a, <span class="ty">int</span> left, <span class="ty">int</span> right) {</span>
+        <span class="cl" id="cl1">    <span class="kw">if</span> (left &gt;= right) <span class="kw">return</span>;           <span class="cm">// base case: 1 element</span></span>
+        <span class="cl" id="cl2">    <span class="ty">int</span> mid = left + (right - left) / <span class="nu">2</span>;</span>
+        <span class="cl" id="cl3">    <span class="fn">mergeSort</span>(a, left, mid);            <span class="cm">// divide: left half</span></span>
+        <span class="cl" id="cl4">    <span class="fn">mergeSort</span>(a, mid <span class="nu">+ 1</span>, right);       <span class="cm">// divide: right half</span></span>
+        <span class="cl" id="cl5">    <span class="fn">merge</span>(a, left, mid, right);         <span class="cm">// conquer</span></span>
+        <span class="cl" id="cl6">}</span>
+        <span class="cl" id="cl7"><span class="ty">void</span> <span class="fn">merge</span>(<span class="ty">int</span>[] a, <span class="ty">int</span> left, <span class="ty">int</span> mid, <span class="ty">int</span> right) {</span>
+        <span class="cl" id="cl8">    <span class="ty">int</span>[] L = Arrays.<span class="fn">copyOfRange</span>(a, left, mid <span class="nu">+ 1</span>);</span>
+        <span class="cl" id="cl9">    <span class="ty">int</span>[] R = Arrays.<span class="fn">copyOfRange</span>(a, mid <span class="nu">+ 1</span>, right <span class="nu">+ 1</span>);</span>
+        <span class="cl" id="cl10">    <span class="ty">int</span> i = <span class="nu">0</span>, j = <span class="nu">0</span>, k = left;</span>
+        <span class="cl" id="cl11">    <span class="kw">while</span> (i &lt; L.length &amp;&amp; j &lt; R.length) {</span>
+        <span class="cl" id="cl12">        <span class="kw">if</span> (L[i] &lt;= R[j]) a[k++] = L[i++];</span>
+        <span class="cl" id="cl13">        <span class="kw">else</span>              a[k++] = R[j++];</span>
+        <span class="cl" id="cl14">    }</span>
+        <span class="cl" id="cl15">    <span class="kw">while</span> (i &lt; L.length) a[k++] = L[i++];   <span class="cm">// tail of L</span></span>
+        <span class="cl" id="cl16">    <span class="kw">while</span> (j &lt; R.length) a[k++] = R[j++];   <span class="cm">// tail of R</span></span>
+        <span class="cl" id="cl17">}</span>
+        <!-- prettier-ignore-end -->
+      </div>
+
+      <!-- Nav -->
+      <div class="nav-row">
+        <button class="nav-btn" id="btn-prev" onclick="move(-1)" disabled>
+          ◀ Prev
+        </button>
+        <button class="nav-btn primary" id="btn-next" onclick="move(1)" disabled>
+          Next ▶
+        </button>
+        <button class="nav-btn" id="btn-auto" onclick="toggleAuto()">
+          ⏵ Auto
+        </button>
+        <span class="step-ctr" id="step-ctr"></span>
+        <div class="speed-row">
+          <label for="speed-sl">Speed</label>
+          <input
+            type="range"
+            id="speed-sl"
+            min="200"
+            max="2000"
+            step="100"
+            value="900"
+            oninput="updateSpeed(this.value)"
+          />
+          <span id="speed-label">0.9s</span>
+        </div>
+      </div>
+
+      <div class="result-panel" id="result-panel"></div>
+
+      <p class="key-hint">
+        Keyboard: <span class="kbd">←</span> Prev &nbsp;
+        <span class="kbd">→</span> Next &nbsp;
+        <span class="kbd">Space</span> Auto play &nbsp;
+        <span class="kbd">R</span> Reset
+      </p>
+    </div>
+    <!-- /page -->
+
+    <script>
+      "use strict";
+      let steps = [],
+        cur = 0,
+        autoTimer = null,
+        autoDelay = 900;
+
+      /* ── Parse input ── */
+      function parseArr(s) {
+        return s
+          .split(",")
+          .map((x) => parseInt(x.trim()))
+          .filter((x) => !isNaN(x));
+      }
+
+      /* ── Per-element bar classes for a given snapshot ──
+         Returns an array of length n, each entry one of:
+         'default' | 'range' | 'left' | 'right' | 'merged' | 'inserted'
+      ── */
+      function barClasses(st) {
+        const { type, n, left, mid, right, k } = st;
+        const c = new Array(n).fill("default");
+        switch (type) {
+          case "init":
+            break;
+
+          case "enter":
+          case "base":
+            // Whole active sub-range is the frame we just entered.
+            for (let x = left; x <= right; x++) c[x] = "range";
+            break;
+
+          case "mid":
+          case "copy":
+            // Show the split: a[left..mid] vs a[mid+1..right].
+            for (let x = left; x <= mid; x++) c[x] = "left";
+            for (let x = mid + 1; x <= right; x++) c[x] = "right";
+            break;
+
+          case "compare":
+          case "place":
+          case "tail":
+            // a[left..k-1] already written by this merge.
+            // a[k..right] is scratch: its originals now live in L and R.
+            for (let x = left; x < k; x++) c[x] = "merged";
+            break;
+
+          case "merged":
+            for (let x = left; x <= right; x++) c[x] = "merged";
+            break;
+
+          case "done":
+            for (let x = 0; x < n; x++) c[x] = "inserted";
+            break;
+        }
+        return c;
+      }
+
+      /* ── Band classes: the "you are here" bracket over a[left..right] ── */
+      function bandClasses(st) {
+        const { type, n, left, mid, right } = st;
+        const b = new Array(n).fill("off");
+        if (type === "init" || type === "done" || left === null) return b;
+        if (type === "mid" || type === "copy") {
+          for (let x = left; x <= mid; x++) b[x] = "n-left";
+          for (let x = mid + 1; x <= right; x++) b[x] = "n-right";
+        } else {
+          for (let x = left; x <= right; x++) b[x] = "n-range";
+        }
+        return b;
+      }
+
+      /* ── Build step list ── */
+      function buildSteps() {
+        clearAuto();
+        const raw = document.getElementById("inp-arr").value;
+        const input = parseArr(raw);
+        if (input.length < 2 || input.length > 12) {
+          alert("Enter between 2 and 12 integers, e.g. 38, 27, 43, 3, 9, 82, 10");
+          return;
+        }
+        const n = input.length;
+        const a = [...input];
+        steps = [];
+
+        document.getElementById("v-n").textContent = n;
+
+        const stack = []; // array of [left, right] frames
+        let calls = 0,
+          maxDepth = 0,
+          comparisons = 0;
+
+        /* Common snapshot fields. */
+        function snap(o) {
+          steps.push(
+            Object.assign(
+              {
+                arr: [...a],
+                n,
+                left: null,
+                mid: null,
+                right: null,
+                depth: null,
+                i: null,
+                j: null,
+                k: null,
+                L: null,
+                R: null,
+                stack: stack.map((f) => [f[0], f[1]]),
+                placedIdx: null,
+                codeLine: [],
+              },
+              o,
+            ),
+          );
+        }
+
+        /* ── Start ── */
+        snap({
+          type: "init",
+          msg:
+            `<span class="step-tag tag-init">Start</span>` +
+            `Array has <b>${n}</b> elements. Merge sort <b>divides</b> a[0..${n - 1}]` +
+            ` at the midpoint, sorts each half by recursing, then <b>merges</b>` +
+            ` the two sorted halves back together. Press <b>Next ▶</b> to enter the first call.`,
+        });
+
+        /* ── Recursive generator ── */
+        function gen(left, right, depth, side) {
+          stack.push([left, right]);
+          calls++;
+          if (depth > maxDepth) maxDepth = depth;
+
+          const callLine = side === "L" ? [3, 0] : side === "R" ? [4, 0] : [0];
+          snap({
+            type: "enter",
+            left,
+            right,
+            mid: null,
+            depth,
+            codeLine: callLine,
+            msg:
+              `<span class="step-tag tag-outer">Divide</span>` +
+              `Call <b>mergeSort(a, ${left}, ${right})</b> at depth <b>${depth}</b>` +
+              (side
+                ? ` — the ${side === "L" ? "left" : "right"} half of its parent.`
+                : ` — the root call.`) +
+              ` Active sub-range <b>a[${left}..${right}]</b> holds <b>${right - left + 1}</b>` +
+              ` element${right - left + 1 === 1 ? "" : "s"}.`,
+          });
+
+          /* ── Base case ── */
+          if (left >= right) {
+            snap({
+              type: "base",
+              left,
+              right,
+              mid: null,
+              depth,
+              codeLine: [1],
+              msg:
+                `<span class="step-tag tag-init">Base case</span>` +
+                `<b>left = ${left} ≥ right = ${right}</b> → a sub-range of one element` +
+                ` is already sorted. Return without doing any work.`,
+            });
+            stack.pop();
+            return;
+          }
+
+          const mid = left + Math.floor((right - left) / 2);
+
+          snap({
+            type: "mid",
+            left,
+            right,
+            mid,
+            depth,
+            codeLine: [2],
+            msg:
+              `<span class="step-tag tag-outer">Split</span>` +
+              `<b>mid = ${left} + (${right} − ${left})/2 = ${mid}</b>.` +
+              ` Left half <b>a[${left}..${mid}]</b>, right half <b>a[${mid + 1}..${right}]</b>.` +
+              ` Recurse into the left half first — nothing is compared yet.`,
+          });
+
+          gen(left, mid, depth + 1, "L");
+          gen(mid + 1, right, depth + 1, "R");
+
+          /* ── Merge ── */
+          const L = a.slice(left, mid + 1);
+          const R = a.slice(mid + 1, right + 1);
+          let i = 0,
+            j = 0,
+            k = left;
+
+          snap({
+            type: "copy",
+            left,
+            right,
+            mid,
+            depth,
+            i,
+            j,
+            k,
+            L: [...L],
+            R: [...R],
+            codeLine: [5, 8, 9, 10],
+            msg:
+              `<span class="step-tag tag-shift">Copy halves</span>` +
+              `Both halves are sorted. Copy a[${left}..${mid}] into <b>L = [${L.join(", ")}]</b>` +
+              ` and a[${mid + 1}..${right}] into <b>R = [${R.join(", ")}]</b>.` +
+              ` a[${left}..${right}] is now free to overwrite — the originals are safe in L and R.` +
+              ` Set <b>i = 0</b>, <b>j = 0</b>, <b>k = ${left}</b>.`,
+          });
+
+          while (i < L.length && j < R.length) {
+            comparisons++;
+            const takeLeft = L[i] <= R[j];
+            snap({
+              type: "compare",
+              left,
+              right,
+              mid,
+              depth,
+              i,
+              j,
+              k,
+              L: [...L],
+              R: [...R],
+              codeLine: [11, 12],
+              msg:
+                `<span class="step-tag tag-compare">Compare</span>` +
+                `<b>L[${i}] = ${L[i]}</b> ${takeLeft ? "≤" : "&gt;"} <b>R[${j}] = ${R[j]}</b>` +
+                ` → <b>${takeLeft}</b>. The smaller value sits in the` +
+                ` <b>${takeLeft ? "left" : "right"}</b> half, so it is written to a[${k}] next.` +
+                (takeLeft
+                  ? ` Ties go to L, which is what keeps merge sort <b>stable</b>.`
+                  : ``),
+            });
+
+            const placedIdx = k;
+            if (takeLeft) {
+              a[k] = L[i];
+              const v = L[i];
+              i++;
+              k++;
+              snap({
+                type: "place",
+                left,
+                right,
+                mid,
+                depth,
+                i,
+                j,
+                k,
+                L: [...L],
+                R: [...R],
+                placedIdx,
+                codeLine: [12],
+                msg:
+                  `<span class="step-tag tag-insert">Place</span>` +
+                  `<b>a[${placedIdx}] ← L[${i - 1}] = ${v}</b>.` +
+                  ` Advance <b>i → ${i}</b> and <b>k → ${k}</b>.` +
+                  ` L has <b>${L.length - i}</b> value${L.length - i === 1 ? "" : "s"} left,` +
+                  ` R has <b>${R.length - j}</b>.`,
+              });
+            } else {
+              a[k] = R[j];
+              const v = R[j];
+              j++;
+              k++;
+              snap({
+                type: "place",
+                left,
+                right,
+                mid,
+                depth,
+                i,
+                j,
+                k,
+                L: [...L],
+                R: [...R],
+                placedIdx,
+                codeLine: [13],
+                msg:
+                  `<span class="step-tag tag-insert">Place</span>` +
+                  `<b>a[${placedIdx}] ← R[${j - 1}] = ${v}</b>.` +
+                  ` Advance <b>j → ${j}</b> and <b>k → ${k}</b>.` +
+                  ` L has <b>${L.length - i}</b> value${L.length - i === 1 ? "" : "s"} left,` +
+                  ` R has <b>${R.length - j}</b>.`,
+              });
+            }
+          }
+
+          /* ── Tail copies ── */
+          while (i < L.length) {
+            const placedIdx = k;
+            a[k] = L[i];
+            const v = L[i];
+            i++;
+            k++;
+            snap({
+              type: "tail",
+              left,
+              right,
+              mid,
+              depth,
+              i,
+              j,
+              k,
+              L: [...L],
+              R: [...R],
+              placedIdx,
+              codeLine: [15],
+              msg:
+                `<span class="step-tag tag-shift">Tail of L</span>` +
+                `R is exhausted (<b>j = ${j}</b> = R.length). Everything still in L is` +
+                ` already larger than everything placed, so copy it straight across:` +
+                ` <b>a[${placedIdx}] ← L[${i - 1}] = ${v}</b>. No comparison needed.`,
+            });
+          }
+          while (j < R.length) {
+            const placedIdx = k;
+            a[k] = R[j];
+            const v = R[j];
+            j++;
+            k++;
+            snap({
+              type: "tail",
+              left,
+              right,
+              mid,
+              depth,
+              i,
+              j,
+              k,
+              L: [...L],
+              R: [...R],
+              placedIdx,
+              codeLine: [16],
+              msg:
+                `<span class="step-tag tag-shift">Tail of R</span>` +
+                `L is exhausted (<b>i = ${i}</b> = L.length). Everything still in R is` +
+                ` already larger than everything placed, so copy it straight across:` +
+                ` <b>a[${placedIdx}] ← R[${j - 1}] = ${v}</b>. No comparison needed.`,
+            });
+          }
+
+          snap({
+            type: "merged",
+            left,
+            right,
+            mid,
+            depth,
+            i,
+            j,
+            k,
+            codeLine: [5, 17],
+            msg:
+              `<span class="step-tag tag-done">Merged ✓</span>` +
+              `Sub-range <b>a[${left}..${right}]</b> is now sorted:` +
+              ` <b>[${a.slice(left, right + 1).join(", ")}]</b>.` +
+              (depth === 0
+                ? ` This was the root call — the whole array is done.`
+                : ` Return to depth <b>${depth - 1}</b>, where this half waits to be merged with its sibling.`),
+          });
+
+          stack.pop();
+        }
+
+        gen(0, n - 1, 0, null);
+
+        /* ── Done ── */
+        const levels = maxDepth + 1;
+        steps.push({
+          type: "done",
+          arr: [...a],
+          n,
+          left: null,
+          mid: null,
+          right: null,
+          depth: null,
+          i: null,
+          j: null,
+          k: null,
+          L: null,
+          R: null,
+          stack: [],
+          placedIdx: null,
+          codeLine: [6],
+          msg:
+            `<span class="step-tag tag-done">Done ★</span>` +
+            `All <b>${n}</b> elements are sorted. Merge sort made <b>${calls}</b> calls` +
+            ` across <b>${levels}</b> level${levels === 1 ? "" : "s"} and used` +
+            ` <b>${comparisons}</b> comparison${comparisons === 1 ? "" : "s"}.` +
+            ` Each level does Θ(n) merging work over ⌈log₂ n⌉ levels → <b>Θ(n log n)</b>.`,
+        });
+
+        cur = 0;
+        document.getElementById("btn-prev").disabled = false;
+        document.getElementById("btn-next").disabled = false;
+        renderStep();
+      }
+
+      /* ── Render current step ── */
+      function renderStep() {
+        const st = steps[cur];
+        const { arr, n, left, mid, right, depth, i, j, k, L, R, type } = st;
+
+        /* Progress */
+        document.getElementById("progress-bar").style.width =
+          (cur / (steps.length - 1)) * 100 + "%";
+        document.getElementById("step-ctr").textContent =
+          "Step " + (cur + 1) + " / " + steps.length;
+
+        /* Var chips */
+        const dash = (v) => (v === null || v === undefined ? "—" : v);
+        document.getElementById("v-left").textContent = dash(left);
+        document.getElementById("v-mid").textContent = dash(mid);
+        document.getElementById("v-right").textContent = dash(right);
+        document.getElementById("v-depth").textContent = dash(depth);
+        document.getElementById("v-i").textContent = dash(i);
+        document.getElementById("v-j").textContent = dash(j);
+        document.getElementById("v-k").textContent = dash(k);
+
+        /* Info panel */
+        document.getElementById("info-panel").innerHTML = st.msg;
+
+        /* Code highlight */
+        for (let c = 0; c <= 17; c++) {
+          const el = document.getElementById("cl" + c);
+          if (el) el.classList.toggle("hl", st.codeLine.includes(c));
+        }
+
+        /* Call-stack frames — depth indicator */
+        const frames = st.stack;
+        document.getElementById("stack-row").innerHTML = frames.length
+          ? frames
+              .map(
+                (f, idx) =>
+                  (idx ? `<span class="frame-arrow">▸</span>` : "") +
+                  `<span class="frame${idx === frames.length - 1 ? " cur" : ""}">a[${f[0]}..${f[1]}]</span>`,
+              )
+              .join("")
+          : `<span class="frame">call stack empty</span>`;
+
+        /* Active-range caption */
+        const cap = document.getElementById("range-cap");
+        if (left === null) {
+          cap.textContent =
+            type === "done" ? "sorted — a[0.." + (n - 1) + "]" : " ";
+        } else {
+          cap.textContent =
+            `mergeSort(a, ${left}, ${right})` +
+            `  ·  depth ${depth}` +
+            `  ·  size ${right - left + 1}` +
+            (mid !== null ? `  ·  mid ${mid}` : "");
+        }
+
+        /* Range band */
+        const band = bandClasses(st);
+        document.getElementById("band-row").innerHTML = band
+          .map((b) => `<div class="band-cell ${b === "off" ? "" : b}"></div>`)
+          .join("");
+
+        /* Bars */
+        const maxVal = Math.max(...arr);
+        const MAX_H = 150;
+        const MIN_H = 28;
+        const cls = barClasses(st);
+        const merging =
+          type === "copy" ||
+          type === "compare" ||
+          type === "place" ||
+          type === "tail";
+
+        document.getElementById("bars-wrap").innerHTML = arr
+          .map((val, idx) => {
+            const h = Math.max(MIN_H, Math.round((val / maxVal) * MAX_H));
+            // During a merge, a[k..right] holds leftovers already copied into L/R.
+            const stale =
+              merging && type !== "copy" && idx >= k && idx <= right;
+            return `<div class="bar-col">
+            <div class="bar-val${stale ? " stale" : ""}">${val}</div>
+            <div class="bar b-${cls[idx]}" style="height:${h}px"></div>
+            <div class="bar-idx">${idx}</div>
+          </div>`;
+          })
+          .join("");
+
+        /* k write-pointer row:
+           - copy / compare  → k is the slot about to be written
+           - place / tail     → placedIdx is the slot just written */
+        let kIdx = -1,
+          kLabel = "";
+        if (type === "copy" || type === "compare") {
+          kIdx = k;
+          kLabel = "k↓";
+        } else if (st.placedIdx !== null) {
+          kIdx = st.placedIdx;
+          kLabel = "k↑";
+        }
+        document.getElementById("ptr-row").innerHTML = arr
+          .map((_, idx) => {
+            const on = idx === kIdx;
+            return `<div class="ptr-cell${on ? " on" : ""}">${on ? kLabel : ""}</div>`;
+          })
+          .join("");
+
+        /* L / R temp arrays */
+        const tr = document.getElementById("temp-row");
+        if (L && R) {
+          const box = (vals, ptr, base, ptrName, label) =>
+            `<div class="temp-box">
+              <div class="temp-head">${label}&nbsp;&nbsp;<span
+                >${ptrName} = ${ptr}${ptr >= vals.length ? " (exhausted)" : ""}</span
+              ></div>
+              <div class="temp-cells">${vals
+                .map((v, x) => {
+                  let c = "b-" + base;
+                  if (x < ptr) c = "b-spent";
+                  else if (x === ptr && type === "compare") c = "b-comparing";
+                  return `<div class="temp-col">
+                    <div class="temp-cell ${c}">${v}</div>
+                    <div class="temp-idx">${x === ptr ? "▲" + ptrName : x}</div>
+                  </div>`;
+                })
+                .join("")}</div>
+            </div>`;
+          tr.className = "temp-row on";
+          tr.innerHTML =
+            box(L, i, "left", "i", "L[]") +
+            box(R, j, "right", "j", "R[]") +
+            `<div class="temp-note">L[] and R[] are the auxiliary copies of
+               a[${left}..${mid}] and a[${mid + 1}..${right}]. Faded cells have
+               already been written into a[]; grey bars above are slots whose
+               original value now lives here.</div>`;
+        } else {
+          tr.className = "temp-row";
+          tr.innerHTML = "";
+        }
+
+        /* Result panel */
+        const rp = document.getElementById("result-panel");
+        if (type === "done") {
+          rp.innerHTML =
+            "Result: " +
+            arr.map((v) => `<span class="sorted-badge">${v}</span>`).join("");
+        } else {
+          rp.innerHTML = "";
+        }
+
+        document.getElementById("btn-prev").disabled = cur === 0;
+        document.getElementById("btn-next").disabled = cur === steps.length - 1;
+      }
+
+      /* ── Navigation ── */
+      function move(d) {
+        cur = Math.max(0, Math.min(steps.length - 1, cur + d));
+        renderStep();
+      }
+
+      function toggleAuto() {
+        const btn = document.getElementById("btn-auto");
+        if (autoTimer) {
+          clearAuto();
+          return;
+        }
+        if (!steps.length) buildSteps();
+        btn.textContent = "⏸ Pause";
+        btn.classList.add("auto-on");
+        autoTimer = setInterval(() => {
+          if (cur >= steps.length - 1) {
+            clearAuto();
+            return;
+          }
+          cur++;
+          renderStep();
+        }, autoDelay);
+      }
+
+      function clearAuto() {
+        if (autoTimer) {
+          clearInterval(autoTimer);
+          autoTimer = null;
+        }
+        const btn = document.getElementById("btn-auto");
+        btn.textContent = "⏵ Auto";
+        btn.classList.remove("auto-on");
+      }
+
+      function updateSpeed(v) {
+        const sl = document.getElementById("speed-sl");
+        autoDelay = parseInt(sl.max) + parseInt(sl.min) - parseInt(v);
+        document.getElementById("speed-label").textContent =
+          (v / 1000).toFixed(1) + "s";
+        if (autoTimer) {
+          clearAuto();
+          toggleAuto();
+        }
+      }
+
+      /* ── Keyboard shortcuts ── */
+      document.addEventListener("keydown", (e) => {
+        if (["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName)) return;
+        if (e.key === "ArrowRight") move(1);
+        else if (e.key === "ArrowLeft") move(-1);
+        else if (e.key === " ") {
+          e.preventDefault();
+          toggleAuto();
+        } else if (e.key === "r" || e.key === "R") buildSteps();
+      });
+
+      window.addEventListener("load", buildSteps);
+    </script>
+  </body>
+</html>

@@ -583,11 +583,15 @@
           <button class="nav-group-btn" data-target="sec-dc" onclick="toggleGroup(this)">
             <span class="ngb-dot"></span>
             <span class="ngb-title">Divide &amp; Conquer</span>
-            <span class="ngb-badge">coming soon</span>
+            <span class="ngb-badge">1 done</span>
             <span class="ngb-chevron">▸</span>
           </button>
           <div class="nav-items">
-            <span class="nav-item soon" style="--c: var(--accent)"><span class="ni-dot"></span><span class="ni-label">Merge Sort</span><span class="ni-cpx">Θ(n log n)</span></span>
+            <a class="nav-item live" href="./merge_sort.html" style="--c: var(--accent)">
+              <span class="ni-dot"></span>
+              <span class="ni-label">Merge Sort</span>
+              <span class="ni-cpx">Θ(n log n)</span>
+            </a>
             <span class="nav-item soon" style="--c: var(--accent)"><span class="ni-dot"></span><span class="ni-label">Quick Sort</span></span>
             <span class="nav-item soon" style="--c: var(--accent)"><span class="ni-dot"></span><span class="ni-label">Binary Search</span><span class="ni-cpx">Θ(log n)</span></span>
             <span class="nav-item soon" style="--c: var(--accent)"><span class="ni-dot"></span><span class="ni-label">Closest Pair D&amp;C</span><span class="ni-cpx">Θ(n log n)</span></span>
@@ -649,11 +653,11 @@
 
       <div class="sidebar-footer">
         <div class="sf-row">
-          <span>5 of 22 visualizations</span>
-          <strong>23%</strong>
+          <span>6 of 22 visualizations</span>
+          <strong>27%</strong>
         </div>
         <!-- update width % above as you add pages -->
-        <div class="sf-track"><div class="sf-fill" style="width:23%"></div></div>
+        <div class="sf-track"><div class="sf-fill" style="width:27%"></div></div>
       </div>
 
     </aside><!-- /sidebar -->
@@ -683,7 +687,7 @@
         <!-- ── Stats ── -->
         <div class="stats-row">
           <div class="stat">
-            <div class="stat-val" style="color:var(--good)">5</div>
+            <div class="stat-val" style="color:var(--good)">6</div>
             <div class="stat-lbl">Available now</div>
           </div>
           <div class="stat">
@@ -695,7 +699,7 @@
             <div class="stat-lbl">Technique modules</div>
           </div>
           <div class="stat">
-            <div class="stat-val" style="color:var(--amber)">2</div>
+            <div class="stat-val" style="color:var(--amber)">3</div>
             <div class="stat-lbl">Modules active</div>
           </div>
         </div>
@@ -835,14 +839,25 @@
           <div class="sec-head">
             <div class="sec-pip" style="background:var(--accent)"></div>
             <h2>Divide &amp; Conquer</h2>
-            <span class="sec-badge soon">Coming soon</span>
+            <span class="sec-badge live">● 1 available</span>
           </div>
           <p class="sec-desc">
             Split the problem recursively into smaller subproblems, solve each independently, then combine.
             Often breaks the quadratic barrier of brute force.
           </p>
           <div class="cards">
-            <div class="card locked"><div class="card-tags"><span class="tag">Sorting</span></div><h3>Merge Sort</h3><p>Recursively split the array in half, sort each half, then merge the two sorted halves in linear time.</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">Θ(n log n)</span></div></div>
+            <a class="card live" href="./merge_sort.html">
+              <div class="card-tags">
+                <span class="tag" style="color:var(--accent);border-color:rgba(125,211,252,0.28);background:rgba(125,211,252,0.07)">Divide &amp; Conquer</span>
+                <span class="tag">Sorting</span>
+              </div>
+              <h3>Merge Sort</h3>
+              <p>Recursively split the array in half, sort each half, then merge the two sorted halves in linear time.</p>
+              <div class="card-foot">
+                <span class="open-btn">Open →</span>
+                <span class="cpx">Θ(n log n)</span>
+              </div>
+            </a>
             <div class="card locked"><div class="card-tags"><span class="tag">Sorting</span></div><h3>Quick Sort</h3><p>Partition around a pivot so all smaller elements precede it, then recurse on both sides.</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">Avg Θ(n log n)</span></div></div>
             <div class="card locked"><div class="card-tags"><span class="tag">Search</span></div><h3>Binary Search</h3><p>Repeatedly halve the search space on a sorted array until the target is found or excluded.</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">Θ(log n)</span></div></div>
             <div class="card locked"><div class="card-tags"><span class="tag">Geometry</span></div><h3>Closest Pair — D&amp;C</h3><p>Optimal divide-and-conquer version that beats the brute-force quadratic bound.</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">Θ(n log n)</span></div></div>
