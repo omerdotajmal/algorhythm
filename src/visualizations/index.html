@@ -604,15 +604,23 @@
           <button class="nav-group-btn" data-target="sec-gr" onclick="toggleGroup(this)">
             <span class="ngb-dot"></span>
             <span class="ngb-title">Greedy</span>
-            <span class="ngb-badge">coming soon</span>
+            <span class="ngb-badge">2 done</span>
             <span class="ngb-chevron">▸</span>
           </button>
           <div class="nav-items">
-            <span class="nav-item soon" style="--c: var(--amber)"><span class="ni-dot"></span><span class="ni-label">Activity Selection</span><span class="ni-cpx">Θ(n log n)</span></span>
+            <a class="nav-item live" href="./activity_selection.html" style="--c: var(--amber)">
+              <span class="ni-dot"></span>
+              <span class="ni-label">Activity Selection</span>
+              <span class="ni-cpx">Θ(n log n)</span>
+            </a>
             <span class="nav-item soon" style="--c: var(--amber)"><span class="ni-dot"></span><span class="ni-label">Huffman Coding</span></span>
             <span class="nav-item soon" style="--c: var(--amber)"><span class="ni-dot"></span><span class="ni-label">Kruskal's MST</span><span class="ni-cpx">O(E log E)</span></span>
             <span class="nav-item soon" style="--c: var(--amber)"><span class="ni-dot"></span><span class="ni-label">Prim's MST</span></span>
-            <span class="nav-item soon" style="--c: var(--amber)"><span class="ni-dot"></span><span class="ni-label">Dijkstra's SSSP</span></span>
+            <a class="nav-item live" href="./dijkstra.html" style="--c: var(--amber)">
+              <span class="ni-dot"></span>
+              <span class="ni-label">Dijkstra's SSSP</span>
+              <span class="ni-cpx">O(V²)</span>
+            </a>
           </div>
         </div>
 
@@ -653,11 +661,11 @@
 
       <div class="sidebar-footer">
         <div class="sf-row">
-          <span>6 of 22 visualizations</span>
-          <strong>27%</strong>
+          <span>8 of 22 visualizations</span>
+          <strong>36%</strong>
         </div>
         <!-- update width % above as you add pages -->
-        <div class="sf-track"><div class="sf-fill" style="width:27%"></div></div>
+        <div class="sf-track"><div class="sf-fill" style="width:36%"></div></div>
       </div>
 
     </aside><!-- /sidebar -->
@@ -687,7 +695,7 @@
         <!-- ── Stats ── -->
         <div class="stats-row">
           <div class="stat">
-            <div class="stat-val" style="color:var(--good)">6</div>
+            <div class="stat-val" style="color:var(--good)">8</div>
             <div class="stat-lbl">Available now</div>
           </div>
           <div class="stat">
@@ -699,7 +707,7 @@
             <div class="stat-lbl">Technique modules</div>
           </div>
           <div class="stat">
-            <div class="stat-val" style="color:var(--amber)">3</div>
+            <div class="stat-val" style="color:var(--amber)">4</div>
             <div class="stat-lbl">Modules active</div>
           </div>
         </div>
@@ -872,18 +880,28 @@
           <div class="sec-head">
             <div class="sec-pip" style="background:var(--amber)"></div>
             <h2>Greedy</h2>
-            <span class="sec-badge soon">Coming soon</span>
+            <span class="sec-badge live">● 2 available</span>
           </div>
           <p class="sec-desc">
             Commit to the locally best choice at every step.
             Efficient and often elegant — correctness requires a proof of the greedy property.
           </p>
           <div class="cards">
-            <div class="card locked"><div class="card-tags"><span class="tag">Scheduling</span></div><h3>Activity Selection</h3><p>Greedily pick the maximum number of mutually compatible (non-overlapping) activities.</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">Θ(n log n)</span></div></div>
+            <a class="card live" href="./activity_selection.html">
+              <div class="card-tags"><span class="tag" style="color:var(--amber);border-color:rgba(251,191,36,0.28);background:rgba(251,191,36,0.07)">Greedy</span><span class="tag">Scheduling</span></div>
+              <h3>Activity Selection</h3>
+              <p>Greedily pick the maximum number of mutually compatible (non-overlapping) activities.</p>
+              <div class="card-foot"><span class="open-btn">Open →</span><span class="cpx">Θ(n log n)</span></div>
+            </a>
             <div class="card locked"><div class="card-tags"><span class="tag">Compression</span></div><h3>Huffman Coding</h3><p>Build a minimum-redundancy prefix-free code using a greedy priority queue over symbol frequencies.</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">O(n log n)</span></div></div>
             <div class="card locked"><div class="card-tags"><span class="tag">Graph · MST</span></div><h3>Kruskal's MST</h3><p>Sort edges by weight; greedily include each edge that doesn't form a cycle (Union-Find).</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">O(E log E)</span></div></div>
             <div class="card locked"><div class="card-tags"><span class="tag">Graph · MST</span></div><h3>Prim's MST</h3><p>Grow the spanning tree one vertex at a time by always extending via the minimum-weight edge.</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">O(E log V)</span></div></div>
-            <div class="card locked"><div class="card-tags"><span class="tag">Graph · SSSP</span></div><h3>Dijkstra's Shortest Path</h3><p>Single-source shortest paths on graphs with non-negative weights via a min-priority queue.</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">O((V+E) log V)</span></div></div>
+            <a class="card live" href="./dijkstra.html">
+              <div class="card-tags"><span class="tag" style="color:var(--amber);border-color:rgba(251,191,36,0.28);background:rgba(251,191,36,0.07)">Greedy</span><span class="tag">Graph · SSSP</span></div>
+              <h3>Dijkstra's Shortest Path</h3>
+              <p>Single-source shortest paths on graphs with non-negative weights, finalizing the nearest unvisited vertex each round.</p>
+              <div class="card-foot"><span class="open-btn">Open →</span><span class="cpx">O(V²)</span></div>
+            </a>
           </div>
         </section>
 

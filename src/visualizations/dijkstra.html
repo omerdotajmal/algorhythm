@@ -1,0 +1,1234 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dijkstra's SSSP — Dry Run</title>
+    <link rel="stylesheet" href="shared-nav.css" />
+    <link rel="stylesheet" href="shared.css" />
+    <style>
+      :root {
+        --bg: #f8f7f4;
+        --bg2: #f0eeea;
+        --bg3: #e8e6e1;
+        --card: #ffffff;
+        --border: rgba(0, 0, 0, 0.1);
+        --border2: rgba(0, 0, 0, 0.18);
+        --text: #1a1a18;
+        --text2: #5a5955;
+        --text3: #8a8880;
+        --mono: "JetBrains Mono", "Fira Mono", "Consolas", monospace;
+        --sans: "Inter", "Segoe UI", system-ui, sans-serif;
+        --progress-color: #9a3412;
+
+        --n-stroke: rgba(0, 0, 0, 0.3);
+        --edge: #b9b5ad;
+        --edge-lbl-bg: #f8f7f4;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #18181a;
+          --bg2: #222226;
+          --bg3: #2c2c30;
+          --card: #1e1e22;
+          --border: rgba(255, 255, 255, 0.09);
+          --border2: rgba(255, 255, 255, 0.18);
+          --text: #e8e6e0;
+          --text2: #a0a098;
+          --text3: #606060;
+          --n-stroke: rgba(255, 255, 255, 0.32);
+          --edge: #55524c;
+          --edge-lbl-bg: #1e1e22;
+        }
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+      body {
+        font-family: var(--sans);
+        background: var(--bg);
+        color: var(--text);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+        padding: 32px 20px 48px;
+      }
+      .page {
+        width: 100%;
+        max-width: 920px;
+      }
+
+      /* ── Header ── */
+      .header {
+        margin-bottom: 24px;
+      }
+      .header h1 {
+        font-size: 22px;
+        font-weight: 600;
+        letter-spacing: -0.3px;
+      }
+      .header p {
+        font-size: 13px;
+        color: var(--text2);
+        margin-top: 4px;
+      }
+
+      /* ── Input bar ── */
+      .input-bar {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        background: var(--card);
+        border: 1px solid var(--border2);
+        border-radius: 10px;
+        padding: 12px 16px;
+        margin-bottom: 16px;
+      }
+      .input-bar label {
+        font-size: 13px;
+        color: var(--text2);
+        white-space: nowrap;
+      }
+      .arr-input {
+        font-family: var(--mono);
+        font-size: 14px;
+        font-weight: 600;
+        padding: 6px 10px;
+        border: 1px solid var(--border2);
+        border-radius: 6px;
+        background: var(--bg2);
+        color: var(--text);
+        flex: 1;
+        min-width: 220px;
+        letter-spacing: 0.05em;
+      }
+      .arr-input:focus {
+        outline: 2px solid #378add;
+        outline-offset: 1px;
+      }
+      .src-input {
+        width: 62px;
+        min-width: 62px;
+        flex: none;
+        text-align: center;
+      }
+      .btn-run {
+        font-family: var(--sans);
+        font-size: 13px;
+        font-weight: 500;
+        padding: 7px 20px;
+        border: none;
+        border-radius: 6px;
+        background: #185fa5;
+        color: #fff;
+        cursor: pointer;
+        transition: background 0.15s;
+        white-space: nowrap;
+      }
+      .btn-run:hover {
+        background: #0c447c;
+      }
+
+      /* ── Legend ── */
+      .legend {
+        display: flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+        font-size: 12px;
+        color: var(--text2);
+      }
+      .leg {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .leg-dot {
+        width: 13px;
+        height: 13px;
+        border-radius: 3px;
+        flex-shrink: 0;
+      }
+
+      /* ── Var chips ── */
+      .vars-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 14px;
+      }
+      .var-chip {
+        font-family: var(--mono);
+        font-size: 13px;
+        font-weight: 600;
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 4px 12px;
+      }
+      .var-chip span {
+        color: var(--text2);
+        font-weight: 400;
+      }
+
+      /* ── Two-column: graph + table ── */
+      .two-col {
+        display: grid;
+        grid-template-columns: 1fr minmax(0, 330px);
+        gap: 14px;
+        margin-bottom: 14px;
+        align-items: start;
+      }
+      @media (max-width: 760px) {
+        .two-col {
+          grid-template-columns: 1fr;
+        }
+      }
+      .graph-card,
+      .table-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 14px 16px;
+        overflow-x: auto;
+      }
+      .graph-card svg {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+
+      /* Graph elements */
+      .e-line {
+        stroke: var(--edge);
+        stroke-width: 2;
+        transition:
+          stroke 0.2s,
+          stroke-width 0.2s;
+      }
+      .e-line.e-relax {
+        stroke: #f59e0b;
+        stroke-width: 4;
+      }
+      .e-line.e-tree {
+        stroke: #639922;
+        stroke-width: 3.5;
+      }
+      .e-lbl {
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 700;
+        fill: var(--text2);
+      }
+      .e-lbl-bg {
+        fill: var(--edge-lbl-bg);
+      }
+      .n-circ {
+        stroke-width: 2.5;
+        transition:
+          fill 0.2s,
+          stroke 0.2s;
+      }
+      .n-name {
+        font-family: var(--mono);
+        font-size: 13px;
+        font-weight: 700;
+        fill: #1a1a18;
+        text-anchor: middle;
+      }
+      .n-dist {
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 700;
+        fill: var(--text2);
+        text-anchor: middle;
+      }
+
+      /* Vertex states — house vocabulary */
+      .v-default {
+        fill: var(--bg3);
+        stroke: var(--n-stroke);
+      }
+      .v-reached {
+        fill: #deedf8;
+        stroke: #378add;
+      }
+      .v-current {
+        fill: #fef3c7;
+        stroke: #f59e0b;
+      }
+      .v-final {
+        fill: #d8eec2;
+        stroke: #639922;
+      }
+      .v-source {
+        fill: #ede9fe;
+        stroke: #8b5cf6;
+      }
+
+      /* dist / parent / finalized table */
+      .dtable {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: var(--mono);
+        font-size: 12px;
+      }
+      .dtable th {
+        font-family: var(--sans);
+        font-size: 10.5px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--text3);
+        text-align: left;
+        padding: 0 6px 7px;
+        border-bottom: 1px solid var(--border2);
+      }
+      .dtable td {
+        padding: 5px 6px;
+        border-bottom: 1px solid var(--border);
+      }
+      .dtable tr:last-child td {
+        border-bottom: none;
+      }
+      .dtable tr.row-current td {
+        background: #fef3c7;
+      }
+      .dtable tr.row-final td {
+        color: var(--text2);
+      }
+      .dtable tr.row-updated td {
+        background: #deedf8;
+      }
+      @media (prefers-color-scheme: dark) {
+        .dtable tr.row-current td {
+          background: #3a2a06;
+        }
+        .dtable tr.row-updated td {
+          background: #0e2033;
+        }
+        .n-name {
+          fill: #16160f;
+        }
+      }
+      .fin-yes {
+        color: #3b6d11;
+        font-weight: 700;
+      }
+      .fin-no {
+        color: var(--text3);
+      }
+      @media (prefers-color-scheme: dark) {
+        .fin-yes {
+          color: #9ccc5f;
+        }
+      }
+      .tbl-title {
+        font-family: var(--sans);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text3);
+        margin-bottom: 9px;
+      }
+
+      /* ── Info panel ── */
+      .info-panel {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 14px 16px;
+        font-size: 13.5px;
+        line-height: 1.75;
+        color: var(--text);
+        min-height: 60px;
+      }
+      .step-tag {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 9px;
+        border-radius: 5px;
+        margin-right: 8px;
+        vertical-align: middle;
+        letter-spacing: 0.02em;
+      }
+      .tag-init {
+        background: var(--bg3);
+        color: var(--text2);
+        border: 1px solid var(--border2);
+      }
+      .tag-extract {
+        background: #fef3c7;
+        color: #78350f;
+        border: 1px solid #f59e0b;
+      }
+      .tag-relax {
+        background: #deedf8;
+        color: #0c447c;
+        border: 1px solid #378add;
+      }
+      .tag-noup {
+        background: #fadede;
+        color: #7f1d1d;
+        border: 1px solid #e24b4a;
+      }
+      .tag-done {
+        background: #d8eec2;
+        color: #173404;
+        border: 1px solid #639922;
+      }
+      @media (prefers-color-scheme: dark) {
+        .tag-extract {
+          background: #451a03;
+          color: #fde68a;
+        }
+        .tag-relax {
+          background: #0c447c;
+          color: #b5d4f4;
+        }
+        .tag-noup {
+          background: #450a0a;
+          color: #fecaca;
+        }
+        .tag-done {
+          background: #1e3d0a;
+          color: #c0dd97;
+        }
+      }
+
+      /* ── Result panel ── */
+      .result-panel {
+        font-size: 13px;
+        color: var(--text2);
+        min-height: 22px;
+        margin-top: 10px;
+      }
+      .sorted-badge {
+        display: inline-block;
+        background: #d8eec2;
+        color: #173404;
+        border: 1px solid #97c459;
+        border-radius: 5px;
+        padding: 2px 10px;
+        font-size: 13px;
+        font-family: var(--mono);
+        font-weight: 600;
+        margin-right: 4px;
+      }
+      @media (prefers-color-scheme: dark) {
+        .sorted-badge {
+          background: #1e3d0a;
+          color: #c0dd97;
+          border-color: #639922;
+        }
+      }
+
+      /* ── Nav buttons ── */
+      .nav-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+      }
+      .nav-btn {
+        font-family: var(--sans);
+        font-size: 13px;
+        font-weight: 500;
+        padding: 8px 18px;
+        border: 1px solid var(--border2);
+        border-radius: 7px;
+        background: var(--bg2);
+        color: var(--text);
+        cursor: pointer;
+        transition: background 0.14s;
+      }
+      .nav-btn:hover:not(:disabled) {
+        background: var(--bg3);
+      }
+      .nav-btn:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+      .nav-btn.primary {
+        background: #185fa5;
+        color: #fff;
+        border-color: #185fa5;
+      }
+      .nav-btn.primary:hover:not(:disabled) {
+        background: #0c447c;
+      }
+      .nav-btn.auto-on {
+        background: #3b6d11;
+        color: #eaf3de;
+        border-color: #3b6d11;
+      }
+    </style>
+  </head>
+
+  <body>
+    <aside class="snav">
+      <a class="snav-home" href="./index.html" title="All Visualizations">
+        <span class="snav-logo">◈</span>
+        <span class="snav-home-text">DAA Visualizations</span>
+      </a>
+      <div class="snav-scroll">
+        <div class="snav-group" data-cat="bf">
+          <div class="snav-cat-row">
+            <span class="snav-cat-pip"></span
+            ><span class="snav-cat-name">Brute Force</span>
+          </div>
+          <a
+            class="snav-link"
+            href="./naive_string_matching.html"
+            data-page="naive_string_matching"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Naive String Matching</span
+            ><span class="snav-link-cpx">O(nm)</span></a
+          >
+          <a
+            class="snav-link"
+            href="./closest_pair_brute_force.html"
+            data-page="closest_pair_brute_force"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Closest Pair (2D)</span
+            ><span class="snav-link-cpx">Θ(n²)</span></a
+          >
+          <a
+            class="snav-link"
+            href="./subset_bitmask.html"
+            data-page="subset_bitmask"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Subset Generation</span
+            ><span class="snav-link-cpx">Θ(n·2ⁿ)</span></a
+          >
+        </div>
+        <div class="snav-sep"></div>
+        <div class="snav-group" data-cat="dc">
+          <div class="snav-cat-row">
+            <span class="snav-cat-pip"></span
+            ><span class="snav-cat-name">Decrease &amp; Conquer</span>
+          </div>
+          <a
+            class="snav-link"
+            href="./insertion_sort.html"
+            data-page="insertion_sort"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Insertion Sort</span
+            ><span class="snav-link-cpx">O(n²)</span></a
+          >
+          <a
+            class="snav-link"
+            href="./insertion_sort_cards.html"
+            data-page="insertion_sort_cards"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Insertion Sort — Card Table</span></a
+          >
+        </div>
+        <div class="snav-sep"></div>
+        <div class="snav-group" data-cat="dq">
+          <div class="snav-cat-row">
+            <span class="snav-cat-pip"></span
+            ><span class="snav-cat-name">Divide &amp; Conquer</span>
+          </div>
+          <a class="snav-link" href="./merge_sort.html" data-page="merge_sort"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Merge Sort</span
+            ><span class="snav-link-cpx">Θ(n log n)</span></a
+          >
+          <span class="snav-link snav-soon"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Quick Sort</span></span
+          >
+          <span class="snav-link snav-soon"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Binary Search</span
+            ><span class="snav-link-cpx">Θ(log n)</span></span
+          >
+        </div>
+        <div class="snav-sep"></div>
+        <div class="snav-group" data-cat="gr">
+          <div class="snav-cat-row">
+            <span class="snav-cat-pip"></span
+            ><span class="snav-cat-name">Greedy</span>
+          </div>
+          <a
+            class="snav-link"
+            href="./activity_selection.html"
+            data-page="activity_selection"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Activity Selection</span
+            ><span class="snav-link-cpx">Θ(n log n)</span></a
+          >
+          <a class="snav-link" href="./dijkstra.html" data-page="dijkstra"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Dijkstra's SSSP</span
+            ><span class="snav-link-cpx">O(V²)</span></a
+          >
+          <span class="snav-link snav-soon"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Huffman Coding</span></span
+          >
+          <span class="snav-link snav-soon"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Kruskal's MST</span
+            ><span class="snav-link-cpx">O(E log E)</span></span
+          >
+        </div>
+        <div class="snav-sep"></div>
+        <div class="snav-group snav-soon" data-cat="dp">
+          <div class="snav-cat-row">
+            <span class="snav-cat-pip"></span
+            ><span class="snav-cat-name">Dynamic Programming</span>
+          </div>
+          <span class="snav-link"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">0/1 Knapsack</span
+            ><span class="snav-link-cpx">Θ(nW)</span></span
+          >
+          <span class="snav-link"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">LCS</span></span
+          >
+          <span class="snav-link"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Floyd-Warshall</span
+            ><span class="snav-link-cpx">Θ(V³)</span></span
+          >
+        </div>
+        <div class="snav-sep"></div>
+        <div class="snav-group snav-soon" data-cat="ga">
+          <div class="snav-cat-row">
+            <span class="snav-cat-pip"></span
+            ><span class="snav-cat-name">Graph Algorithms</span>
+          </div>
+          <span class="snav-link"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">BFS</span
+            ><span class="snav-link-cpx">Θ(V+E)</span></span
+          >
+          <span class="snav-link"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">DFS</span
+            ><span class="snav-link-cpx">Θ(V+E)</span></span
+          >
+          <span class="snav-link"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Topological Sort</span></span
+          >
+        </div>
+      </div>
+      <div class="snav-foot">
+        <span class="snav-foot-icon">8/22</span>
+        <span class="snav-foot-text">8 of 22 live</span>
+      </div>
+    </aside>
+    <script>
+      (function () {
+        var p = location.pathname.split("/").pop().replace(".html", "");
+        var el = document.querySelector('.snav-link[data-page="' + p + '"]');
+        if (el) el.classList.add("snav-current");
+      })();
+    </script>
+
+
+    <div class="page">
+      <div class="header">
+        <h1>Dijkstra's SSSP — Dry Run</h1>
+        <p>
+          Design &amp; Analysis of Algorithms &nbsp;·&nbsp; Greedy — Interactive
+          Step-through
+        </p>
+      </div>
+
+      <!-- Input -->
+      <div class="input-bar">
+        <label>edges =</label>
+        <input
+          class="arr-input"
+          id="inp-edges"
+          value="A-B:2, A-D:1, B-C:3, B-E:4, C-F:1, D-E:6, E-F:5"
+          placeholder="e.g. A-B:2, A-D:1, B-C:3"
+        />
+        <label>source =</label>
+        <input class="arr-input src-input" id="inp-src" value="A" />
+        <button class="btn-run" onclick="buildSteps()">▶ Run</button>
+      </div>
+
+      <!-- Legend -->
+      <div class="legend">
+        <div class="leg">
+          <span class="leg-dot" style="background: #ede9fe; border: 2px solid #8b5cf6"></span>
+          Source
+        </div>
+        <div class="leg">
+          <span class="leg-dot" style="background: #e8e6e1; border: 2px solid rgba(0,0,0,0.3)"></span>
+          Unreached (dist = ∞)
+        </div>
+        <div class="leg">
+          <span class="leg-dot" style="background: #deedf8; border: 2px solid #378add"></span>
+          Reached, not finalized
+        </div>
+        <div class="leg">
+          <span class="leg-dot" style="background: #fef3c7; border: 2px solid #f59e0b"></span>
+          Extracting now
+        </div>
+        <div class="leg">
+          <span class="leg-dot" style="background: #d8eec2; border: 2px solid #639922"></span>
+          Finalized
+        </div>
+      </div>
+
+      <!-- Variables -->
+      <div class="vars-row" id="vars-row">
+        <span class="var-chip"><span>V =</span> <b id="v-V">—</b></span>
+        <span class="var-chip"><span>u =</span> <b id="v-u">—</b></span>
+        <span class="var-chip"><span>dist[u] =</span> <b id="v-du">—</b></span>
+        <span class="var-chip"
+          ><span>finalized =</span> <b id="v-fin">—</b></span
+        >
+      </div>
+
+      <!-- Graph + table -->
+      <div class="two-col">
+        <div class="graph-card">
+          <svg id="graph" viewBox="0 0 520 276" role="img"
+               aria-label="Weighted graph with shortest-path progress"></svg>
+        </div>
+        <div class="table-card">
+          <div class="tbl-title">dist · parent · finalized</div>
+          <table class="dtable">
+            <thead>
+              <tr>
+                <th>V</th>
+                <th>dist</th>
+                <th>parent</th>
+                <th>fin</th>
+              </tr>
+            </thead>
+            <tbody id="dtable-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Info -->
+      <div class="info-panel" id="info-panel">
+        Press <b>▶ Run</b> to start, then step through using the buttons below.
+      </div>
+
+      <!-- Progress -->
+      <div class="progress-wrap">
+        <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+      </div>
+
+      <!-- Code -->
+      <div class="code-card">
+        <span class="lang-tag">// Java — DijkstraArray.java</span>
+        <!-- prettier-ignore-start -->
+        <!-- Each .cl must stay on ONE source line: .cl is white-space: pre,
+             so a line break in the markup becomes a line break on screen. -->
+        <span class="cl" id="cl0"><span class="ty">void</span> <span class="fn">dijkstra</span>(<span class="ty">int</span>[][] graph, <span class="ty">int</span> source) {</span>
+        <span class="cl" id="cl1">    Arrays.<span class="fn">fill</span>(dist, INF);</span>
+        <span class="cl" id="cl2">    Arrays.<span class="fn">fill</span>(parent, <span class="nu">-1</span>);</span>
+        <span class="cl" id="cl3">    dist[source] = <span class="nu">0</span>;</span>
+        <span class="cl" id="cl4">    <span class="kw">for</span> (<span class="ty">int</span> count = <span class="nu">0</span>; count &lt; V; count++) {</span>
+        <span class="cl" id="cl5">        <span class="cm">// Find unfinalized vertex with minimum dist</span></span>
+        <span class="cl" id="cl6">        <span class="ty">int</span> u = <span class="nu">-1</span>;</span>
+        <span class="cl" id="cl7">        <span class="kw">for</span> (<span class="ty">int</span> v = <span class="nu">0</span>; v &lt; V; v++)</span>
+        <span class="cl" id="cl8">            <span class="kw">if</span> (!finalized[v] &amp;&amp; (u == <span class="nu">-1</span> || dist[v] &lt; dist[u])) u = v;</span>
+        <span class="cl" id="cl9">        <span class="kw">if</span> (dist[u] == INF) <span class="kw">break</span>;   <span class="cm">// rest are unreachable</span></span>
+        <span class="cl" id="cl10">        finalized[u] = <span class="kw">true</span>;</span>
+        <span class="cl" id="cl11">        <span class="cm">// Relax all neighbors of u</span></span>
+        <span class="cl" id="cl12">        <span class="kw">for</span> (<span class="ty">int</span> v = <span class="nu">0</span>; v &lt; V; v++) {</span>
+        <span class="cl" id="cl13">            <span class="kw">if</span> (graph[u][v] != <span class="nu">0</span> &amp;&amp; !finalized[v]</span>
+        <span class="cl" id="cl14">                    &amp;&amp; dist[u] + graph[u][v] &lt; dist[v]) {</span>
+        <span class="cl" id="cl15">                dist[v] = dist[u] + graph[u][v];</span>
+        <span class="cl" id="cl16">                parent[v] = u;</span>
+        <span class="cl" id="cl17">            }</span>
+        <span class="cl" id="cl18">        }</span>
+        <span class="cl" id="cl19">    }</span>
+        <span class="cl" id="cl20">}</span>
+        <!-- prettier-ignore-end -->
+      </div>
+
+      <!-- Nav -->
+      <div class="nav-row">
+        <button class="nav-btn" id="btn-prev" onclick="move(-1)" disabled>
+          ◀ Prev
+        </button>
+        <button class="nav-btn primary" id="btn-next" onclick="move(1)" disabled>
+          Next ▶
+        </button>
+        <button class="nav-btn" id="btn-auto" onclick="toggleAuto()">
+          ⏵ Auto
+        </button>
+        <span class="step-ctr" id="step-ctr"></span>
+        <div class="speed-row">
+          <label for="speed-sl">Speed</label>
+          <input
+            type="range"
+            id="speed-sl"
+            min="200"
+            max="2000"
+            step="100"
+            value="900"
+            oninput="updateSpeed(this.value)"
+          />
+          <span id="speed-label">0.9s</span>
+        </div>
+      </div>
+
+      <div class="result-panel" id="result-panel"></div>
+
+      <p class="key-hint">
+        Keyboard: <span class="kbd">←</span> Prev &nbsp;
+        <span class="kbd">→</span> Next &nbsp;
+        <span class="kbd">Space</span> Auto play &nbsp;
+        <span class="kbd">R</span> Reset
+      </p>
+    </div>
+    <!-- /page -->
+
+    <script>
+      "use strict";
+      const INF = Infinity;
+      let steps = [],
+        cur = 0,
+        autoTimer = null,
+        autoDelay = 900,
+        names = [],
+        edges = [],
+        pos = {};
+
+      /* Parse "A-B:2, A-D:1, …" into an undirected weighted edge list. */
+      function parseEdges(s) {
+        const out = [];
+        const seen = [];
+        const parts = s.split(",").map((x) => x.trim()).filter(Boolean);
+        for (const p of parts) {
+          const m = p.match(/^([A-Za-z]\w*)\s*-\s*([A-Za-z]\w*)\s*:\s*(\d+)$/);
+          if (!m) return null;
+          const [, a, b, w] = m;
+          if (a === b) return null;
+          if (!seen.includes(a)) seen.push(a);
+          if (!seen.includes(b)) seen.push(b);
+          out.push({ a, b, w: parseInt(w, 10) });
+        }
+        return { edges: out, names: seen.sort() };
+      }
+
+      /* Two rows, first half on top — for A…F this reproduces the
+         handout's A B C / D E F layout exactly. */
+      function layout(n) {
+        const W = 520,
+          H = 260,
+          top = 74,
+          bot = 204;
+        const nTop = Math.ceil(n / 2),
+          nBot = n - nTop;
+        const p = {};
+        const place = (count, y, offset, isTop) => {
+          for (let k = 0; k < count; k++) {
+            const x = count === 1 ? W / 2 : 70 + (k * (W - 140)) / (count - 1);
+            /* dist sits above top-row nodes and below bottom-row ones, so it
+               never lands on the vertical edge running between the rows */
+            p[names[offset + k]] = { x, y, distY: isTop ? y - 29 : y + 35 };
+          }
+        };
+        place(nTop, top, 0, true);
+        if (nBot > 0) place(nBot, bot, nTop, false);
+        return p;
+      }
+
+      function buildSteps() {
+        clearAuto();
+        const parsed = parseEdges(document.getElementById("inp-edges").value);
+        if (!parsed || parsed.edges.length < 1) {
+          alert(
+            "Enter edges as Node-Node:weight separated by commas, e.g.\nA-B:2, A-D:1, B-C:3, B-E:4, C-F:1, D-E:6, E-F:5"
+          );
+          return;
+        }
+        names = parsed.names;
+        edges = parsed.edges;
+        const V = names.length;
+        if (V < 2 || V > 10) {
+          alert("The graph must have between 2 and 10 vertices.");
+          return;
+        }
+        const src = document.getElementById("inp-src").value.trim().toUpperCase();
+        if (!names.includes(src)) {
+          alert("Source must be one of the vertices: " + names.join(", "));
+          return;
+        }
+        pos = layout(V);
+        document.getElementById("v-V").textContent = V;
+
+        /* Adjacency map */
+        const adj = {};
+        names.forEach((n) => (adj[n] = []));
+        edges.forEach((e) => {
+          adj[e.a].push({ to: e.b, w: e.w });
+          adj[e.b].push({ to: e.a, w: e.w });
+        });
+
+        const dist = {},
+          parent = {},
+          finalized = {};
+        names.forEach((n) => {
+          dist[n] = INF;
+          parent[n] = null;
+          finalized[n] = false;
+        });
+        dist[src] = 0;
+
+        steps = [];
+        const snap = (extra) =>
+          Object.assign(
+            {
+              dist: { ...dist },
+              parent: { ...parent },
+              finalized: { ...finalized },
+              u: null,
+              relaxEdge: null,
+              updated: null,
+              src,
+            },
+            extra
+          );
+
+        steps.push(
+          snap({
+            type: "init",
+            codeLine: [1, 2, 3],
+            msg:
+              `<span class="step-tag tag-init">Init</span>` +
+              `Set <b>dist[v] = ∞</b> for every vertex and <b>dist[${src}] = 0</b>. ` +
+              `No vertex is finalized yet. The source is the only place we can reach at zero cost.`,
+          })
+        );
+
+        for (let count = 0; count < V; count++) {
+          /* Extract the unfinalized vertex with the smallest dist */
+          let u = null;
+          names.forEach((n) => {
+            if (!finalized[n] && (u === null || dist[n] < dist[u])) u = n;
+          });
+          if (dist[u] === INF) {
+            steps.push(
+              snap({
+                type: "done",
+                codeLine: [9],
+                msg:
+                  `<span class="step-tag tag-done">Stop</span>` +
+                  `Every remaining vertex still has <b>dist = ∞</b>, so nothing more is reachable ` +
+                  `from <b>${src}</b>. The algorithm stops early.`,
+              })
+            );
+            break;
+          }
+
+          finalized[u] = true;
+          steps.push(
+            snap({
+              type: "extract",
+              u,
+              codeLine: [6, 7, 8, 10],
+              msg:
+                `<span class="step-tag tag-extract">Extract-min</span>` +
+                `The smallest unfinalized distance is <b>${u}</b> at <b>dist = ${dist[u]}</b>. ` +
+                `Finalize it — because all edge weights are non-negative, no later path can reach ` +
+                `<b>${u}</b> more cheaply.`,
+            })
+          );
+
+          /* Relax each neighbour, one step per neighbour */
+          for (const { to: v, w } of adj[u]) {
+            if (finalized[v]) continue;
+            const via = dist[u] + w;
+            if (via < dist[v]) {
+              const old = dist[v];
+              dist[v] = via;
+              parent[v] = u;
+              steps.push(
+                snap({
+                  type: "relax",
+                  u,
+                  relaxEdge: [u, v],
+                  updated: v,
+                  codeLine: [13, 14, 15, 16],
+                  msg:
+                    `<span class="step-tag tag-relax">Relax</span>` +
+                    `Edge <b>${u}–${v}</b> has weight <b>${w}</b>. ` +
+                    `<b>dist[${u}] + ${w} = ${via}</b>, which beats the current ` +
+                    `<b>${old === INF ? "∞" : old}</b> — so set <b>dist[${v}] = ${via}</b> and ` +
+                    `<b>parent[${v}] = ${u}</b>.`,
+                })
+              );
+            } else {
+              steps.push(
+                snap({
+                  type: "noup",
+                  u,
+                  relaxEdge: [u, v],
+                  codeLine: [13, 14],
+                  msg:
+                    `<span class="step-tag tag-noup">No update</span>` +
+                    `Edge <b>${u}–${v}</b> gives <b>${dist[u]} + ${w} = ${via}</b>, which is not ` +
+                    `better than the known <b>dist[${v}] = ${dist[v]}</b>. Leave it unchanged.`,
+                })
+              );
+            }
+          }
+        }
+
+        /* Final summary */
+        const reach = names.filter((n) => dist[n] !== INF);
+        steps.push(
+          snap({
+            type: "final",
+            codeLine: [19, 20],
+            msg:
+              `<span class="step-tag tag-done">Done</span>` +
+              `Every reachable vertex is finalized. Each one's <b>dist</b> is now its true shortest ` +
+              `distance from <b>${src}</b>, and following <b>parent</b> backwards reconstructs the path. ` +
+              `This array version scans for the minimum each round, so it runs in <b>O(V²)</b>.`,
+            summary: reach.map((n) => n + "=" + dist[n]).join("  "),
+          })
+        );
+
+        cur = 0;
+        renderStep();
+      }
+
+      function pathOf(st, v) {
+        const out = [];
+        let c = v,
+          guard = 0;
+        while (c != null && guard++ < 50) {
+          out.push(c);
+          c = st.parent[c];
+        }
+        return out.reverse().join(" → ");
+      }
+
+      function renderStep() {
+        const st = steps[cur];
+        if (!st) return;
+
+        /* Variable chips */
+        document.getElementById("v-u").textContent = st.u || "—";
+        document.getElementById("v-du").textContent =
+          st.u == null ? "—" : st.dist[st.u] === INF ? "∞" : st.dist[st.u];
+        document.getElementById("v-fin").textContent =
+          names.filter((n) => st.finalized[n]).length + " / " + names.length;
+
+        /* Code highlight */
+        for (let k = 0; k <= 20; k++) {
+          const el = document.getElementById("cl" + k);
+          if (el) el.classList.remove("hl");
+        }
+        (st.codeLine || []).forEach((k) => {
+          const el = document.getElementById("cl" + k);
+          if (el) el.classList.add("hl");
+        });
+
+        /* ── Graph ── */
+        const svg = document.getElementById("graph");
+        const NS = "http://www.w3.org/2000/svg";
+        svg.innerHTML = "";
+        const el = (tag, attrs, text) => {
+          const e = document.createElementNS(NS, tag);
+          for (const k in attrs) e.setAttribute(k, attrs[k]);
+          if (text != null) e.textContent = text;
+          return e;
+        };
+
+        /* Edges first, so vertices draw on top */
+        edges.forEach((e) => {
+          const p1 = pos[e.a],
+            p2 = pos[e.b];
+          let cls = "e-line";
+          if (
+            st.relaxEdge &&
+            ((st.relaxEdge[0] === e.a && st.relaxEdge[1] === e.b) ||
+              (st.relaxEdge[0] === e.b && st.relaxEdge[1] === e.a))
+          ) {
+            cls += " e-relax";
+          } else if (st.parent[e.a] === e.b || st.parent[e.b] === e.a) {
+            cls += " e-tree";
+          }
+          svg.appendChild(
+            el("line", { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, class: cls })
+          );
+          const mx = (p1.x + p2.x) / 2,
+            my = (p1.y + p2.y) / 2;
+          svg.appendChild(
+            el("rect", {
+              x: mx - 10,
+              y: my - 9,
+              width: 20,
+              height: 16,
+              rx: 4,
+              class: "e-lbl-bg",
+            })
+          );
+          svg.appendChild(
+            el(
+              "text",
+              { x: mx, y: my + 3, class: "e-lbl", "text-anchor": "middle" },
+              e.w
+            )
+          );
+        });
+
+        /* Vertices */
+        names.forEach((n) => {
+          const p = pos[n];
+          let cls = "v-default";
+          if (st.finalized[n]) cls = "v-final";
+          else if (st.dist[n] !== INF) cls = "v-reached";
+          if (n === st.src && st.type === "init") cls = "v-source";
+          if (n === st.u && st.type === "extract") cls = "v-current";
+
+          svg.appendChild(
+            el("circle", { cx: p.x, cy: p.y, r: 21, class: "n-circ " + cls })
+          );
+          svg.appendChild(el("text", { x: p.x, y: p.y + 1, class: "n-name" }, n));
+          svg.appendChild(
+            el(
+              "text",
+              { x: p.x, y: p.distY, class: "n-dist" },
+              st.dist[n] === INF ? "∞" : st.dist[n]
+            )
+          );
+        });
+
+        /* ── dist / parent / finalized table ── */
+        const tb = document.getElementById("dtable-body");
+        tb.innerHTML = "";
+        names.forEach((n) => {
+          const tr = document.createElement("tr");
+          if (n === st.u && st.type === "extract") tr.className = "row-current";
+          else if (n === st.updated) tr.className = "row-updated";
+          else if (st.finalized[n]) tr.className = "row-final";
+          tr.innerHTML =
+            "<td><b>" +
+            n +
+            "</b></td><td>" +
+            (st.dist[n] === INF ? "∞" : st.dist[n]) +
+            "</td><td>" +
+            (st.parent[n] || "—") +
+            '</td><td class="' +
+            (st.finalized[n] ? "fin-yes" : "fin-no") +
+            '">' +
+            (st.finalized[n] ? "Yes" : "No") +
+            "</td>";
+          tb.appendChild(tr);
+        });
+
+        /* Info + progress + result */
+        document.getElementById("info-panel").innerHTML = st.msg;
+        document.getElementById("progress-bar").style.width =
+          ((cur + 1) / steps.length) * 100 + "%";
+        document.getElementById("step-ctr").textContent =
+          "Step " + (cur + 1) + " / " + steps.length;
+
+        const rp = document.getElementById("result-panel");
+        if (st.type === "final") {
+          rp.innerHTML =
+            '<span class="sorted-badge">' +
+            st.summary +
+            "</span> shortest distances from " +
+            st.src;
+        } else if (st.type === "relax" && st.updated) {
+          rp.innerHTML =
+            "path to <b>" +
+            st.updated +
+            "</b> so far: " +
+            pathOf(st, st.updated) +
+            " (" +
+            st.dist[st.updated] +
+            ")";
+        } else {
+          rp.innerHTML = "";
+        }
+
+        document.getElementById("btn-prev").disabled = cur === 0;
+        document.getElementById("btn-next").disabled = cur === steps.length - 1;
+      }
+
+      function move(d) {
+        cur = Math.max(0, Math.min(steps.length - 1, cur + d));
+        renderStep();
+      }
+
+      function toggleAuto() {
+        const btn = document.getElementById("btn-auto");
+        if (autoTimer) {
+          clearAuto();
+          return;
+        }
+        if (!steps.length) buildSteps();
+        btn.textContent = "⏸ Pause";
+        btn.classList.add("auto-on");
+        autoTimer = setInterval(() => {
+          if (cur >= steps.length - 1) {
+            clearAuto();
+            return;
+          }
+          cur++;
+          renderStep();
+        }, autoDelay);
+      }
+
+      function clearAuto() {
+        if (autoTimer) {
+          clearInterval(autoTimer);
+          autoTimer = null;
+        }
+        const btn = document.getElementById("btn-auto");
+        btn.textContent = "⏵ Auto";
+        btn.classList.remove("auto-on");
+      }
+
+      function updateSpeed(v) {
+        const sl = document.getElementById("speed-sl");
+        autoDelay = parseInt(sl.max) + parseInt(sl.min) - parseInt(v);
+        document.getElementById("speed-label").textContent =
+          (v / 1000).toFixed(1) + "s";
+        if (autoTimer) {
+          clearAuto();
+          toggleAuto();
+        }
+      }
+
+      /* ── Keyboard shortcuts ── */
+      document.addEventListener("keydown", (e) => {
+        if (["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName)) return;
+        if (e.key === "ArrowRight") move(1);
+        else if (e.key === "ArrowLeft") move(-1);
+        else if (e.key === " ") {
+          e.preventDefault();
+          toggleAuto();
+        } else if (e.key === "r" || e.key === "R") buildSteps();
+      });
+
+      window.addEventListener("load", buildSteps);
+    </script>
+  </body>
+</html>
