@@ -874,7 +874,7 @@
             <div class="card-head">
               <span class="card-title" id="pills-title">Edges</span>
               <div class="vars-row" style="margin-left:auto">
-                <span class="var-chip"><span>taken =</span> <b id="v-count">—</b></span>
+                <span class="var-chip"><span>count =</span> <b id="v-count">—</b> <span id="v-count-of"></span></span>
                 <span class="var-chip"><span>total =</span> <b id="v-total">—</b></span>
               </div>
             </div>
@@ -1504,7 +1504,8 @@
           "</tr>";
         document.getElementById("trace").innerHTML = st.trace || "";
 
-        document.getElementById("v-count").textContent = st.count + " / " + (names.length - 1);
+        document.getElementById("v-count").textContent = st.count;
+        document.getElementById("v-count-of").textContent = "of V−1 = " + (names.length - 1);
         document.getElementById("v-total").textContent = st.total;
 
         /* Code highlight, keeping the active line in view inside the card */

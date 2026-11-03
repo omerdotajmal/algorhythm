@@ -826,7 +826,7 @@
               <span class="card-title">key · parent · inMST</span>
               <div class="vars-row" style="margin-left:auto">
                 <span class="var-chip"><span>u =</span> <b id="v-u">—</b></span>
-                <span class="var-chip"><span>in tree =</span> <b id="v-in">—</b></span>
+                <span class="var-chip"><span>in tree =</span> <b id="v-in">—</b> <span id="v-in-of"></span></span>
                 <span class="var-chip"><span>total =</span> <b id="v-total">—</b></span>
               </div>
             </div>
@@ -1411,7 +1411,8 @@
 
         const inCount = st.inMST.filter(Boolean).length;
         document.getElementById("v-u").textContent = st.u >= 0 ? names[st.u] : "—";
-        document.getElementById("v-in").textContent = inCount + " / " + names.length;
+        document.getElementById("v-in").textContent = inCount;
+        document.getElementById("v-in-of").textContent = "of V = " + names.length;
         document.getElementById("v-total").textContent = st.total;
 
         /* Code highlight, keeping the highlighted block in view inside the card */
