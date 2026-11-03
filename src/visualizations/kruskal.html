@@ -875,7 +875,7 @@
               <span class="card-title" id="pills-title">Edges</span>
               <div class="vars-row" style="margin-left:auto">
                 <span class="var-chip"><span>count =</span> <b id="v-count">—</b> <span id="v-count-of"></span></span>
-                <span class="var-chip"><span>total =</span> <b id="v-total">—</b></span>
+                <span class="var-chip"><span>total weight =</span> <b id="v-total">—</b></span>
               </div>
             </div>
             <div class="pills" id="pills"></div>
@@ -1355,7 +1355,7 @@
                 '<span class="step-tag tag-take">Take</span>' +
                 "Different roots, so " + disp(e) + " joins two separate pieces and cannot close a cycle. " +
                 "Union them with <b>parent[" + names[rv] + "] = " + names[ru] + "</b> and add the edge. " +
-                "MST so far: <b>" + count + " of " + (V - 1) + "</b> edges, total <b>" + total + "</b>.",
+                "MST so far: <b>" + count + " of " + (V - 1) + "</b> edges, total weight <b>" + total + "</b>.",
             });
             if (count === V - 1) {
               let unseen = 0;
@@ -1536,7 +1536,7 @@
           rp.innerHTML = '<span class="sorted-badge">' + (st.summary || "no edges") + "</span> total weight " + st.total;
         } else if (st.count > 0) {
           rp.innerHTML = "MST so far: " + (st.order || []).filter((id) => st.status[id] === "take")
-            .map((id) => edges[id].a + "–" + edges[id].b).join(", ") + " &nbsp;·&nbsp; total <b>" + st.total + "</b>";
+            .map((id) => edges[id].a + "–" + edges[id].b).join(", ") + " &nbsp;·&nbsp; total weight <b>" + st.total + "</b>";
         } else rp.innerHTML = "";
 
         document.getElementById("btn-prev").disabled = cur === 0;

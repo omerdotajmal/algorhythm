@@ -827,7 +827,7 @@
               <div class="vars-row" style="margin-left:auto">
                 <span class="var-chip"><span>u =</span> <b id="v-u">—</b></span>
                 <span class="var-chip"><span>in tree =</span> <b id="v-in">—</b> <span id="v-in-of"></span></span>
-                <span class="var-chip"><span>total =</span> <b id="v-total">—</b></span>
+                <span class="var-chip"><span>total weight =</span> <b id="v-total">—</b></span>
               </div>
             </div>
             <table class="arr" id="arr"></table>
@@ -1314,7 +1314,7 @@
                   : "") +
                 "Array version: <b>O(V²)</b>."
               : "Only part of the graph was reached from " + names[start] +
-                " — it is <b>disconnected</b>, so there is no spanning tree. Total of the edges added: <b>" + total + "</b>."),
+                " — it is <b>disconnected</b>, so there is no spanning tree. Total weight of the edges added: <b>" + total + "</b>."),
           summary: treeEdges.join(", "),
         });
 
@@ -1443,7 +1443,7 @@
         if (st.type === "final") {
           rp.innerHTML = '<span class="sorted-badge">' + (st.summary || "no edges") + "</span> total weight " + st.total;
         } else if (tree.length) {
-          rp.innerHTML = "Tree so far: " + tree.join(", ") + " &nbsp;·&nbsp; total <b>" + st.total + "</b>";
+          rp.innerHTML = "Tree so far: " + tree.join(", ") + " &nbsp;·&nbsp; total weight <b>" + st.total + "</b>";
         } else rp.innerHTML = "";
 
         document.getElementById("btn-prev").disabled = cur === 0;
