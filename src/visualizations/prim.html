@@ -1,0 +1,1532 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prim's MST — Dry Run</title>
+    <link rel="stylesheet" href="shared-nav.css" />
+    <link rel="stylesheet" href="shared.css" />
+    <style>
+      :root {
+        --bg: #f8f7f4;
+        --bg2: #f0eeea;
+        --bg3: #e8e6e1;
+        --card: #ffffff;
+        --border: rgba(0, 0, 0, 0.1);
+        --border2: rgba(0, 0, 0, 0.18);
+        --text: #1a1a18;
+        --text2: #5a5955;
+        --text3: #8a8880;
+        --mono: "JetBrains Mono", "Fira Mono", "Consolas", monospace;
+        --sans: "Inter", "Segoe UI", system-ui, sans-serif;
+        --progress-color: #92400e;
+
+        --n-stroke: rgba(0, 0, 0, 0.3);
+        --edge: #b9b5ad;
+        --edge-lbl-bg: #ffffff;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #18181a;
+          --bg2: #222226;
+          --bg3: #2c2c30;
+          --card: #1e1e22;
+          --border: rgba(255, 255, 255, 0.09);
+          --border2: rgba(255, 255, 255, 0.18);
+          --text: #e8e6e0;
+          --text2: #a0a098;
+          --text3: #606060;
+          --n-stroke: rgba(255, 255, 255, 0.32);
+          --edge: #55524c;
+          --edge-lbl-bg: #1e1e22;
+        }
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: var(--sans);
+        background: var(--bg);
+        color: var(--text);
+        padding: 14px 18px 12px;
+      }
+      .page {
+        width: 100%;
+        max-width: 1500px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      /* ── Header ── */
+      .header {
+        display: flex;
+        align-items: baseline;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+      .header h1 {
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: -0.3px;
+      }
+      .header p {
+        font-size: 12.5px;
+        color: var(--text2);
+      }
+
+      /* ── Toolbar: input + controls on one row ── */
+      .toolbar {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: stretch;
+      }
+      .input-bar {
+        flex: 1 1 380px;
+        display: flex;
+        gap: 9px;
+        align-items: center;
+        background: var(--card);
+        border: 1px solid var(--border2);
+        border-radius: 10px;
+        padding: 7px 12px;
+      }
+      .input-bar label {
+        font-size: 13px;
+        color: var(--text2);
+        white-space: nowrap;
+      }
+      .arr-input {
+        font-family: var(--mono);
+        font-size: 13px;
+        font-weight: 600;
+        padding: 5px 9px;
+        border: 1px solid var(--border2);
+        border-radius: 6px;
+        background: var(--bg2);
+        color: var(--text);
+        flex: 1;
+        min-width: 160px;
+        letter-spacing: 0.05em;
+      }
+      .src-input {
+        width: 52px;
+        min-width: 52px;
+        flex: none;
+        text-align: center;
+      }
+      .arr-input:focus {
+        outline: 2px solid #378add;
+        outline-offset: 1px;
+      }
+      .btn-run {
+        font-family: var(--sans);
+        font-size: 13px;
+        font-weight: 500;
+        padding: 7px 20px;
+        border: none;
+        border-radius: 6px;
+        background: #185fa5;
+        color: #fff;
+        cursor: pointer;
+        transition: background 0.15s;
+        white-space: nowrap;
+      }
+      .btn-run:hover {
+        background: #0c447c;
+      }
+      .nav-row {
+        display: flex;
+        gap: 7px;
+        align-items: center;
+        flex-wrap: wrap;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 6px 12px;
+      }
+      .nav-btn {
+        font-family: var(--sans);
+        font-size: 13px;
+        font-weight: 500;
+        padding: 6px 15px;
+        border: 1px solid var(--border2);
+        border-radius: 7px;
+        background: var(--bg2);
+        color: var(--text);
+        cursor: pointer;
+        transition: background 0.14s;
+      }
+      .nav-btn:hover:not(:disabled) {
+        background: var(--bg3);
+      }
+      .nav-btn:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+      .nav-btn.primary {
+        background: #185fa5;
+        color: #fff;
+        border-color: #185fa5;
+      }
+      .nav-btn.primary:hover:not(:disabled) {
+        background: #0c447c;
+      }
+      .nav-btn.auto-on {
+        background: #3b6d11;
+        color: #eaf3de;
+        border-color: #3b6d11;
+      }
+      .nav-row .speed-row {
+        margin-left: 6px;
+      }
+      .progress-wrap {
+        margin-bottom: 0;
+      }
+
+      /* ── Stage: visual (left) beside code (right) ── */
+      .stage {
+        display: grid;
+        grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
+        gap: 12px;
+      }
+      .col-vis,
+      .col-code {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-width: 0;
+        min-height: 0;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+      }
+      .card-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 6px;
+      }
+      .card-title {
+        font-size: 10.5px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text3);
+      }
+
+      /* Graph card */
+      .graph-card {
+        padding: 9px 12px 6px;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+      .legend {
+        display: flex;
+        gap: 11px;
+        flex-wrap: wrap;
+        font-size: 11px;
+        color: var(--text2);
+        margin-left: auto;
+      }
+      .leg {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .leg-line {
+        width: 18px;
+        height: 0;
+        border-top-width: 3px;
+        border-top-style: solid;
+      }
+      .svg-wrap {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 520 / 276;
+      }
+      .svg-wrap svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+
+      .e-line {
+        stroke: var(--edge);
+        stroke-width: 2;
+        stroke-linecap: round;
+        transition:
+          stroke 0.2s,
+          stroke-width 0.2s,
+          opacity 0.2s;
+      }
+      .e-line.e-cur {
+        stroke: #f59e0b;
+        stroke-width: 5;
+      }
+      .e-line.e-tree {
+        stroke: #639922;
+        stroke-width: 4;
+      }
+      .e-line.e-cand {
+        stroke: #378add;
+        stroke-width: 2.5;
+        stroke-dasharray: 7 5;
+      }
+      .e-line.e-faded {
+        opacity: 0.35;
+      }
+      .e-glow {
+        stroke: rgba(99, 153, 34, 0.35);
+        stroke-width: 12;
+        stroke-linecap: round;
+        fill: none;
+      }
+      .e-lbl {
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 700;
+        fill: var(--text2);
+      }
+      .e-lbl-bg {
+        fill: var(--edge-lbl-bg);
+      }
+      .n-circ {
+        stroke-width: 2.5;
+        transition:
+          fill 0.2s,
+          stroke 0.2s;
+      }
+      .n-name {
+        font-family: var(--mono);
+        font-size: 13px;
+        font-weight: 700;
+        fill: #1a1a18;
+        text-anchor: middle;
+      }
+      .n-key {
+        font-family: var(--mono);
+        font-size: 10.5px;
+        font-weight: 700;
+        fill: var(--text2);
+        text-anchor: middle;
+      }
+      .n-key.k-upd {
+        fill: #185fa5;
+      }
+      /* Vertex states — house vocabulary */
+      .v-default { fill: var(--bg3); stroke: var(--n-stroke); }
+      .v-fringe { fill: #deedf8; stroke: #378add; }
+      .v-current { fill: #fef3c7; stroke: #f59e0b; }
+      .v-tree { fill: #d8eec2; stroke: #639922; }
+      .v-start { fill: #ede9fe; stroke: #8b5cf6; }
+      @media (prefers-color-scheme: dark) {
+        .n-name { fill: #16160f; }
+        .n-key.k-upd { fill: #7cb8f0; }
+      }
+
+      /* State card: key / parent / inMST table */
+      .state-card {
+        padding: 9px 12px 10px;
+      }
+      .arr {
+        border-collapse: collapse;
+        font-family: var(--mono);
+        font-size: 12.5px;
+      }
+      .arr th,
+      .arr td {
+        border: 1px solid var(--border);
+        padding: 3px 10px;
+        text-align: center;
+        min-width: 34px;
+      }
+      .arr th {
+        font-weight: 700;
+        color: var(--text2);
+        background: var(--bg2);
+      }
+      .arr .rowlbl {
+        font-family: var(--sans);
+        font-size: 10.5px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        color: var(--text3);
+        background: transparent;
+        border: none;
+        text-align: right;
+        padding-right: 8px;
+      }
+      .arr th.ucol { background: #fef3c7; color: #78350f; }
+      .arr td.upd { background: #deedf8; font-weight: 700; }
+      .arr td.minkey { outline: 2px solid #f59e0b; outline-offset: -2px; font-weight: 700; }
+      .arr td.intree { color: #3b6d11; font-weight: 700; }
+      .arr td.dim { color: var(--text3); }
+      @media (prefers-color-scheme: dark) {
+        .arr th.ucol { background: #451a03; color: #fde68a; }
+        .arr td.upd { background: #0e2033; }
+        .arr td.intree { color: #9ccc5f; }
+      }
+      .tbl-note {
+        font-size: 11.5px;
+        color: var(--text2);
+        margin-top: 7px;
+      }
+
+      /* Var chips */
+      .vars-row {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .var-chip {
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 600;
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 2px 9px;
+      }
+      .var-chip span {
+        color: var(--text2);
+        font-weight: 400;
+      }
+
+      /* Info panel */
+      .info-panel {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 9px 13px;
+        font-size: 13px;
+        line-height: 1.62;
+        color: var(--text);
+        min-height: 62px;
+      }
+      .step-tag {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 1px 8px;
+        border-radius: 5px;
+        margin-right: 7px;
+        vertical-align: 1px;
+        letter-spacing: 0.02em;
+      }
+      .tag-init { background: var(--bg3); color: var(--text2); border: 1px solid var(--border2); }
+      .tag-extract { background: #fef3c7; color: #78350f; border: 1px solid #f59e0b; }
+      .tag-update { background: #deedf8; color: #0c447c; border: 1px solid #378add; }
+      .tag-noup { background: #fadede; color: #7f1d1d; border: 1px solid #e24b4a; }
+      .tag-keys { background: #ede9fe; color: #4c1d95; border: 1px solid #8b5cf6; }
+      .tag-done { background: #d8eec2; color: #173404; border: 1px solid #639922; }
+      @media (prefers-color-scheme: dark) {
+        .tag-extract { background: #451a03; color: #fde68a; }
+        .tag-update { background: #0c447c; color: #b5d4f4; }
+        .tag-noup { background: #450a0a; color: #fecaca; }
+        .tag-keys { background: #2e1065; color: #ddd6fe; }
+        .tag-done { background: #1e3d0a; color: #c0dd97; }
+      }
+
+      /* Code card (Catppuccin from shared.css) — compact, scrolls inside */
+      .code-card {
+        margin-bottom: 0;
+        padding: 10px 6px 10px 10px;
+        position: relative;
+        overflow: auto;
+        scroll-behavior: smooth;
+      }
+      .code-card .lang-tag {
+        margin-bottom: 6px;
+        padding-left: 4px;
+      }
+      .code-card .cl {
+        font-size: 11.5px;
+        line-height: 1.5;
+        min-height: 1.5em; /* keeps blank source lines one line tall */
+        padding: 0 8px;
+      }
+
+      /* Console */
+      .console-card {
+        background: #11111b;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        padding: 8px 10px;
+        overflow: auto;
+        min-height: 92px;
+      }
+      .console-card .lang-tag {
+        display: block;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        color: #585b70;
+        margin-bottom: 4px;
+      }
+      .out-line {
+        display: block;
+        font-family: var(--mono);
+        font-size: 11.5px;
+        line-height: 1.5;
+        color: #bac2de;
+        white-space: pre;
+        padding: 0 4px;
+        border-radius: 3px;
+      }
+      .out-line.fresh {
+        background: #313244;
+        color: #a6e3a1;
+      }
+      .out-empty {
+        font-family: var(--mono);
+        font-size: 11.5px;
+        color: #585b70;
+        font-style: italic;
+      }
+
+      /* Footer */
+      .foot {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        min-height: 22px;
+      }
+      .result-panel {
+        font-size: 13px;
+        color: var(--text2);
+      }
+      .sorted-badge {
+        display: inline-block;
+        background: #d8eec2;
+        color: #173404;
+        border: 1px solid #97c459;
+        border-radius: 5px;
+        padding: 1px 9px;
+        font-size: 12.5px;
+        font-family: var(--mono);
+        font-weight: 600;
+        margin-right: 4px;
+      }
+      @media (prefers-color-scheme: dark) {
+        .sorted-badge { background: #1e3d0a; color: #c0dd97; border-color: #639922; }
+      }
+      .foot .key-hint {
+        margin: 0 0 0 auto;
+      }
+
+      /* ── Narrow screens: stack and scroll normally ── */
+      @media (max-width: 979px) {
+        .stage { grid-template-columns: 1fr; }
+        .code-card { max-height: 60vh; }
+        .console-card { max-height: 30vh; }
+      }
+
+      /* ── Mid-width screens (1024-class projectors): keep the toolbar on one row ── */
+      @media (min-width: 980px) and (max-width: 1199px) {
+        .nav-btn { padding: 6px 11px; }
+        .btn-run { padding: 7px 14px; }
+        .arr-input:not(.src-input) { min-width: 110px; }
+        .speed-row label { display: none; }
+        .speed-row input[type="range"] { width: 64px; }
+        .header p { display: none; }
+      }
+      /* ── Short screens: give the graph the room ── */
+      @media (min-width: 980px) and (max-height: 700px) {
+        .tbl-note { display: none; }
+        .info-panel { max-height: 96px; }
+      }
+
+      /* ── Wide screens: everything fits one viewport, no page scroll ── */
+      @media (min-width: 980px) and (min-height: 540px) {
+        html,
+        body {
+          height: 100%;
+        }
+        body {
+          display: flex;
+          flex-direction: column;
+        }
+        .page {
+          flex: 1;
+          min-height: 0;
+        }
+        .stage {
+          flex: 1;
+          min-height: 400px;
+          grid-template-rows: minmax(0, 1fr);
+        }
+        .graph-card {
+          flex: 1 1 0;
+          min-height: 160px;
+        }
+        .svg-wrap {
+          flex: 1;
+          min-height: 0;
+          aspect-ratio: auto;
+        }
+        .code-card {
+          flex: 1 1 0;
+          min-height: 0;
+        }
+        .console-card {
+          flex: 0 0 auto;
+          height: clamp(96px, 21vh, 176px);
+        }
+        .info-panel {
+          flex: 0 0 auto;
+          max-height: 132px;
+          overflow: auto;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <aside class="snav">
+      <a class="snav-home" href="./index.html" title="All Visualizations">
+        <span class="snav-logo">◈</span>
+        <span class="snav-home-text">DAA Visualizations</span>
+      </a>
+      <div class="snav-scroll">
+        <div class="snav-group" data-cat="bf">
+          <div class="snav-cat-row">
+            <span class="snav-cat-pip"></span
+            ><span class="snav-cat-name">Brute Force</span>
+          </div>
+          <a
+            class="snav-link"
+            href="./naive_string_matching.html"
+            data-page="naive_string_matching"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Naive String Matching</span
+            ><span class="snav-link-cpx">O(nm)</span></a
+          >
+          <a
+            class="snav-link"
+            href="./closest_pair_brute_force.html"
+            data-page="closest_pair_brute_force"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Closest Pair (2D)</span
+            ><span class="snav-link-cpx">Θ(n²)</span></a
+          >
+          <a
+            class="snav-link"
+            href="./subset_bitmask.html"
+            data-page="subset_bitmask"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Subset Generation</span
+            ><span class="snav-link-cpx">Θ(n·2ⁿ)</span></a
+          >
+        </div>
+        <div class="snav-sep"></div>
+        <div class="snav-group" data-cat="dc">
+          <div class="snav-cat-row">
+            <span class="snav-cat-pip"></span
+            ><span class="snav-cat-name">Decrease &amp; Conquer</span>
+          </div>
+          <a
+            class="snav-link"
+            href="./insertion_sort.html"
+            data-page="insertion_sort"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Insertion Sort</span
+            ><span class="snav-link-cpx">O(n²)</span></a
+          >
+          <a
+            class="snav-link"
+            href="./insertion_sort_cards.html"
+            data-page="insertion_sort_cards"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Insertion Sort — Card Table</span></a
+          >
+        </div>
+        <div class="snav-sep"></div>
+        <div class="snav-group" data-cat="dq">
+          <div class="snav-cat-row">
+            <span class="snav-cat-pip"></span
+            ><span class="snav-cat-name">Divide &amp; Conquer</span>
+          </div>
+          <a class="snav-link" href="./merge_sort.html" data-page="merge_sort"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Merge Sort</span
+            ><span class="snav-link-cpx">Θ(n log n)</span></a
+          >
+          <span class="snav-link snav-soon"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Quick Sort</span></span
+          >
+          <span class="snav-link snav-soon"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Binary Search</span
+            ><span class="snav-link-cpx">Θ(log n)</span></span
+          >
+        </div>
+        <div class="snav-sep"></div>
+        <div class="snav-group" data-cat="gr">
+          <div class="snav-cat-row">
+            <span class="snav-cat-pip"></span
+            ><span class="snav-cat-name">Greedy</span>
+          </div>
+          <a
+            class="snav-link"
+            href="./activity_selection.html"
+            data-page="activity_selection"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Activity Selection</span
+            ><span class="snav-link-cpx">Θ(n log n)</span></a
+          >
+          <a class="snav-link" href="./dijkstra.html" data-page="dijkstra"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Dijkstra's SSSP</span
+            ><span class="snav-link-cpx">O(V²)</span></a
+          >
+          <a class="snav-link" href="./kruskal.html" data-page="kruskal"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Kruskal's MST</span
+            ><span class="snav-link-cpx">O(E log E)</span></a
+          >
+          <a class="snav-link" href="./prim.html" data-page="prim"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Prim's MST</span
+            ><span class="snav-link-cpx">O(V²)</span></a
+          >
+          <span class="snav-link snav-soon"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Huffman Coding</span></span
+          >
+        </div>
+        <div class="snav-sep"></div>
+        <div class="snav-group snav-soon" data-cat="dp">
+          <div class="snav-cat-row">
+            <span class="snav-cat-pip"></span
+            ><span class="snav-cat-name">Dynamic Programming</span>
+          </div>
+          <span class="snav-link"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">0/1 Knapsack</span
+            ><span class="snav-link-cpx">Θ(nW)</span></span
+          >
+          <span class="snav-link"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">LCS</span></span
+          >
+          <span class="snav-link"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Floyd-Warshall</span
+            ><span class="snav-link-cpx">Θ(V³)</span></span
+          >
+        </div>
+        <div class="snav-sep"></div>
+        <div class="snav-group snav-soon" data-cat="ga">
+          <div class="snav-cat-row">
+            <span class="snav-cat-pip"></span
+            ><span class="snav-cat-name">Graph Algorithms</span>
+          </div>
+          <span class="snav-link"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">BFS</span
+            ><span class="snav-link-cpx">Θ(V+E)</span></span
+          >
+          <span class="snav-link"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">DFS</span
+            ><span class="snav-link-cpx">Θ(V+E)</span></span
+          >
+          <span class="snav-link"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Topological Sort</span></span
+          >
+        </div>
+      </div>
+      <div class="snav-foot">
+        <span class="snav-foot-icon">10/22</span>
+        <span class="snav-foot-text">10 of 22 live</span>
+      </div>
+    </aside>
+    <script>
+      (function () {
+        var p = location.pathname.split("/").pop().replace(".html", "");
+        var el = document.querySelector('.snav-link[data-page="' + p + '"]');
+        if (el) el.classList.add("snav-current");
+      })();
+    </script>
+
+    <div class="page">
+      <div class="header">
+        <h1>Prim's MST — Dry Run</h1>
+        <p>Design &amp; Analysis of Algorithms &nbsp;·&nbsp; Greedy — Interactive Step-through</p>
+      </div>
+
+      <div class="toolbar">
+        <div class="input-bar">
+          <label for="inp-edges">edges =</label>
+          <input
+            class="arr-input"
+            id="inp-edges"
+            value="A-B:5, B-C:6, D-E:2, E-F:7, A-D:4, B-E:3, C-F:1"
+            placeholder="e.g. A-B:5, B-C:6, D-E:2"
+          />
+          <label for="inp-src">start =</label>
+          <input class="arr-input src-input" id="inp-src" value="A" />
+          <button class="btn-run" onclick="buildSteps()">▶ Run</button>
+        </div>
+        <div class="nav-row">
+          <button class="nav-btn" id="btn-prev" onclick="move(-1)" disabled>◀ Prev</button>
+          <button class="nav-btn primary" id="btn-next" onclick="move(1)" disabled>Next ▶</button>
+          <button class="nav-btn" id="btn-auto" onclick="toggleAuto()">⏵ Auto</button>
+          <span class="step-ctr" id="step-ctr"></span>
+          <div class="speed-row">
+            <label for="speed-sl">Speed</label>
+            <input type="range" id="speed-sl" min="200" max="2000" step="100" value="900"
+                   oninput="updateSpeed(this.value)" />
+            <span id="speed-label">0.9s</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+      </div>
+
+      <div class="stage">
+        <!-- Left: what the algorithm is doing -->
+        <div class="col-vis">
+          <div class="card graph-card">
+            <div class="card-head">
+              <span class="card-title">Graph</span>
+              <div class="legend">
+                <span class="leg"><span class="leg-line" style="border-top-color:#639922"></span>In tree</span>
+                <span class="leg"><span class="leg-line" style="border-top-color:#378add;border-top-style:dashed"></span>Cheapest link so far (key)</span>
+                <span class="leg"><span class="leg-line" style="border-top-color:#f59e0b"></span>Checking</span>
+              </div>
+            </div>
+            <div class="svg-wrap">
+              <svg id="graph" viewBox="0 0 520 276" role="img"
+                   aria-label="Weighted graph showing Prim's progress"></svg>
+            </div>
+          </div>
+
+          <div class="card state-card">
+            <div class="card-head">
+              <span class="card-title">key · parent · inMST</span>
+              <div class="vars-row" style="margin-left:auto">
+                <span class="var-chip"><span>u =</span> <b id="v-u">—</b></span>
+                <span class="var-chip"><span>in tree =</span> <b id="v-in">—</b></span>
+                <span class="var-chip"><span>total =</span> <b id="v-total">—</b></span>
+              </div>
+            </div>
+            <table class="arr" id="arr"></table>
+            <div class="tbl-note" id="tbl-note"></div>
+          </div>
+
+          <div class="info-panel" id="info-panel">
+            Press <b>▶ Run</b> to start, then step through using the buttons above.
+          </div>
+        </div>
+
+        <!-- Right: the handout's code and what it prints -->
+        <div class="col-code">
+          <div class="code-card" id="code-card">
+            <span class="lang-tag" id="lang-tag">// Java — PrimArray.java</span>
+            <div id="code-body"></div>
+          </div>
+          <div class="console-card" id="console-card">
+            <span class="lang-tag">// Output — what the program prints</span>
+            <div id="console-body"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="foot">
+        <div class="result-panel" id="result-panel"></div>
+        <p class="key-hint">
+          Keyboard: <span class="kbd">←</span> Prev &nbsp;
+          <span class="kbd">→</span> Next &nbsp;
+          <span class="kbd">Space</span> Auto play &nbsp;
+          <span class="kbd">R</span> Reset
+        </p>
+      </div>
+    </div>
+
+    <script>
+      "use strict";
+      /* PrimArray.java exactly as printed in the Greedy Part 3 handout, one
+         string per line. Only the data lines (names, the adjacency matrix and
+         the start vertex) are regenerated when you type a different graph. */
+      const JAVA_SRC = [
+        "import java.util.*;",
+        "",
+        "public class PrimArray {",
+        "",
+        "    static final int INF = Integer.MAX_VALUE;",
+        "",
+        "    public static void prim(int[][] graph, int start, String[] names) {",
+        "        int V = graph.length;",
+        "        int[] key = new int[V];          // cheapest edge connecting v to the tree",
+        "        int[] parent = new int[V];       // the tree vertex at the other end of that edge",
+        "        boolean[] inMST = new boolean[V];",
+        "",
+        "        Arrays.fill(key, INF);",
+        "        Arrays.fill(parent, -1);",
+        "        key[start] = 0;",
+        "",
+        "        int total = 0;",
+        "        for (int count = 0; count < V; count++) {",
+        "            // Pick the vertex outside the tree with the smallest key.",
+        "            int u = -1;",
+        "            for (int v = 0; v < V; v++)",
+        "                if (!inMST[v] && (u == -1 || key[v] < key[u]))",
+        "                    u = v;",
+        "",
+        "            if (key[u] == INF) break;    // the rest is unreachable: graph is disconnected",
+        "            inMST[u] = true;",
+        "",
+        "            if (parent[u] == -1)",
+        "                System.out.printf(\"add %s (start)%n\", names[u]);",
+        "            else {",
+        "                System.out.printf(\"add %s via %s-%s (%d)%n\",",
+        "                        names[u], names[parent[u]], names[u], key[u]);",
+        "                total += key[u];",
+        "            }",
+        "",
+        "            // Update keys of u's neighbours that are still outside the tree.",
+        "            for (int v = 0; v < V; v++) {",
+        "                if (graph[u][v] != 0 && !inMST[v]",
+        "                        && graph[u][v] < key[v]) {   // Dijkstra would test dist[u] + w here",
+        "                    key[v] = graph[u][v];",
+        "                    parent[v] = u;",
+        "                }",
+        "            }",
+        "            System.out.println(\"    key = \" + show(key, inMST, names));",
+        "        }",
+        "        System.out.println(\"Total weight: \" + total);",
+        "    }",
+        "",
+        "    static String show(int[] key, boolean[] in, String[] names) {",
+        "        StringBuilder sb = new StringBuilder();",
+        "        for (int i = 0; i < key.length; i++) {",
+        "            if (in[i]) continue;",
+        "            sb.append(names[i]).append(\":\").append(key[i] == INF ? \"INF\" : String.valueOf(key[i])).append(\" \");",
+        "        }",
+        "        return sb.length() == 0 ? \"(all vertices in tree)\" : sb.toString().trim();",
+        "    }",
+        "",
+        "    public static void main(String[] args) {",
+        "        String[] names = {\"A\", \"B\", \"C\", \"D\", \"E\", \"F\"};",
+        "        //               A  B  C  D  E  F",
+        "        int[][] graph = {",
+        "                        {0, 5, 0, 4, 0, 0},   // A",
+        "                        {5, 0, 6, 0, 3, 0},   // B",
+        "                        {0, 6, 0, 0, 0, 1},   // C",
+        "                        {4, 0, 0, 0, 2, 0},   // D",
+        "                        {0, 3, 0, 2, 0, 7},   // E",
+        "                        {0, 0, 1, 0, 7, 0},   // F",
+        "        };",
+        "        prim(graph, 0, names);   // start = A",
+        "    }",
+        "}"
+      ];
+
+      const INF = Infinity;
+      let steps = [],
+        cur = 0,
+        autoTimer = null,
+        autoDelay = 900,
+        names = [],
+        edges = [],
+        W = [],
+        pos = {};
+
+      /* ── Input ── */
+      function parseEdges(s) {
+        const out = [],
+          seen = new Set(),
+          pairs = new Set();
+        const parts = s.split(",").map((x) => x.trim()).filter(Boolean);
+        if (!parts.length) return null;
+        for (const p of parts) {
+          const m = p.match(/^([A-Za-z])\s*-\s*([A-Za-z])\s*:\s*(\d+)$/);
+          if (!m) return null;
+          const a = m[1].toUpperCase(),
+            b = m[2].toUpperCase(),
+            w = parseInt(m[3], 10);
+          if (a === b || w < 1 || w > 99) return null;
+          const key = a < b ? a + b : b + a;
+          if (pairs.has(key)) return null;
+          pairs.add(key);
+          seen.add(a);
+          seen.add(b);
+          out.push({ a, b, w });
+        }
+        return { edges: out, names: [...seen].sort() };
+      }
+
+      /* Two rows, first half on top: A B C / D E F, as in the handout. */
+      function layout(n) {
+        const W = 520,
+          top = 74,
+          bot = 204;
+        const nTop = Math.ceil(n / 2),
+          nBot = n - nTop;
+        const p = {};
+        const place = (count, y, offset, isTop) => {
+          for (let k = 0; k < count; k++) {
+            const x = count === 1 ? W / 2 : 70 + (k * (W - 140)) / (count - 1);
+            p[names[offset + k]] = { x, y, lblY: isTop ? y - 30 : y + 37 };
+          }
+        };
+        place(nTop, top, 0, true);
+        if (nBot > 0) place(nBot, bot, nTop, false);
+        return p;
+      }
+
+      /* ── The handout's Java, with data lines for the current graph ── */
+      function buildJava(s) {
+        const out = [];
+        const d = Math.max(1, ...edges.map((e) => String(e.w).length));
+        for (let i = 0; i < JAVA_SRC.length; i++) {
+          const line = JAVA_SRC[i];
+          if (line.includes("String[] names = {")) {
+            out.push("        String[] names = {" + names.map((n) => '"' + n + '"').join(", ") + "};");
+          } else if (/^\s*\/\/\s+[A-Z](\s+[A-Z])*\s*$/.test(line)) {
+            /* the column-letter comment above the matrix */
+            out.push("        //" + " ".repeat(15 + d - 1) + names.join(" ".repeat(d + 1)));
+          } else if (line.includes("int[][] graph = {")) {
+            out.push(line);
+            while (JAVA_SRC[i + 1].trim() !== "};") i++;
+            names.forEach((n, r) =>
+              out.push(" ".repeat(24) + "{" + names.map((_, c) => String(W[r][c]).padStart(d)).join(", ") +
+                "},   // " + n)
+            );
+          } else if (line.trim().startsWith("prim(graph,")) {
+            out.push("        prim(graph, " + s + ", names);   // start = " + names[s]);
+          } else {
+            out.push(line);
+          }
+        }
+        return out;
+      }
+
+      function tagLines(L) {
+        const at = (test, from = 0) => {
+          for (let i = from; i < L.length; i++) if (test(L[i].trim())) return i;
+          return -1;
+        };
+        const has = (s) => (t) => t.includes(s);
+        const is = (s) => (t) => t === s;
+        const via = at(has('printf("add %s via %s-%s (%d)%n"'));
+        const T = {
+          fill: [at(has("Arrays.fill(key, INF);")), at(has("Arrays.fill(parent, -1);")), at(is("key[start] = 0;"))],
+          loop: [at(has("for (int count = 0; count < V; count++)"))],
+          scan: [at(is("int u = -1;")), at(is("for (int v = 0; v < V; v++)")),
+                 at(has("if (!inMST[v] && (u == -1 || key[v] < key[u]))")), at(is("u = v;"))],
+          brk: [at(has("if (key[u] == INF) break;"))],
+          mark: [at(is("inMST[u] = true;"))],
+          addStart: [at(is("if (parent[u] == -1)")), at(has('printf("add %s (start)%n"'))],
+          addVia: [at(is("else {")), via, via + 1, at(is("total += key[u];"))],
+          updLoop: [at(is("for (int v = 0; v < V; v++) {"))],
+          updTest: [at(is("if (graph[u][v] != 0 && !inMST[v]")), at(has("&& graph[u][v] < key[v]) {"))],
+          updBody: [at(is("key[v] = graph[u][v];")), at(is("parent[v] = u;"))],
+          printKey: [at(has('System.out.println("    key = "'))],
+          total: [at(has('System.out.println("Total weight: " + total);'))],
+        };
+        for (const k in T) if (T[k].some((x) => x < 0)) console.error("code tag not found:", k);
+        return T;
+      }
+
+      /* Small Java highlighter using the shared Catppuccin token classes. */
+      const KW = new Set(["public", "static", "class", "import", "new", "for", "if", "else", "return",
+                          "break", "continue", "true", "false", "null", "final"]);
+      const TY = new Set(["int", "void", "boolean", "String", "List", "ArrayList", "StringBuilder", "Integer"]);
+      const escH = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      function hl(line) {
+        let out = "",
+          i = 0;
+        while (i < line.length) {
+          const rest = line.slice(i);
+          let m;
+          if (rest.startsWith("//")) {
+            out += '<span class="cm">' + escH(rest) + "</span>";
+            break;
+          } else if (rest[0] === '"') {
+            let j = 1;
+            while (j < rest.length && rest[j] !== '"') j += rest[j] === "\\" ? 2 : 1;
+            out += '<span class="str">' + escH(rest.slice(0, j + 1)) + "</span>";
+            i += j + 1;
+          } else if ((m = rest.match(/^\d+/))) {
+            out += '<span class="nu">' + m[0] + "</span>";
+            i += m[0].length;
+          } else if ((m = rest.match(/^[A-Za-z_]\w*/))) {
+            const w = m[0],
+              after = rest.slice(w.length).trimStart();
+            if (KW.has(w)) out += '<span class="kw">' + w + "</span>";
+            else if (TY.has(w)) out += '<span class="ty">' + w + "</span>";
+            else if (after[0] === "(") out += '<span class="fn">' + w + "</span>";
+            else out += w;
+            i += w.length;
+          } else {
+            out += escH(rest[0]);
+            i += 1;
+          }
+        }
+        return out;
+      }
+
+      function renderCode(L) {
+        document.getElementById("code-body").innerHTML = L.map(
+          (l, k) => '<span class="cl" id="cl' + k + '">' + hl(l) + "</span>"
+        ).join("");
+      }
+
+      const pairName = (x, y) => (names[x] < names[y] ? names[x] + "–" + names[y] : names[y] + "–" + names[x]);
+
+      /* ── Simulate the Java exactly, recording a snapshot per step ── */
+      function buildSteps() {
+        clearAuto();
+        const parsed = parseEdges(document.getElementById("inp-edges").value);
+        if (!parsed) {
+          alert(
+            "Enter edges as Letter-Letter:weight separated by commas — single-letter vertices, " +
+              "weights 1 to 99 (the Java's matrix uses 0 to mean “no edge”), no repeated pairs. For example:\n" +
+              "A-B:5, B-C:6, D-E:2, E-F:7, A-D:4, B-E:3, C-F:1"
+          );
+          return;
+        }
+        if (parsed.names.length < 2 || parsed.names.length > 10) {
+          alert("The graph must have between 2 and 10 vertices.");
+          return;
+        }
+        names = parsed.names;
+        edges = parsed.edges;
+        const V = names.length;
+        const srcName = document.getElementById("inp-src").value.trim().toUpperCase();
+        const start = names.indexOf(srcName);
+        if (start < 0) {
+          alert("start must be one of the vertices: " + names.join(", "));
+          return;
+        }
+        W = names.map(() => names.map(() => 0));
+        edges.forEach((e) => {
+          const a = names.indexOf(e.a),
+            b = names.indexOf(e.b);
+          W[a][b] = W[b][a] = e.w;
+        });
+        pos = layout(V);
+
+        const L = buildJava(start);
+        const isHandout = L.join("\n") === JAVA_SRC.join("\n");
+        document.getElementById("lang-tag").textContent = isHandout
+          ? "// Java — PrimArray.java (exactly as in the handout)"
+          : "// Java — PrimArray.java (handout code; data lines match your graph)";
+        renderCode(L);
+        const T = tagLines(L);
+
+        /* State, mirroring the Java variables */
+        const key = names.map(() => INF),
+          parent = names.map(() => -1),
+          inMST = names.map(() => false);
+        key[start] = 0;
+        let total = 0;
+        const out = [],
+          picked = [],
+          added = [];
+        const kTxt = (k) => (k === INF ? "∞" : String(k));
+        const show = () => {
+          const parts = [];
+          names.forEach((n, i) => {
+            if (!inMST[i]) parts.push(n + ":" + (key[i] === INF ? "INF" : key[i]));
+          });
+          return parts.length ? parts.join(" ") : "(all vertices in tree)";
+        };
+        const nextPick = () => {
+          let u = -1;
+          for (let v = 0; v < V; v++) if (!inMST[v] && (u === -1 || key[v] < key[u])) u = v;
+          return u;
+        };
+
+        steps = [];
+        const snap = (o) => {
+          const prevOut = steps.length ? steps[steps.length - 1].out.length : 0;
+          steps.push(
+            Object.assign(
+              {
+                key: key.slice(),
+                parent: parent.slice(),
+                inMST: inMST.slice(),
+                out: out.slice(),
+                fresh: out.length - prevOut,
+                total,
+                u: -1,
+                v: -1,
+                upd: -1,
+                minkey: -1,
+                start,
+                added: added.slice(),
+              },
+              o
+            )
+          );
+        };
+
+        snap({
+          type: "init",
+          codeLine: T.fill,
+          msg:
+            '<span class="step-tag tag-init">Init</span>' +
+            "Every vertex starts with <b>key = ∞</b> (no known way to attach it) and no parent. " +
+            "Set <b>key[" + names[start] + "] = 0</b> so the start vertex is picked first.",
+        });
+
+        let firstUpdate = true;
+        for (let count = 0; count < V; count++) {
+          const u = nextPick();
+          if (key[u] === INF) {
+            snap({
+              type: "stop",
+              u,
+              codeLine: T.brk,
+              msg:
+                '<span class="step-tag tag-done">Stop</span>' +
+                "The smallest key left is <b>∞</b>: nothing outside the tree can be reached. " +
+                "The graph is <b>disconnected</b>, so the loop breaks early.",
+            });
+            break;
+          }
+          inMST[u] = true;
+          if (parent[u] === -1) {
+            out.push("add " + names[u] + " (start)");
+            snap({
+              type: "extract",
+              u,
+              codeLine: [...T.loop, ...T.scan, ...T.mark, ...T.addStart],
+              focus: T.mark[0],
+              msg:
+                '<span class="step-tag tag-extract">Add vertex</span>' +
+                "Scan the vertices outside the tree for the smallest key: <b>" + names[u] + " (0)</b>. " +
+                "<b>" + names[u] + "</b> is the start — on its own it is the whole tree so far.",
+            });
+          } else {
+            const p = parent[u];
+            total += key[u];
+            picked.push(key[u]);
+            added.push(pairName(p, u) + " (" + key[u] + ")");
+            out.push("add " + names[u] + " via " + names[p] + "-" + names[u] + " (" + key[u] + ")");
+            snap({
+              type: "extract",
+              u,
+              codeLine: [...T.loop, ...T.scan, ...T.mark, ...T.addVia],
+              focus: T.mark[0],
+              msg:
+                '<span class="step-tag tag-extract">Add vertex</span>' +
+                "The smallest key outside the tree is <b>" + names[u] + " (" + key[u] + ")</b>. " +
+                "Add " + names[u] + " via <b>" + pairName(p, u) + " (" + key[u] + ")</b> — " +
+                "the cheapest edge crossing from the tree to the rest, so the cut rule says it is safe.",
+            });
+          }
+
+          for (let v = 0; v < V; v++) {
+            const w = W[u][v];
+            if (w === 0 || inMST[v]) continue;
+            if (w < key[v]) {
+              const old = key[v];
+              key[v] = w;
+              parent[v] = u;
+              snap({
+                type: "update",
+                u,
+                v,
+                upd: v,
+                codeLine: [...T.updLoop, ...T.updTest, ...T.updBody],
+                focus: T.updTest[0],
+                msg:
+                  '<span class="step-tag tag-update">Update key</span>' +
+                  "Edge <b>" + names[u] + "–" + names[v] + "</b> has weight <b>" + w + "</b>, cheaper than " +
+                  names[v] + "'s current key <b>" + kTxt(old) + "</b>. Set <b>key[" + names[v] + "] = " + w +
+                  "</b> and <b>parent[" + names[v] + "] = " + names[u] + "</b>." +
+                  (firstUpdate
+                    ? " <i>Notice the test compares the edge weight alone — Dijkstra would compare dist[u] + w. " +
+                      "That is the one line that differs.</i>"
+                    : ""),
+              });
+              firstUpdate = false;
+            } else {
+              snap({
+                type: "noup",
+                u,
+                v,
+                codeLine: [...T.updLoop, ...T.updTest],
+                focus: T.updTest[0],
+                msg:
+                  '<span class="step-tag tag-noup">No update</span>' +
+                  "Edge <b>" + names[u] + "–" + names[v] + "</b> has weight <b>" + w + "</b>, but " + names[v] +
+                  " can already be attached for <b>" + key[v] + "</b>. Keep the cheaper link.",
+              });
+            }
+          }
+
+          out.push("    key = " + show());
+          const nx = nextPick();
+          const left = names.filter((_, i) => !inMST[i]);
+          snap({
+            type: "keys",
+            minkey: nx >= 0 && key[nx] !== INF ? nx : -1,
+            codeLine: T.printKey,
+            msg:
+              '<span class="step-tag tag-keys">End of round</span>' +
+              (left.length === 0
+                ? "Every vertex is in the tree."
+                : nx >= 0 && key[nx] !== INF
+                  ? "Keys of the vertices still outside: <b>" +
+                    left.map((n) => n + " " + kTxt(key[names.indexOf(n)])).join(", ") +
+                    "</b>. The smallest is <b>" + names[nx] + " (" + key[nx] + ")</b> — it joins next."
+                  : "Every vertex still outside has <b>key = ∞</b>: none of them is reachable from the tree."),
+          });
+        }
+
+        out.push("Total weight: " + total);
+        const treeEdges = added.map((s) => s.replace(/ \(\d+\)$/, ""));
+        const connected = inMST.every(Boolean);
+        snap({
+          type: "final",
+          codeLine: T.total,
+          msg:
+            '<span class="step-tag tag-done">Done</span>' +
+            (connected
+              ? "Minimum spanning tree, in the order Prim added it: <b>" + added.join(", ") + "</b> — total weight <b>" + total + "</b>. " +
+                "The keys picked were <b>" + picked.join(", ") + "</b> — " +
+                (picked.some((k, i) => i > 0 && k < picked[i - 1])
+                  ? "they go up and down, unlike Dijkstra's distances, because each key is a single edge, not a running total. "
+                  : "") +
+                "Array version: <b>O(V²)</b>."
+              : "Only part of the graph was reached from " + names[start] +
+                " — it is <b>disconnected</b>, so there is no spanning tree. Total of the edges added: <b>" + total + "</b>."),
+          summary: treeEdges.join(", "),
+        });
+
+        cur = 0;
+        renderStep();
+      }
+
+      /* ── Drawing ── */
+      function renderStep() {
+        const st = steps[cur];
+        if (!st) return;
+        const NS = "http://www.w3.org/2000/svg";
+        const svg = document.getElementById("graph");
+        svg.innerHTML = "";
+        const el = (tag, attrs, text) => {
+          const e = document.createElementNS(NS, tag);
+          for (const k in attrs) e.setAttribute(k, attrs[k]);
+          if (text != null) e.textContent = text;
+          return e;
+        };
+        const ix = (n) => names.indexOf(n);
+        const isFinal = st.type === "final";
+
+        /* glow under the edge that just joined the tree */
+        if (st.type === "extract" && st.parent[st.u] >= 0) {
+          const p1 = pos[names[st.u]],
+            p2 = pos[names[st.parent[st.u]]];
+          svg.appendChild(el("line", { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, class: "e-glow" }));
+        }
+
+        edges.forEach((e) => {
+          const a = ix(e.a),
+            b = ix(e.b),
+            p1 = pos[e.a],
+            p2 = pos[e.b];
+          const linked = (x, y) => st.parent[x] === y; /* x attached to tree vertex y */
+          let cls = "e-line";
+          if ((st.u === a && st.v === b) || (st.u === b && st.v === a)) cls += " e-cur";
+          else if ((linked(a, b) && st.inMST[a]) || (linked(b, a) && st.inMST[b])) cls += " e-tree";
+          else if ((linked(a, b) && !st.inMST[a]) || (linked(b, a) && !st.inMST[b])) cls += " e-cand";
+          else if (isFinal) cls += " e-faded";
+          svg.appendChild(el("line", { x1: p1.x, y1: p1.y, x2: p2.x, y2: p2.y, class: cls }));
+          const mx = (p1.x + p2.x) / 2,
+            my = (p1.y + p2.y) / 2;
+          svg.appendChild(el("rect", { x: mx - 11, y: my - 9, width: 22, height: 16, rx: 4, class: "e-lbl-bg" }));
+          svg.appendChild(el("text", { x: mx, y: my + 3, class: "e-lbl", "text-anchor": "middle" }, e.w));
+        });
+
+        names.forEach((n, i) => {
+          const p = pos[n];
+          let cls = "v-default";
+          if (st.inMST[i]) cls = "v-tree";
+          else if (st.key[i] !== INF) cls = "v-fringe";
+          if (st.type === "init" && i === st.start) cls = "v-start";
+          if (st.type === "extract" && i === st.u) cls = "v-current";
+          svg.appendChild(el("circle", { cx: p.x, cy: p.y, r: 20, class: "n-circ " + cls }));
+          svg.appendChild(el("text", { x: p.x, y: p.y + 4.5, class: "n-name" }, n));
+          const k = st.key[i] === INF ? "∞" : st.key[i];
+          svg.appendChild(
+            el("text", { x: p.x, y: p.lblY, class: "n-key" + (i === st.upd ? " k-upd" : "") }, "key " + k)
+          );
+        });
+
+        /* key / parent / inMST table */
+        const head = names
+          .map((n, i) => "<th" + (i === st.u && st.type !== "keys" && st.type !== "final" ? ' class="ucol"' : "") +
+            ">" + n + "</th>")
+          .join("");
+        const keyRow = names
+          .map((_, i) => {
+            const c = [];
+            if (i === st.upd) c.push("upd");
+            if (i === st.minkey) c.push("minkey");
+            if (st.inMST[i]) c.push("dim");
+            return '<td class="' + c.join(" ") + '">' + (st.key[i] === INF ? "∞" : st.key[i]) + "</td>";
+          })
+          .join("");
+        const parRow = names
+          .map((_, i) => '<td class="' + (i === st.upd ? "upd" : st.inMST[i] ? "dim" : "") + '">' +
+            (st.parent[i] >= 0 ? names[st.parent[i]] : "—") + "</td>")
+          .join("");
+        const inRow = names
+          .map((_, i) => '<td class="' + (st.inMST[i] ? "intree" : "dim") + '">' + (st.inMST[i] ? "✓" : "·") + "</td>")
+          .join("");
+        document.getElementById("arr").innerHTML =
+          '<tr><th class="rowlbl"></th>' + head + "</tr>" +
+          '<tr><th class="rowlbl">key</th>' + keyRow + "</tr>" +
+          '<tr><th class="rowlbl">parent</th>' + parRow + "</tr>" +
+          '<tr><th class="rowlbl">inMST</th>' + inRow + "</tr>";
+        document.getElementById("tbl-note").innerHTML =
+          st.minkey >= 0
+            ? "Outlined: the smallest key outside the tree — <b>" + names[st.minkey] + "</b> is added next."
+            : "key[v] = the cheapest single edge that would attach v to the tree.";
+
+        const inCount = st.inMST.filter(Boolean).length;
+        document.getElementById("v-u").textContent = st.u >= 0 ? names[st.u] : "—";
+        document.getElementById("v-in").textContent = inCount + " / " + names.length;
+        document.getElementById("v-total").textContent = st.total;
+
+        /* Code highlight, keeping the highlighted block in view inside the card */
+        document.querySelectorAll("#code-body .cl.hl").forEach((x) => x.classList.remove("hl"));
+        (st.codeLine || []).forEach((k) => {
+          const x = document.getElementById("cl" + k);
+          if (x) x.classList.add("hl");
+        });
+        keepInView(st);
+
+        /* Console */
+        const cb = document.getElementById("console-body");
+        cb.innerHTML = st.out.length
+          ? st.out
+              .map((l, k) => '<span class="out-line' + (k >= st.out.length - st.fresh ? " fresh" : "") + '">' +
+                escH(l) + "</span>")
+              .join("")
+          : '<span class="out-empty">(nothing printed yet)</span>';
+        const cc = document.getElementById("console-card");
+        cc.scrollTop = cc.scrollHeight;
+
+        document.getElementById("info-panel").innerHTML = st.msg;
+        document.getElementById("progress-bar").style.width = ((cur + 1) / steps.length) * 100 + "%";
+        document.getElementById("step-ctr").textContent = "Step " + (cur + 1) + " / " + steps.length;
+
+        const rp = document.getElementById("result-panel");
+        const tree = st.added.map((s) => s.replace(/ \(\d+\)$/, ""));
+        if (st.type === "final") {
+          rp.innerHTML = '<span class="sorted-badge">' + (st.summary || "no edges") + "</span> total weight " + st.total;
+        } else if (tree.length) {
+          rp.innerHTML = "Tree so far: " + tree.join(", ") + " &nbsp;·&nbsp; total <b>" + st.total + "</b>";
+        } else rp.innerHTML = "";
+
+        document.getElementById("btn-prev").disabled = cur === 0;
+        document.getElementById("btn-next").disabled = cur === steps.length - 1;
+      }
+
+      /* Scroll the code card (never the page) so the highlighted block near the
+         step's focus line is fully visible — centred when it fits. */
+      function keepInView(st) {
+        const card = document.getElementById("code-card");
+        const lines = st.codeLine || [];
+        if (!lines.length) return;
+        const focus = st.focus != null ? st.focus : lines[0];
+        const near = lines.filter((k) => Math.abs(k - focus) <= 14);
+        const first = document.getElementById("cl" + Math.min(...near)),
+          last = document.getElementById("cl" + Math.max(...near));
+        if (!first || !last) return;
+        const view = card.clientHeight,
+          top = first.offsetTop,
+          bot = last.offsetTop + last.offsetHeight;
+        const fits = bot - top + 24 <= view;
+        if (top < card.scrollTop + 12 || bot > card.scrollTop + view - 12) {
+          card.scrollTop = fits ? Math.max(0, top - (view - (bot - top)) / 2) : Math.max(0, top - 12);
+        }
+      }
+
+      function move(d) {
+        cur = Math.max(0, Math.min(steps.length - 1, cur + d));
+        renderStep();
+      }
+
+      function toggleAuto() {
+        const btn = document.getElementById("btn-auto");
+        if (autoTimer) {
+          clearAuto();
+          return;
+        }
+        if (!steps.length) buildSteps();
+        btn.textContent = "⏸ Pause";
+        btn.classList.add("auto-on");
+        autoTimer = setInterval(() => {
+          if (cur >= steps.length - 1) {
+            clearAuto();
+            return;
+          }
+          cur++;
+          renderStep();
+        }, autoDelay);
+      }
+
+      function clearAuto() {
+        if (autoTimer) {
+          clearInterval(autoTimer);
+          autoTimer = null;
+        }
+        const btn = document.getElementById("btn-auto");
+        btn.textContent = "⏵ Auto";
+        btn.classList.remove("auto-on");
+      }
+
+      function updateSpeed(v) {
+        const sl = document.getElementById("speed-sl");
+        autoDelay = parseInt(sl.max) + parseInt(sl.min) - parseInt(v);
+        document.getElementById("speed-label").textContent = (v / 1000).toFixed(1) + "s";
+        if (autoTimer) {
+          clearAuto();
+          toggleAuto();
+        }
+      }
+
+      document.addEventListener("keydown", (e) => {
+        if (["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName)) {
+          if (e.key === "Enter" && (e.target.id === "inp-edges" || e.target.id === "inp-src")) buildSteps();
+          return;
+        }
+        if (e.key === "ArrowRight") move(1);
+        else if (e.key === "ArrowLeft") move(-1);
+        else if (e.key === " ") {
+          e.preventDefault();
+          toggleAuto();
+        } else if (e.key === "r" || e.key === "R") buildSteps();
+      });
+
+      window.addEventListener("load", buildSteps);
+    </script>
+  </body>
+</html>
