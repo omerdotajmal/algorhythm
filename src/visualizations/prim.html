@@ -380,6 +380,27 @@
         .arr td.upd { background: #0e2033; }
         .arr td.intree { color: #9ccc5f; }
       }
+      /* table with the update loop's variables beside it; they drop below
+         as one row when the table is too wide to share the line */
+      .tbl-row {
+        display: flex;
+        gap: 14px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .loop-vars {
+        flex: 1 1 150px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-content: center;
+      }
+      .var-chip.w-upd { background: #deedf8; border-color: #378add; }
+      .var-chip.w-no { background: #fadede; border-color: #e24b4a; }
+      @media (prefers-color-scheme: dark) {
+        .var-chip.w-upd { background: #0e2033; border-color: #378add; }
+        .var-chip.w-no { background: #450a0a; border-color: #e24b4a; }
+      }
       .tbl-note {
         font-size: 11.5px;
         color: var(--text2);
@@ -825,12 +846,18 @@
             <div class="card-head">
               <span class="card-title">key · parent · inMST</span>
               <div class="vars-row" style="margin-left:auto">
-                <span class="var-chip"><span>u =</span> <b id="v-u">—</b></span>
                 <span class="var-chip"><span>in tree =</span> <b id="v-in">—</b> <span id="v-in-of"></span></span>
                 <span class="var-chip"><span>total weight =</span> <b id="v-total">—</b></span>
               </div>
             </div>
-            <table class="arr" id="arr"></table>
+            <div class="tbl-row">
+              <table class="arr" id="arr"></table>
+              <div class="loop-vars" aria-label="loop variables">
+                <span class="var-chip"><span>u =</span> <b id="v-u">—</b></span>
+                <span class="var-chip"><span>v =</span> <b id="v-v">—</b></span>
+                <span class="var-chip" id="chip-w"><span>graph[u][v] =</span> <b id="v-w">—</b></span>
+              </div>
+            </div>
             <div class="tbl-note" id="tbl-note"></div>
           </div>
 
@@ -1284,6 +1311,7 @@
           const left = names.filter((_, i) => !inMST[i]);
           snap({
             type: "keys",
+            u,
             minkey: nx >= 0 && key[nx] !== INF ? nx : -1,
             codeLine: T.printKey,
             msg:
@@ -1411,6 +1439,11 @@
 
         const inCount = st.inMST.filter(Boolean).length;
         document.getElementById("v-u").textContent = st.u >= 0 ? names[st.u] : "—";
+        document.getElementById("v-v").textContent = st.v >= 0 ? names[st.v] : "—";
+        document.getElementById("v-w").textContent = st.u >= 0 && st.v >= 0 ? W[st.u][st.v] : "—";
+        const chipW = document.getElementById("chip-w");
+        chipW.classList.toggle("w-upd", st.type === "update");
+        chipW.classList.toggle("w-no", st.type === "noup");
         document.getElementById("v-in").textContent = inCount;
         document.getElementById("v-in-of").textContent = "of V = " + names.length;
         document.getElementById("v-total").textContent = st.total;
