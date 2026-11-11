@@ -4,6 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Prim's MST — Dry Run</title>
+    <script>
+      /* Theme switch: "light" or "dark" once chosen with the ☀/☾ button (remembered
+         in this browser); until then the page follows the system theme. Runs
+         before the styles load so the page never flashes the other theme. */
+      (function () {
+        try {
+          var t = localStorage.getItem("dv-theme");
+          if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        } catch (e) {}
+      })();
+    </script>
     <link rel="stylesheet" href="shared-nav.css" />
     <link rel="stylesheet" href="shared.css" />
     <style>
@@ -26,7 +37,7 @@
         --edge-lbl-bg: #ffffff;
       }
       @media (prefers-color-scheme: dark) {
-        :root {
+        :root:not([data-theme="light"]) {
           --bg: #18181a;
           --bg2: #222226;
           --bg3: #2c2c30;
@@ -40,6 +51,20 @@
           --edge: #55524c;
           --edge-lbl-bg: #1e1e22;
         }
+      }
+      :root[data-theme="dark"] {
+        --bg: #18181a;
+        --bg2: #222226;
+        --bg3: #2c2c30;
+        --card: #1e1e22;
+        --border: rgba(255, 255, 255, 0.09);
+        --border2: rgba(255, 255, 255, 0.18);
+        --text: #e8e6e0;
+        --text2: #a0a098;
+        --text3: #606060;
+        --n-stroke: rgba(255, 255, 255, 0.32);
+        --edge: #55524c;
+        --edge-lbl-bg: #1e1e22;
       }
 
       *,
@@ -334,9 +359,11 @@
       .v-tree { fill: #d8eec2; stroke: #639922; }
       .v-start { fill: #ede9fe; stroke: #8b5cf6; }
       @media (prefers-color-scheme: dark) {
-        .n-name { fill: #16160f; }
-        .n-key.k-upd { fill: #7cb8f0; }
+        :root:not([data-theme="light"]) .n-name { fill: #16160f; }
+        :root:not([data-theme="light"]) .n-key.k-upd { fill: #7cb8f0; }
       }
+      :root[data-theme="dark"] .n-name { fill: #16160f; }
+      :root[data-theme="dark"] .n-key.k-upd { fill: #7cb8f0; }
 
       /* State card: key / parent / inMST table */
       .state-card {
@@ -376,10 +403,13 @@
       .arr td.intree { color: #3b6d11; font-weight: 700; }
       .arr td.dim { color: var(--text3); }
       @media (prefers-color-scheme: dark) {
-        .arr th.ucol { background: #451a03; color: #fde68a; }
-        .arr td.upd { background: #0e2033; }
-        .arr td.intree { color: #9ccc5f; }
+        :root:not([data-theme="light"]) .arr th.ucol { background: #451a03; color: #fde68a; }
+        :root:not([data-theme="light"]) .arr td.upd { background: #0e2033; }
+        :root:not([data-theme="light"]) .arr td.intree { color: #9ccc5f; }
       }
+      :root[data-theme="dark"] .arr th.ucol { background: #451a03; color: #fde68a; }
+      :root[data-theme="dark"] .arr td.upd { background: #0e2033; }
+      :root[data-theme="dark"] .arr td.intree { color: #9ccc5f; }
       /* table with the update loop's variables beside it; they drop below
          as one row when the table is too wide to share the line */
       .tbl-row {
@@ -398,9 +428,11 @@
       .var-chip.w-upd { background: #deedf8; border-color: #378add; }
       .var-chip.w-no { background: #fadede; border-color: #e24b4a; }
       @media (prefers-color-scheme: dark) {
-        .var-chip.w-upd { background: #0e2033; border-color: #378add; }
-        .var-chip.w-no { background: #450a0a; border-color: #e24b4a; }
+        :root:not([data-theme="light"]) .var-chip.w-upd { background: #0e2033; border-color: #378add; }
+        :root:not([data-theme="light"]) .var-chip.w-no { background: #450a0a; border-color: #e24b4a; }
       }
+      :root[data-theme="dark"] .var-chip.w-upd { background: #0e2033; border-color: #378add; }
+      :root[data-theme="dark"] .var-chip.w-no { background: #450a0a; border-color: #e24b4a; }
       .tbl-note {
         font-size: 11.5px;
         color: var(--text2);
@@ -456,12 +488,17 @@
       .tag-keys { background: #ede9fe; color: #4c1d95; border: 1px solid #8b5cf6; }
       .tag-done { background: #d8eec2; color: #173404; border: 1px solid #639922; }
       @media (prefers-color-scheme: dark) {
-        .tag-extract { background: #451a03; color: #fde68a; }
-        .tag-update { background: #0c447c; color: #b5d4f4; }
-        .tag-noup { background: #450a0a; color: #fecaca; }
-        .tag-keys { background: #2e1065; color: #ddd6fe; }
-        .tag-done { background: #1e3d0a; color: #c0dd97; }
+        :root:not([data-theme="light"]) .tag-extract { background: #451a03; color: #fde68a; }
+        :root:not([data-theme="light"]) .tag-update { background: #0c447c; color: #b5d4f4; }
+        :root:not([data-theme="light"]) .tag-noup { background: #450a0a; color: #fecaca; }
+        :root:not([data-theme="light"]) .tag-keys { background: #2e1065; color: #ddd6fe; }
+        :root:not([data-theme="light"]) .tag-done { background: #1e3d0a; color: #c0dd97; }
       }
+      :root[data-theme="dark"] .tag-extract { background: #451a03; color: #fde68a; }
+      :root[data-theme="dark"] .tag-update { background: #0c447c; color: #b5d4f4; }
+      :root[data-theme="dark"] .tag-noup { background: #450a0a; color: #fecaca; }
+      :root[data-theme="dark"] .tag-keys { background: #2e1065; color: #ddd6fe; }
+      :root[data-theme="dark"] .tag-done { background: #1e3d0a; color: #c0dd97; }
 
       /* Code card (Catppuccin from shared.css) — compact, scrolls inside */
       .code-card {
@@ -519,6 +556,48 @@
         font-style: italic;
       }
 
+      /* Light mode chosen with the switch (for projectors): code and output
+         turn light too, with darker token colours and a strong line highlight. */
+      :root[data-theme="light"] .code-card {
+        background: #f7f7fa;
+        border-color: rgba(0, 0, 0, 0.14);
+      }
+      :root[data-theme="light"] .console-card {
+        background: #f1f2f5;
+        border-color: rgba(0, 0, 0, 0.14);
+      }
+      :root[data-theme="light"] .code-card .lang-tag,
+      :root[data-theme="light"] .console-card .lang-tag,
+      :root[data-theme="light"] .out-empty { color: #6b7280; }
+      :root[data-theme="light"] .cl { color: #2f3142; }
+      :root[data-theme="light"] .cl.hl { background: #fde68a; color: #1a1a18; }
+      :root[data-theme="light"] .kw { color: #7c3aed; }
+      :root[data-theme="light"] .ty { color: #0e7490; }
+      :root[data-theme="light"] .fn { color: #1d4ed8; }
+      :root[data-theme="light"] .nu { color: #c2410c; }
+      :root[data-theme="light"] .cm { color: #6b7280; }
+      :root[data-theme="light"] .str { color: #15803d; }
+      :root[data-theme="light"] .out-line { color: #2f3142; }
+      :root[data-theme="light"] .out-line.fresh { background: #dcfce7; color: #14532d; }
+
+      /* ☀ / ☾ theme switch in the header */
+      .theme-btn {
+        margin-left: auto;
+        align-self: center;
+        font-family: var(--sans);
+        font-size: 12px;
+        font-weight: 600;
+        padding: 4px 12px;
+        border-radius: 999px;
+        border: 1px solid var(--border2);
+        background: var(--bg2);
+        color: var(--text);
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .theme-btn:hover { background: var(--bg3); }
+      .theme-btn:focus-visible { outline: 2px solid #378add; outline-offset: 2px; }
+
       /* Footer */
       .foot {
         display: flex;
@@ -544,8 +623,9 @@
         margin-right: 4px;
       }
       @media (prefers-color-scheme: dark) {
-        .sorted-badge { background: #1e3d0a; color: #c0dd97; border-color: #639922; }
+        :root:not([data-theme="light"]) .sorted-badge { background: #1e3d0a; color: #c0dd97; border-color: #639922; }
       }
+      :root[data-theme="dark"] .sorted-badge { background: #1e3d0a; color: #c0dd97; border-color: #639922; }
       .foot .key-hint {
         margin: 0 0 0 auto;
       }
@@ -791,6 +871,7 @@
       <div class="header">
         <h1>Prim's MST — Dry Run</h1>
         <p>Design &amp; Analysis of Algorithms &nbsp;·&nbsp; Greedy — Interactive Step-through</p>
+        <button class="theme-btn" id="theme-btn" type="button" onclick="toggleTheme()">☀ Light mode</button>
       </div>
 
       <div class="toolbar">
@@ -885,7 +966,8 @@
           Keyboard: <span class="kbd">←</span> Prev &nbsp;
           <span class="kbd">→</span> Next &nbsp;
           <span class="kbd">Space</span> Auto play &nbsp;
-          <span class="kbd">R</span> Reset
+          <span class="kbd">R</span> Reset &nbsp;
+          <span class="kbd">T</span> Theme
         </p>
       </div>
     </div>
@@ -1558,7 +1640,29 @@
           e.preventDefault();
           toggleAuto();
         } else if (e.key === "r" || e.key === "R") buildSteps();
+        else if (e.key === "t" || e.key === "T") toggleTheme();
       });
+
+      /* ── Light / dark switch ── */
+      const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+      function currentTheme() {
+        const t = document.documentElement.getAttribute("data-theme");
+        return t === "light" || t === "dark" ? t : darkQuery.matches ? "dark" : "light";
+      }
+      function paintThemeButton() {
+        const btn = document.getElementById("theme-btn");
+        const dark = currentTheme() === "dark";
+        btn.textContent = dark ? "☀ Light mode" : "☾ Dark mode";
+        btn.title = (dark ? "Switch to light mode" : "Switch to dark mode") + " (T)";
+      }
+      function toggleTheme() {
+        const next = currentTheme() === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", next);
+        try { localStorage.setItem("dv-theme", next); } catch (e) {}
+        paintThemeButton();
+      }
+      darkQuery.addEventListener("change", paintThemeButton);
+      paintThemeButton();
 
       window.addEventListener("load", buildSteps);
     </script>
