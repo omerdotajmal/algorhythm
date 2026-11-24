@@ -1,0 +1,1588 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>0/1 Knapsack — Dry Run</title>
+    <script>
+      /* Theme switch: "light" or "dark" once chosen with the ☀/☾ button (remembered
+         in this browser); until then the page follows the system theme. Runs
+         before the styles load so the page never flashes the other theme. */
+      (function () {
+        try {
+          var t = localStorage.getItem("dv-theme");
+          if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+        } catch (e) {}
+      })();
+    </script>
+    <link rel="stylesheet" href="shared-nav.css" />
+    <link rel="stylesheet" href="shared.css" />
+    <style>
+      :root {
+        --bg: #f8f7f4;
+        --bg2: #f0eeea;
+        --bg3: #e8e6e1;
+        --card: #ffffff;
+        --border: rgba(0, 0, 0, 0.1);
+        --border2: rgba(0, 0, 0, 0.18);
+        --text: #1a1a18;
+        --text2: #5a5955;
+        --text3: #8a8880;
+        --mono: "JetBrains Mono", "Fira Mono", "Consolas", monospace;
+        --sans: "Inter", "Segoe UI", system-ui, sans-serif;
+        --progress-color: #7c3aed;
+
+        --n-stroke: rgba(0, 0, 0, 0.3);
+        --edge: #b9b5ad;
+        --edge-lbl-bg: #ffffff;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          --bg: #18181a;
+          --bg2: #222226;
+          --bg3: #2c2c30;
+          --card: #1e1e22;
+          --border: rgba(255, 255, 255, 0.09);
+          --border2: rgba(255, 255, 255, 0.18);
+          --text: #e8e6e0;
+          --text2: #a0a098;
+          --text3: #606060;
+          --n-stroke: rgba(255, 255, 255, 0.32);
+          --edge: #55524c;
+          --edge-lbl-bg: #1e1e22;
+        }
+      }
+      :root[data-theme="dark"] {
+        --bg: #18181a;
+        --bg2: #222226;
+        --bg3: #2c2c30;
+        --card: #1e1e22;
+        --border: rgba(255, 255, 255, 0.09);
+        --border2: rgba(255, 255, 255, 0.18);
+        --text: #e8e6e0;
+        --text2: #a0a098;
+        --text3: #606060;
+        --n-stroke: rgba(255, 255, 255, 0.32);
+        --edge: #55524c;
+        --edge-lbl-bg: #1e1e22;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: var(--sans);
+        background: var(--bg);
+        color: var(--text);
+        padding: 14px 18px 12px;
+      }
+      .page {
+        width: 100%;
+        max-width: 1500px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      /* ── Header ── */
+      .header {
+        display: flex;
+        align-items: baseline;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+      .header h1 {
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: -0.3px;
+      }
+      .header p {
+        font-size: 12.5px;
+        color: var(--text2);
+      }
+
+      /* ── Toolbar: input + controls on one row ── */
+      .toolbar {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: stretch;
+      }
+      .input-bar {
+        flex: 1 1 380px;
+        display: flex;
+        gap: 9px;
+        align-items: center;
+        background: var(--card);
+        border: 1px solid var(--border2);
+        border-radius: 10px;
+        padding: 7px 12px;
+      }
+      .input-bar label {
+        font-size: 13px;
+        color: var(--text2);
+        white-space: nowrap;
+      }
+      .arr-input {
+        font-family: var(--mono);
+        font-size: 13px;
+        font-weight: 600;
+        padding: 5px 9px;
+        border: 1px solid var(--border2);
+        border-radius: 6px;
+        background: var(--bg2);
+        color: var(--text);
+        flex: 1;
+        min-width: 160px;
+        letter-spacing: 0.05em;
+      }
+      .src-input {
+        width: 52px;
+        min-width: 52px;
+        flex: none;
+        text-align: center;
+      }
+      .arr-input:focus {
+        outline: 2px solid #378add;
+        outline-offset: 1px;
+      }
+      .btn-run {
+        font-family: var(--sans);
+        font-size: 13px;
+        font-weight: 500;
+        padding: 7px 20px;
+        border: none;
+        border-radius: 6px;
+        background: #185fa5;
+        color: #fff;
+        cursor: pointer;
+        transition: background 0.15s;
+        white-space: nowrap;
+      }
+      .btn-run:hover {
+        background: #0c447c;
+      }
+      .nav-row {
+        display: flex;
+        gap: 7px;
+        align-items: center;
+        flex-wrap: wrap;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 6px 12px;
+      }
+      .nav-btn {
+        font-family: var(--sans);
+        font-size: 13px;
+        font-weight: 500;
+        padding: 6px 15px;
+        border: 1px solid var(--border2);
+        border-radius: 7px;
+        background: var(--bg2);
+        color: var(--text);
+        cursor: pointer;
+        transition: background 0.14s;
+      }
+      .nav-btn:hover:not(:disabled) {
+        background: var(--bg3);
+      }
+      .nav-btn:disabled {
+        opacity: 0.35;
+        cursor: default;
+      }
+      .nav-btn.primary {
+        background: #185fa5;
+        color: #fff;
+        border-color: #185fa5;
+      }
+      .nav-btn.primary:hover:not(:disabled) {
+        background: #0c447c;
+      }
+      .nav-btn.auto-on {
+        background: #3b6d11;
+        color: #eaf3de;
+        border-color: #3b6d11;
+      }
+      .nav-row .speed-row {
+        margin-left: 6px;
+      }
+      .progress-wrap {
+        margin-bottom: 0;
+      }
+
+      /* ── Stage: visual (left) beside code (right) ── */
+      .stage {
+        display: grid;
+        grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
+        gap: 12px;
+      }
+      .col-vis,
+      .col-code {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-width: 0;
+        min-height: 0;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+      }
+      .card-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 6px;
+      }
+      .card-title {
+        font-size: 10.5px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text3);
+      }
+
+      /* Var chips */
+      .vars-row {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .var-chip {
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 600;
+        background: var(--bg2);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 2px 9px;
+      }
+      .var-chip span {
+        color: var(--text2);
+        font-weight: 400;
+      }
+
+      /* Info panel */
+      .info-panel {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 9px 13px;
+        font-size: 13px;
+        line-height: 1.62;
+        color: var(--text);
+        min-height: 62px;
+      }
+      .step-tag {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 1px 8px;
+        border-radius: 5px;
+        margin-right: 7px;
+        vertical-align: 1px;
+        letter-spacing: 0.02em;
+      }
+      .tag-init { background: var(--bg3); color: var(--text2); border: 1px solid var(--border2); }
+      .tag-extract { background: #fef3c7; color: #78350f; border: 1px solid #f59e0b; }
+      .tag-update { background: #deedf8; color: #0c447c; border: 1px solid #378add; }
+      .tag-noup { background: #fadede; color: #7f1d1d; border: 1px solid #e24b4a; }
+      .tag-keys { background: #ede9fe; color: #4c1d95; border: 1px solid #8b5cf6; }
+      .tag-done { background: #d8eec2; color: #173404; border: 1px solid #639922; }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) .tag-extract { background: #451a03; color: #fde68a; }
+        :root:not([data-theme="light"]) .tag-update { background: #0c447c; color: #b5d4f4; }
+        :root:not([data-theme="light"]) .tag-noup { background: #450a0a; color: #fecaca; }
+        :root:not([data-theme="light"]) .tag-keys { background: #2e1065; color: #ddd6fe; }
+        :root:not([data-theme="light"]) .tag-done { background: #1e3d0a; color: #c0dd97; }
+      }
+      :root[data-theme="dark"] .tag-extract { background: #451a03; color: #fde68a; }
+      :root[data-theme="dark"] .tag-update { background: #0c447c; color: #b5d4f4; }
+      :root[data-theme="dark"] .tag-noup { background: #450a0a; color: #fecaca; }
+      :root[data-theme="dark"] .tag-keys { background: #2e1065; color: #ddd6fe; }
+      :root[data-theme="dark"] .tag-done { background: #1e3d0a; color: #c0dd97; }
+
+      /* Code card (Catppuccin from shared.css) — compact, scrolls inside */
+      .code-card {
+        margin-bottom: 0;
+        padding: 10px 6px 10px 10px;
+        position: relative;
+        overflow: auto;
+        scroll-behavior: smooth;
+      }
+      .code-card .lang-tag {
+        margin-bottom: 6px;
+        padding-left: 4px;
+      }
+      .code-card .cl {
+        font-size: 11.5px;
+        line-height: 1.5;
+        min-height: 1.5em; /* keeps blank source lines one line tall */
+        padding: 0 8px;
+      }
+
+      /* Console */
+      .console-card {
+        background: #11111b;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 10px;
+        padding: 8px 10px;
+        overflow: auto;
+        min-height: 92px;
+      }
+      .console-card .lang-tag {
+        display: block;
+        font-family: var(--mono);
+        font-size: 10.5px;
+        color: #585b70;
+        margin-bottom: 4px;
+      }
+      .out-line {
+        display: block;
+        font-family: var(--mono);
+        font-size: 11.5px;
+        line-height: 1.5;
+        color: #bac2de;
+        white-space: pre;
+        padding: 0 4px;
+        border-radius: 3px;
+      }
+      .out-line.fresh {
+        background: #313244;
+        color: #a6e3a1;
+      }
+      .out-empty {
+        font-family: var(--mono);
+        font-size: 11.5px;
+        color: #585b70;
+        font-style: italic;
+      }
+
+      /* Light mode chosen with the switch (for projectors): code and output
+         turn light too, with darker token colours and a strong line highlight. */
+      :root[data-theme="light"] .code-card {
+        background: #f7f7fa;
+        border-color: rgba(0, 0, 0, 0.14);
+      }
+      :root[data-theme="light"] .console-card {
+        background: #f1f2f5;
+        border-color: rgba(0, 0, 0, 0.14);
+      }
+      :root[data-theme="light"] .code-card .lang-tag,
+      :root[data-theme="light"] .console-card .lang-tag,
+      :root[data-theme="light"] .out-empty { color: #6b7280; }
+      :root[data-theme="light"] .cl { color: #2f3142; }
+      :root[data-theme="light"] .cl.hl { background: #fde68a; color: #1a1a18; }
+      :root[data-theme="light"] .kw { color: #7c3aed; }
+      :root[data-theme="light"] .ty { color: #0e7490; }
+      :root[data-theme="light"] .fn { color: #1d4ed8; }
+      :root[data-theme="light"] .nu { color: #c2410c; }
+      :root[data-theme="light"] .cm { color: #6b7280; }
+      :root[data-theme="light"] .str { color: #15803d; }
+      :root[data-theme="light"] .out-line { color: #2f3142; }
+      :root[data-theme="light"] .out-line.fresh { background: #dcfce7; color: #14532d; }
+
+      /* ☀ / ☾ theme switch in the header */
+      .theme-btn {
+        margin-left: auto;
+        align-self: center;
+        font-family: var(--sans);
+        font-size: 12px;
+        font-weight: 600;
+        padding: 4px 12px;
+        border-radius: 999px;
+        border: 1px solid var(--border2);
+        background: var(--bg2);
+        color: var(--text);
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .theme-btn:hover { background: var(--bg3); }
+      .theme-btn:focus-visible { outline: 2px solid #378add; outline-offset: 2px; }
+
+      /* Footer */
+      .foot {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        min-height: 22px;
+      }
+      .result-panel {
+        font-size: 13px;
+        color: var(--text2);
+      }
+      .sorted-badge {
+        display: inline-block;
+        background: #d8eec2;
+        color: #173404;
+        border: 1px solid #97c459;
+        border-radius: 5px;
+        padding: 1px 9px;
+        font-size: 12.5px;
+        font-family: var(--mono);
+        font-weight: 600;
+        margin-right: 4px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) .sorted-badge { background: #1e3d0a; color: #c0dd97; border-color: #639922; }
+      }
+      :root[data-theme="dark"] .sorted-badge { background: #1e3d0a; color: #c0dd97; border-color: #639922; }
+      .foot .key-hint {
+        margin: 0 0 0 auto;
+      }
+
+
+      /* ══ Dynamic Programming pages — shared table styles ══ */
+      .table-card {
+        padding: 9px 12px 10px;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+      .legend {
+        display: flex;
+        gap: 11px;
+        flex-wrap: wrap;
+        font-size: 11px;
+        color: var(--text2);
+        margin-left: auto;
+      }
+      .leg {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .leg-sq {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+        border: 2px solid;
+        display: inline-block;
+      }
+      .tbl-wrap {
+        flex: 1;
+        min-height: 0;
+        overflow: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2px;
+      }
+      .dpt {
+        border-collapse: separate;
+        border-spacing: 3px;
+        font-family: var(--mono);
+        margin: auto;
+      }
+      .dpt th {
+        font-size: calc(var(--cell, 44px) * 0.3);
+        font-weight: 700;
+        color: var(--text2);
+        padding: 0 4px;
+        text-align: center;
+        white-space: nowrap;
+        line-height: 1.15;
+      }
+      .dpt th .sub {
+        display: block;
+        font-size: max(9px, calc(var(--cell, 44px) * 0.21));
+        font-weight: 600;
+        color: var(--text3);
+      }
+      .dpt th.rowh {
+        text-align: right;
+        padding-right: 7px;
+      }
+      .dpt th.hot {
+        color: #b45309;
+      }
+      .dpt th.hot .sub { color: #b45309; }
+      .dpt th.match { color: #3b6d11; }
+      .dpt td {
+        width: calc(var(--cell, 44px) * var(--wide, 1));
+        height: var(--cell, 44px);
+        min-width: calc(var(--cell, 44px) * var(--wide, 1));
+        text-align: center;
+        font-size: calc(var(--cell, 44px) * 0.38);
+        font-weight: 700;
+        border-radius: 7px;
+        background: var(--bg2);
+        border: 2px solid var(--border2);
+        color: var(--text);
+        position: relative;
+        transition: background 0.18s, border-color 0.18s, color 0.18s;
+      }
+      .dpt td .arw {
+        position: absolute;
+        top: 1px;
+        left: 4px;
+        font-size: max(9px, calc(var(--cell, 44px) * 0.24));
+        font-weight: 600;
+        color: var(--text3);
+      }
+      .dpt td.pend {
+        color: var(--text3);
+        background: transparent;
+        border-style: dashed;
+        border-color: var(--border2);
+        font-weight: 400;
+      }
+      .dpt td.base { color: var(--text3); }
+      .dpt td.took { color: #3b6d11; }
+      .dpt td.cur { background: #fef3c7; border-color: #f59e0b; }
+      .dpt td.src-a { background: #deedf8; border-color: #378add; }
+      .dpt td.src-b { background: #ede9fe; border-color: #8b5cf6; }
+      .dpt td.src-lose { border-color: #378add; border-style: dashed; }
+      .dpt td.path { background: #d8eec2; border-color: #639922; }
+      .dpt td.path-now { background: #c7e5a0; border-color: #3b6d11; box-shadow: 0 0 0 2.5px rgba(59, 109, 17, 0.35); }
+      .dpt td.answer { box-shadow: 0 0 0 2.5px rgba(124, 58, 237, 0.45); }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) .dpt td.took { color: #9ccc5f; }
+        :root:not([data-theme="light"]) .dpt td.cur { background: #451a03; border-color: #f59e0b; }
+        :root:not([data-theme="light"]) .dpt td.src-a { background: #0e2033; border-color: #378add; }
+        :root:not([data-theme="light"]) .dpt td.src-b { background: #2e1065; border-color: #8b5cf6; }
+        :root:not([data-theme="light"]) .dpt td.path { background: #1e3d0a; border-color: #639922; }
+        :root:not([data-theme="light"]) .dpt td.path-now { background: #2c5a10; border-color: #9ccc5f; }
+        :root:not([data-theme="light"]) .dpt th.hot,
+        :root:not([data-theme="light"]) .dpt th.hot .sub { color: #fbbf24; }
+        :root:not([data-theme="light"]) .dpt th.match { color: #9ccc5f; }
+      }
+      :root[data-theme="dark"] .dpt td.took { color: #9ccc5f; }
+      :root[data-theme="dark"] .dpt td.cur { background: #451a03; border-color: #f59e0b; }
+      :root[data-theme="dark"] .dpt td.src-a { background: #0e2033; border-color: #378add; }
+      :root[data-theme="dark"] .dpt td.src-b { background: #2e1065; border-color: #8b5cf6; }
+      :root[data-theme="dark"] .dpt td.path { background: #1e3d0a; border-color: #639922; }
+      :root[data-theme="dark"] .dpt td.path-now { background: #2c5a10; border-color: #9ccc5f; }
+      :root[data-theme="dark"] .dpt th.hot,
+      :root[data-theme="dark"] .dpt th.hot .sub { color: #fbbf24; }
+      :root[data-theme="dark"] .dpt th.match { color: #9ccc5f; }
+
+      /* the computation of the current cell, as a row of chips */
+      .calc-row {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        align-items: center;
+        align-content: flex-start;
+        margin-top: 8px;
+        min-height: 54px; /* room for two rows of chips, so the table size never jumps */
+      }
+      /* several inputs share the bar: size them by flex, not by their default width */
+      .input-bar { min-width: 0; }
+      .input-bar .arr-input {
+        width: 0;
+        flex: 1 1 0;
+        min-width: 80px;
+      }
+      .calc-row .arrow-sep {
+        color: var(--text3);
+        font-size: 13px;
+      }
+      .var-chip.c-a { background: #deedf8; border-color: #378add; }
+      .var-chip.c-b { background: #ede9fe; border-color: #8b5cf6; }
+      .var-chip.c-win { background: #d8eec2; border-color: #639922; }
+      .var-chip.c-cur { background: #fef3c7; border-color: #f59e0b; }
+      .var-chip.c-no { background: #fadede; border-color: #e24b4a; }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) .var-chip.c-a { background: #0e2033; }
+        :root:not([data-theme="light"]) .var-chip.c-b { background: #2e1065; }
+        :root:not([data-theme="light"]) .var-chip.c-win { background: #1e3d0a; }
+        :root:not([data-theme="light"]) .var-chip.c-cur { background: #451a03; }
+        :root:not([data-theme="light"]) .var-chip.c-no { background: #450a0a; }
+      }
+      :root[data-theme="dark"] .var-chip.c-a { background: #0e2033; }
+      :root[data-theme="dark"] .var-chip.c-b { background: #2e1065; }
+      :root[data-theme="dark"] .var-chip.c-win { background: #1e3d0a; }
+      :root[data-theme="dark"] .var-chip.c-cur { background: #451a03; }
+      :root[data-theme="dark"] .var-chip.c-no { background: #450a0a; }
+
+      .tag-fill { background: #fef3c7; color: #78350f; border: 1px solid #f59e0b; }
+      .tag-trace { background: #d8eec2; color: #173404; border: 1px solid #639922; }
+      .tag-print { background: var(--bg3); color: var(--text2); border: 1px solid var(--border2); }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) .tag-fill { background: #451a03; color: #fde68a; }
+        :root:not([data-theme="light"]) .tag-trace { background: #1e3d0a; color: #c0dd97; }
+      }
+      :root[data-theme="dark"] .tag-fill { background: #451a03; color: #fde68a; }
+      :root[data-theme="dark"] .tag-trace { background: #1e3d0a; color: #c0dd97; }
+
+      /* ── Narrow screens: stack and scroll normally ── */
+      @media (max-width: 979px) {
+        .stage { grid-template-columns: 1fr; }
+        .code-card { max-height: 60vh; }
+        .console-card { max-height: 30vh; }
+        .tbl-wrap { max-height: 70vh; }
+      }
+
+      /* ── Phones: let the inputs wrap instead of widening the page ── */
+      @media (max-width: 680px) {
+        .input-bar { flex-wrap: wrap; }
+        .input-bar .arr-input { min-width: 64px; }
+        .header h1 { font-size: 18px; }
+      }
+
+      /* ── Mid-width screens (1024-class projectors): keep the toolbar on one row ── */
+      @media (min-width: 980px) and (max-width: 1199px) {
+        .nav-btn { padding: 6px 11px; }
+        .btn-run { padding: 7px 14px; }
+        .speed-row label { display: none; }
+        .speed-row input[type="range"] { width: 64px; }
+        .header p { display: none; }
+      }
+
+      /* ── Wide screens: everything fits one viewport, no page scroll ── */
+      @media (min-width: 980px) and (min-height: 540px) {
+        html,
+        body {
+          height: 100%;
+        }
+        body {
+          display: flex;
+          flex-direction: column;
+        }
+        .page {
+          flex: 1;
+          min-height: 0;
+        }
+        .stage {
+          flex: 1;
+          min-height: 400px;
+          grid-template-rows: minmax(0, 1fr);
+        }
+        .table-card {
+          flex: 1 1 0;
+          min-height: 160px;
+        }
+        .code-card {
+          flex: 1 1 0;
+          min-height: 0;
+        }
+        .console-card {
+          flex: 0 0 auto;
+          height: clamp(96px, 21vh, 176px);
+        }
+        .info-panel {
+          flex: 0 0 auto;
+          max-height: 132px;
+          overflow: auto;
+        }
+      }
+
+      /* ── 0/1 Knapsack page ── */
+      .input-bar .arr-input.cap-input {
+        width: 46px;
+        min-width: 46px;
+        flex: none;
+        text-align: center;
+      }
+      .leg-took {
+        font-family: var(--mono);
+        color: #3b6d11;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) .leg-took { color: #9ccc5f; }
+      }
+      :root[data-theme="dark"] .leg-took { color: #9ccc5f; }
+    </style>
+  </head>
+  <body>
+    <aside class="snav">
+      <a class="snav-home" href="./index.html" title="All Visualizations">
+        <span class="snav-logo">◈</span>
+        <span class="snav-home-text">DAA Visualizations</span>
+      </a>
+      <div class="snav-scroll">
+        <div class="snav-group" data-cat="bf">
+          <div class="snav-cat-row">
+            <span class="snav-cat-pip"></span
+            ><span class="snav-cat-name">Brute Force</span>
+          </div>
+          <a
+            class="snav-link"
+            href="./naive_string_matching.html"
+            data-page="naive_string_matching"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Naive String Matching</span
+            ><span class="snav-link-cpx">O(nm)</span></a
+          >
+          <a
+            class="snav-link"
+            href="./closest_pair_brute_force.html"
+            data-page="closest_pair_brute_force"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Closest Pair (2D)</span
+            ><span class="snav-link-cpx">Θ(n²)</span></a
+          >
+          <a
+            class="snav-link"
+            href="./subset_bitmask.html"
+            data-page="subset_bitmask"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Subset Generation</span
+            ><span class="snav-link-cpx">Θ(n·2ⁿ)</span></a
+          >
+        </div>
+        <div class="snav-sep"></div>
+        <div class="snav-group" data-cat="dc">
+          <div class="snav-cat-row">
+            <span class="snav-cat-pip"></span
+            ><span class="snav-cat-name">Decrease &amp; Conquer</span>
+          </div>
+          <a
+            class="snav-link"
+            href="./insertion_sort.html"
+            data-page="insertion_sort"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Insertion Sort</span
+            ><span class="snav-link-cpx">O(n²)</span></a
+          >
+          <a
+            class="snav-link"
+            href="./insertion_sort_cards.html"
+            data-page="insertion_sort_cards"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Insertion Sort — Card Table</span></a
+          >
+        </div>
+        <div class="snav-sep"></div>
+        <div class="snav-group" data-cat="dq">
+          <div class="snav-cat-row">
+            <span class="snav-cat-pip"></span
+            ><span class="snav-cat-name">Divide &amp; Conquer</span>
+          </div>
+          <a class="snav-link" href="./merge_sort.html" data-page="merge_sort"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Merge Sort</span
+            ><span class="snav-link-cpx">Θ(n log n)</span></a
+          >
+          <span class="snav-link snav-soon"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Quick Sort</span></span
+          >
+          <span class="snav-link snav-soon"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Binary Search</span
+            ><span class="snav-link-cpx">Θ(log n)</span></span
+          >
+        </div>
+        <div class="snav-sep"></div>
+        <div class="snav-group" data-cat="gr">
+          <div class="snav-cat-row">
+            <span class="snav-cat-pip"></span
+            ><span class="snav-cat-name">Greedy</span>
+          </div>
+          <a
+            class="snav-link"
+            href="./activity_selection.html"
+            data-page="activity_selection"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Activity Selection</span
+            ><span class="snav-link-cpx">Θ(n log n)</span></a
+          >
+          <a class="snav-link" href="./dijkstra.html" data-page="dijkstra"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Dijkstra's SSSP</span
+            ><span class="snav-link-cpx">O(V²)</span></a
+          >
+          <a class="snav-link" href="./kruskal.html" data-page="kruskal"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Kruskal's MST</span
+            ><span class="snav-link-cpx">O(E log E)</span></a
+          >
+          <a class="snav-link" href="./prim.html" data-page="prim"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Prim's MST</span
+            ><span class="snav-link-cpx">O(V²)</span></a
+          >
+          <span class="snav-link snav-soon"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Huffman Coding</span></span
+          >
+        </div>
+        <div class="snav-sep"></div>
+        <div class="snav-group" data-cat="dp">
+          <div class="snav-cat-row">
+            <span class="snav-cat-pip"></span
+            ><span class="snav-cat-name">Dynamic Programming</span>
+          </div>
+          <a class="snav-link" href="./knapsack_01.html" data-page="knapsack_01"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">0/1 Knapsack</span
+            ><span class="snav-link-cpx">Θ(nW)</span></a
+          >
+          <a class="snav-link" href="./lcs.html" data-page="lcs"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">LCS</span
+            ><span class="snav-link-cpx">Θ(mn)</span></a
+          >
+          <a class="snav-link" href="./floyd_warshall.html" data-page="floyd_warshall"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Floyd-Warshall</span
+            ><span class="snav-link-cpx">Θ(V³)</span></a
+          >
+        </div>
+        <div class="snav-sep"></div>
+        <div class="snav-group snav-soon" data-cat="ga">
+          <div class="snav-cat-row">
+            <span class="snav-cat-pip"></span
+            ><span class="snav-cat-name">Graph Algorithms</span>
+          </div>
+          <span class="snav-link"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">BFS</span
+            ><span class="snav-link-cpx">Θ(V+E)</span></span
+          >
+          <span class="snav-link"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">DFS</span
+            ><span class="snav-link-cpx">Θ(V+E)</span></span
+          >
+          <span class="snav-link"
+            ><span class="snav-link-pip"></span
+            ><span class="snav-link-name">Topological Sort</span></span
+          >
+        </div>
+      </div>
+      <div class="snav-foot">
+        <span class="snav-foot-icon">13/22</span>
+        <span class="snav-foot-text">13 of 22 live</span>
+      </div>
+    </aside>
+    <script>
+      (function () {
+        var p = location.pathname.split("/").pop().replace(".html", "");
+        var el = document.querySelector('.snav-link[data-page="' + p + '"]');
+        if (el) el.classList.add("snav-current");
+      })();
+    </script>
+
+    <div class="page">
+      <div class="header">
+        <h1>0/1 Knapsack — Dry Run</h1>
+        <p>Design &amp; Analysis of Algorithms &nbsp;·&nbsp; Dynamic Programming — Interactive Step-through</p>
+        <button class="theme-btn" id="theme-btn" type="button" onclick="toggleTheme()">☀ Light mode</button>
+      </div>
+
+      <div class="toolbar">
+        <div class="input-bar">
+          <label for="inp-wt">wt =</label>
+          <input class="arr-input" id="inp-wt" value="2, 3, 4, 5" placeholder="e.g. 2, 3, 4, 5" />
+          <label for="inp-val">val =</label>
+          <input class="arr-input" id="inp-val" value="3, 4, 5, 6" placeholder="e.g. 3, 4, 5, 6" />
+          <label for="inp-cap">W =</label>
+          <input class="arr-input cap-input" id="inp-cap" value="5" />
+          <button class="btn-run" onclick="buildSteps()">▶ Run</button>
+        </div>
+        <div class="nav-row">
+          <button class="nav-btn" id="btn-prev" onclick="move(-1)" disabled>◀ Prev</button>
+          <button class="nav-btn primary" id="btn-next" onclick="move(1)" disabled>Next ▶</button>
+          <button class="nav-btn" id="btn-auto" onclick="toggleAuto()">⏵ Auto</button>
+          <span class="step-ctr" id="step-ctr"></span>
+          <div class="speed-row">
+            <label for="speed-sl">Speed</label>
+            <input type="range" id="speed-sl" min="200" max="2000" step="100" value="900"
+                   oninput="updateSpeed(this.value)" />
+            <span id="speed-label">0.9s</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-wrap">
+        <div class="progress-bar" id="progress-bar" style="width: 0%"></div>
+      </div>
+
+      <div class="stage">
+        <!-- Left: the DP table being filled -->
+        <div class="col-vis">
+          <div class="card table-card">
+            <div class="card-head">
+              <span class="card-title">dp[i][w] — best value with the first i items, capacity w</span>
+              <div class="legend">
+                <span class="leg"><span class="leg-sq" style="background:#fef3c7;border-color:#f59e0b"></span>Computing</span>
+                <span class="leg"><span class="leg-sq" style="background:#deedf8;border-color:#378add"></span>Skip</span>
+                <span class="leg"><span class="leg-sq" style="background:#ede9fe;border-color:#8b5cf6"></span>Take</span>
+                <span class="leg"><b class="leg-took">7</b>Taking won</span>
+                <span class="leg"><span class="leg-sq" style="background:#d8eec2;border-color:#639922"></span>Trace back</span>
+              </div>
+            </div>
+            <div class="tbl-wrap" id="tbl-wrap"><table class="dpt" id="dpt"></table></div>
+            <div class="calc-row" id="calc-row"></div>
+          </div>
+
+          <div class="info-panel" id="info-panel">
+            Press <b>▶ Run</b> to start, then step through using the buttons above.
+          </div>
+        </div>
+
+        <!-- Right: the handout's code and what it prints -->
+        <div class="col-code">
+          <div class="code-card" id="code-card">
+            <span class="lang-tag" id="lang-tag">// Java — Knapsack01.java</span>
+            <div id="code-body"></div>
+          </div>
+          <div class="console-card" id="console-card">
+            <span class="lang-tag">// Output — what the program prints</span>
+            <div id="console-body"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="foot">
+        <div class="result-panel" id="result-panel"></div>
+        <p class="key-hint">
+          Keyboard: <span class="kbd">←</span> Prev &nbsp;
+          <span class="kbd">→</span> Next &nbsp;
+          <span class="kbd">Space</span> Auto play &nbsp;
+          <span class="kbd">R</span> Reset &nbsp;
+          <span class="kbd">T</span> Theme
+        </p>
+      </div>
+    </div>
+
+    <script>
+      "use strict";
+      /* Knapsack01.java exactly as printed in the DP Part 1 handout, one string
+         per line. Only the data lines (wt, val, W) are regenerated when you
+         type different items. */
+      const JAVA_SRC = [
+        "import java.util.*;",
+        "",
+        "public class Knapsack01 {",
+        "",
+        "    public static void main(String[] args) {",
+        "        int[] wt  = {2, 3, 4, 5};              // weight of item 1..4",
+        "        int[] val = {3, 4, 5, 6};              // value  of item 1..4",
+        "        int W = 5;                             // knapsack capacity",
+        "        int n = wt.length;",
+        "",
+        "        // dp[i][w] = best value using only the first i items with capacity w",
+        "        int[][] dp = new int[n + 1][W + 1];    // row 0 and column 0 stay 0",
+        "",
+        "        for (int i = 1; i <= n; i++) {",
+        "            for (int w = 0; w <= W; w++) {",
+        "                if (wt[i - 1] > w)                              // item i does not fit",
+        "                    dp[i][w] = dp[i - 1][w];",
+        "                else                                            // best of skip / take",
+        "                    dp[i][w] = Math.max(dp[i - 1][w],",
+        "                                        val[i - 1] + dp[i - 1][w - wt[i - 1]]);",
+        "            }",
+        "            System.out.println(\"row \" + i + \": \" + Arrays.toString(dp[i]));",
+        "        }",
+        "        System.out.println(\"Max value = \" + dp[n][W]);",
+        "",
+        "        // Trace back from dp[n][W] to find which items were taken.",
+        "        List<Integer> taken = new ArrayList<>();",
+        "        int w = W;",
+        "        for (int i = n; i > 0; i--) {",
+        "            if (dp[i][w] != dp[i - 1][w]) {    // value changed: item i was taken",
+        "                taken.add(i);",
+        "                w -= wt[i - 1];",
+        "            }",
+        "        }",
+        "        Collections.reverse(taken);",
+        "        System.out.println(\"Items taken: \" + taken);",
+        "    }",
+        "}"
+      ];
+
+      let steps = [],
+        cur = 0,
+        autoTimer = null,
+        autoDelay = 900,
+        wt = [],
+        val = [],
+        CAP = 0;
+
+      /* ── Input ── */
+      function parseList(s) {
+        const parts = s.split(",").map((x) => x.trim()).filter(Boolean);
+        if (!parts.length) return null;
+        const out = [];
+        for (const p of parts) {
+          if (!/^\d+$/.test(p)) return null;
+          out.push(parseInt(p, 10));
+        }
+        return out;
+      }
+
+      /* ── The handout's Java, with data lines for the current items ── */
+      function buildJava() {
+        const n = wt.length;
+        return JAVA_SRC.map((line) => {
+          if (line.includes("int[] wt  = {"))
+            return withComment(line, "        int[] wt  = {" + wt.join(", ") + "};", "// weight of item 1.." + n);
+          if (line.includes("int[] val = {"))
+            return withComment(line, "        int[] val = {" + val.join(", ") + "};", "// value  of item 1.." + n);
+          if (line.trim().startsWith("int W = "))
+            return withComment(line, "        int W = " + CAP + ";", "// knapsack capacity");
+          return line;
+        });
+      }
+
+      function tagLines(L) {
+        const at = (test) => {
+          for (let i = 0; i < L.length; i++) if (test(L[i].trim())) return i;
+          return -1;
+        };
+        const has = (s) => (t) => t.includes(s);
+        const T = {
+          data: [at(has("int[] wt  = {")), at(has("int[] val = {")), at(has("int W = ")), at(has("int n = wt.length;"))],
+          alloc: [at(has("int[][] dp = new int[n + 1][W + 1];"))],
+          loopI: [at(has("for (int i = 1; i <= n; i++) {"))],
+          loopW: [at(has("for (int w = 0; w <= W; w++) {"))],
+          nofit: [at(has("if (wt[i - 1] > w)")), at((t) => t === "dp[i][w] = dp[i - 1][w];")],
+          fit: [at((t) => t.startsWith("else")), at(has("dp[i][w] = Math.max(dp[i - 1][w],")),
+                at(has("val[i - 1] + dp[i - 1][w - wt[i - 1]]);"))],
+          printRow: [at(has('System.out.println("row " + i'))],
+          printMax: [at(has('System.out.println("Max value = "'))],
+          tbInit: [at(has("List<Integer> taken = new ArrayList<>();")), at((t) => t === "int w = W;")],
+          tbLoop: [at(has("for (int i = n; i > 0; i--) {")), at(has("if (dp[i][w] != dp[i - 1][w]) {"))],
+          tbTake: [at(has("taken.add(i);")), at(has("w -= wt[i - 1];"))],
+          printTaken: [at(has("Collections.reverse(taken);")), at(has('System.out.println("Items taken: "'))],
+        };
+        for (const k in T) if (T[k].some((x) => x < 0)) console.error("code tag not found:", k);
+        return T;
+      }
+
+      /* ── Simulate the Java exactly, recording a snapshot per step ── */
+      function buildSteps() {
+        clearAuto();
+        const w1 = parseList(document.getElementById("inp-wt").value),
+          v1 = parseList(document.getElementById("inp-val").value),
+          c1 = document.getElementById("inp-cap").value.trim();
+        if (!w1 || !v1 || w1.length !== v1.length || w1.length > 6) {
+          alert("Enter the same number of weights and values (1 to 6 items), separated by commas, e.g.\n" +
+            "wt = 2, 3, 4, 5   and   val = 3, 4, 5, 6");
+          return;
+        }
+        if (w1.some((x) => x < 1 || x > 10) || v1.some((x) => x < 1 || x > 99)) {
+          alert("Weights must be whole numbers from 1 to 10, values from 1 to 99.");
+          return;
+        }
+        if (!/^\d+$/.test(c1) || +c1 < 1 || +c1 > 10) {
+          alert("W (the capacity) must be a whole number from 1 to 10, e.g. 5");
+          return;
+        }
+        wt = w1;
+        val = v1;
+        CAP = parseInt(c1, 10);
+        const n = wt.length;
+
+        const L = buildJava();
+        const isHandout = L.join("\n") === JAVA_SRC.join("\n");
+        document.getElementById("lang-tag").textContent = isHandout
+          ? "// Java — Knapsack01.java (exactly as in the handout)"
+          : "// Java — Knapsack01.java (handout code; data lines match your items)";
+        renderCode(L);
+        const T = tagLines(L);
+
+        /* State, mirroring the Java variables */
+        const dp = Array.from({ length: n + 1 }, () => Array(CAP + 1).fill(0));
+        const done = Array.from({ length: n + 1 }, (_, i) => Array(CAP + 1).fill(i === 0));
+        const took = Array.from({ length: n + 1 }, () => Array(CAP + 1).fill(false));
+        const out = [],
+          taken = [],
+          path = [];
+        const arr = (a) => "[" + a.join(", ") + "]";
+
+        steps = [];
+        const snap = (o) => {
+          const prevOut = steps.length ? steps[steps.length - 1].out.length : 0;
+          steps.push(
+            Object.assign(
+              {
+                dp: dp.map((r) => r.slice()),
+                done: done.map((r) => r.slice()),
+                took: took.map((r) => r.slice()),
+                out: out.slice(),
+                fresh: out.length - prevOut,
+                taken: taken.slice(),
+                path: path.slice(),
+                row: -1,
+                col: -1,
+                cells: {},
+                chips: [],
+              },
+              o
+            )
+          );
+        };
+        const key = (i, w) => i + "," + w;
+
+        snap({
+          type: "init",
+          codeLine: T.data.concat(T.alloc),
+          focus: T.alloc[0],
+          chips: [{ t: "n =", v: n }, { t: "W =", v: CAP }, { t: "cells =", v: (n + 1) + " × " + (CAP + 1) }],
+          msg:
+            '<span class="step-tag tag-init">Init</span>' +
+            "The table has <b>n + 1 = " + (n + 1) + "</b> rows (items 0 to " + n + ") and <b>W + 1 = " + (CAP + 1) +
+            "</b> columns (capacity 0 to " + CAP + "). <b>Row 0 is the base case</b>: with no items the best value is 0. " +
+            "Java fills a new array with zeros; the other rows are shown empty until the loop computes them.",
+        });
+
+        for (let i = 1; i <= n; i++) {
+          const wi = wt[i - 1],
+            vi = val[i - 1];
+          /* capacities where item i does not fit: one step for the whole run */
+          const last = Math.min(wi - 1, CAP);
+          const cells = {};
+          for (let w = 0; w <= last; w++) {
+            dp[i][w] = dp[i - 1][w];
+            done[i][w] = true;
+            cells[key(i, w)] = "cur";
+            cells[key(i - 1, w)] = "src-a";
+          }
+          snap({
+            type: "nofit",
+            row: i,
+            codeLine: T.loopW.concat(T.nofit),
+            focus: T.nofit[0],
+            cells,
+            chips: [
+              { t: "i =", v: i },
+              { t: "w =", v: last === 0 ? "0" : "0 … " + last },
+              { t: "wt[i−1] =", v: wi, c: "c-no" },
+              "→",
+              { t: "too heavy:", v: "copy dp[" + (i - 1) + "][w]", c: "c-a" },
+            ],
+            msg:
+              '<span class="step-tag tag-noup">Does not fit</span>' +
+              (wi > CAP
+                ? "Item " + i + " weighs <b>" + wi + "</b> — more than the whole knapsack (W = " + CAP + "). " +
+                  "It fits nowhere, so the whole row is copied from the row above: <b>dp[" + i + "][w] = dp[" + (i - 1) + "][w]</b>."
+                : "Item " + i + " weighs <b>" + wi + "</b>. For capacities <b>w = 0" + (last > 0 ? " … " + last : "") +
+                  "</b> it does not fit (wt[i−1] &gt; w), so the best is the same as without it: " +
+                  "<b>dp[" + i + "][w] = dp[" + (i - 1) + "][w]</b>."),
+          });
+
+          for (let w = wi; w <= CAP; w++) {
+            const skip = dp[i - 1][w],
+              take = vi + dp[i - 1][w - wi];
+            dp[i][w] = Math.max(skip, take);
+            done[i][w] = true;
+            took[i][w] = take > skip;
+            const verdict =
+              take > skip ? "Taking wins" : take < skip ? "Skipping wins" : "Same either way";
+            snap({
+              type: "fit",
+              row: i,
+              col: w,
+              codeLine: T.loopW.concat(T.fit),
+              focus: T.fit[1],
+              cells: { [key(i, w)]: "cur", [key(i - 1, w)]: "src-a", [key(i - 1, w - wi)]: "src-b" },
+              chips: [
+                { t: "i =", v: i },
+                { t: "w =", v: w },
+                { t: "skip: dp[" + (i - 1) + "][" + w + "] =", v: skip, c: take > skip ? "" : "c-a" },
+                { t: "take: " + vi + " + dp[" + (i - 1) + "][" + (w - wi) + "] =", v: take, c: take > skip ? "c-b" : "" },
+                "→",
+                { t: "dp[" + i + "][" + w + "] =", v: dp[i][w], c: "c-win" },
+              ],
+              msg:
+                '<span class="step-tag ' + (take > skip ? "tag-update" : "tag-fill") + '">' + verdict + "</span>" +
+                "Item " + i + " (weight " + wi + ", value " + vi + ") fits in capacity " + w + ". " +
+                "<b>Skip</b> it: dp[" + (i - 1) + "][" + w + "] = <b>" + skip + "</b>. " +
+                "<b>Take</b> it: " + vi + " + dp[" + (i - 1) + "][" + w + " − " + wi + "] = " + vi + " + " +
+                dp[i - 1][w - wi] + " = <b>" + take + "</b>. " +
+                "So <b>dp[" + i + "][" + w + "] = max(" + skip + ", " + take + ") = " + dp[i][w] + "</b>.",
+            });
+          }
+
+          out.push("row " + i + ": " + arr(dp[i]));
+          snap({
+            type: "row",
+            row: i,
+            codeLine: T.printRow,
+            chips: [{ t: "i =", v: i }, { t: "row " + i + " =", v: arr(dp[i]) }],
+            msg:
+              '<span class="step-tag tag-print">Row ' + i + " done</span>" +
+              "Row " + i + " now holds the best value for <b>every capacity</b> using items 1 to " + i + ". " +
+              (i < n ? "The next row will only ever look at this one." : "That was the last item."),
+          });
+        }
+
+        out.push("Max value = " + dp[n][CAP]);
+        snap({
+          type: "max",
+          codeLine: T.printMax,
+          cells: { [key(n, CAP)]: "path-now" },
+          chips: [{ t: "dp[" + n + "][" + CAP + "] =", v: dp[n][CAP], c: "c-win" }],
+          msg:
+            '<span class="step-tag tag-done">Answer</span>' +
+            "The answer is the bottom-right cell: <b>dp[" + n + "][" + CAP + "] = " + dp[n][CAP] + "</b> — the best value " +
+            "with all " + n + " items and capacity " + CAP + ". Next: which items give it?",
+        });
+
+        let w = CAP;
+        snap({
+          type: "tbinit",
+          codeLine: T.tbInit,
+          cells: { [key(n, w)]: "path-now" },
+          chips: [{ t: "w =", v: w }, { t: "taken =", v: arr(taken) }],
+          msg:
+            '<span class="step-tag tag-trace">Trace back</span>' +
+            "Start at dp[" + n + "][" + CAP + "] and walk up. If a cell <b>equals</b> the one above, item i was not needed. " +
+            "If it is <b>different</b>, item i was taken — record it and subtract its weight.",
+        });
+
+        for (let i = n; i > 0; i--) {
+          const a = dp[i][w],
+            b = dp[i - 1][w];
+          path.push([i, w]);
+          if (a !== b) {
+            taken.push(i);
+            const nw = w - wt[i - 1];
+            snap({
+              type: "tbtake",
+              codeLine: T.tbLoop.concat(T.tbTake),
+              focus: T.tbLoop[1],
+              cells: { [key(i, w)]: "path-now", [key(i - 1, w)]: "src-a" },
+              chips: [
+                { t: "i =", v: i },
+                { t: "w =", v: w + " → " + nw },
+                { t: "dp[" + i + "][" + w + "] =", v: a, c: "c-win" },
+                { t: "dp[" + (i - 1) + "][" + w + "] =", v: b, c: "c-a" },
+                "→",
+                { t: "taken =", v: arr(taken), c: "c-win" },
+              ],
+              msg:
+                '<span class="step-tag tag-trace">Item ' + i + " taken</span>" +
+                "dp[" + i + "][" + w + "] = <b>" + a + "</b> but dp[" + (i - 1) + "][" + w + "] = <b>" + b + "</b>: " +
+                "the value changed when item " + i + " became available, so <b>item " + i + " was taken</b>. " +
+                "Its weight " + wt[i - 1] + " is used up: <b>w = " + w + " − " + wt[i - 1] + " = " + nw + "</b>.",
+            });
+            w = nw;
+          } else {
+            snap({
+              type: "tbskip",
+              codeLine: T.tbLoop,
+              focus: T.tbLoop[1],
+              cells: { [key(i, w)]: "path-now", [key(i - 1, w)]: "src-a" },
+              chips: [
+                { t: "i =", v: i },
+                { t: "w =", v: w },
+                { t: "dp[" + i + "][" + w + "] =", v: a },
+                { t: "dp[" + (i - 1) + "][" + w + "] =", v: b, c: "c-a" },
+                "→",
+                { t: "taken =", v: arr(taken) },
+              ],
+              msg:
+                '<span class="step-tag tag-noup">Item ' + i + " not needed</span>" +
+                "dp[" + i + "][" + w + "] = dp[" + (i - 1) + "][" + w + "] = <b>" + a + "</b>: the same value was " +
+                "already possible without item " + i + ", so it was <b>not taken</b>. Move up a row; w stays " + w + ".",
+            });
+          }
+        }
+        path.push([0, w]);
+
+        const list = taken.slice().reverse();
+        out.push("Items taken: " + arr(list));
+        const tw = list.reduce((s, i) => s + wt[i - 1], 0),
+          tv = list.reduce((s, i) => s + val[i - 1], 0);
+        snap({
+          type: "final",
+          codeLine: T.printTaken,
+          chips: [
+            { t: "items =", v: arr(list), c: "c-win" },
+            { t: "weight =", v: tw + " of " + CAP },
+            { t: "value =", v: tv, c: "c-win" },
+          ],
+          msg:
+            '<span class="step-tag tag-done">Done</span>' +
+            (list.length
+              ? "Take items <b>" + list.join(", ") + "</b>: weight " + list.map((i) => wt[i - 1]).join(" + ") + " = " + tw +
+                ", value " + list.map((i) => val[i - 1]).join(" + ") + " = <b>" + tv + "</b>. "
+              : "No item fits, so nothing is taken. ") +
+            "The table has (n + 1)(W + 1) = <b>" + (n + 1) * (CAP + 1) + "</b> cells, each O(1): <b>O(n × W)</b> time and space.",
+          summary: list.length ? "items " + list.join(", ") : "no items",
+          value: tv,
+        });
+
+        cur = 0;
+        fitTable.dirty = true;
+        renderStep();
+      }
+
+      /* ── Drawing ── */
+      function renderStep() {
+        const st = steps[cur];
+        if (!st) return;
+        const n = wt.length;
+        const onPath = new Set(st.path.map(([i, w]) => i + "," + w));
+
+        let h = '<tr><th class="rowh">i \\ w</th>';
+        for (let w = 0; w <= CAP; w++)
+          h += "<th" + (w === st.col ? ' class="hot"' : "") + ">" + w + "</th>";
+        h += "</tr>";
+        for (let i = 0; i <= n; i++) {
+          h += '<tr><th class="rowh' + (i === st.row ? " hot" : "") + '">' +
+            (i === 0 ? "0<span class=\"sub\">no items</span>"
+                     : "item " + i + '<span class="sub">wt ' + wt[i - 1] + " · val " + val[i - 1] + "</span>") +
+            "</th>";
+          for (let w = 0; w <= CAP; w++) {
+            const k = i + "," + w;
+            const c = [];
+            if (!st.done[i][w]) c.push("pend");
+            else if (i === 0) c.push("base");
+            if (st.took[i][w]) c.push("took");
+            if (onPath.has(k)) c.push("path");
+            if (st.cells[k]) c.push(st.cells[k]);
+            h += '<td class="' + c.join(" ") + '">' + (st.done[i][w] ? st.dp[i][w] : "·") + "</td>";
+          }
+          h += "</tr>";
+        }
+        document.getElementById("dpt").innerHTML = h;
+        document.getElementById("calc-row").innerHTML = chipsHtml(st.chips);
+
+        const rp = document.getElementById("result-panel");
+        if (st.type === "final")
+          rp.innerHTML = '<span class="sorted-badge">' + st.summary + "</span> total value <b>" + st.value + "</b>";
+        else if (st.type.startsWith("tb"))
+          rp.innerHTML = "Trace back · taken so far: <b>[" + st.taken.join(", ") + "]</b>";
+        else rp.innerHTML = "Capacity W = <b>" + CAP + "</b> · " + n + " items";
+
+        paintCommon(st);
+        fitTable();
+      }
+
+
+      /* ── Shared by the DP pages ── */
+
+      /* Code highlight + console + info + progress, the same way on every page. */
+      function paintCommon(st) {
+        document.querySelectorAll("#code-body .cl.hl").forEach((x) => x.classList.remove("hl"));
+        (st.codeLine || []).forEach((k) => {
+          const x = document.getElementById("cl" + k);
+          if (x) x.classList.add("hl");
+        });
+        keepInView(st);
+
+        const cb = document.getElementById("console-body");
+        cb.innerHTML = st.out.length
+          ? st.out
+              .map((l, k) => '<span class="out-line' + (k >= st.out.length - st.fresh ? " fresh" : "") + '">' +
+                escH(l) + "</span>")
+              .join("")
+          : '<span class="out-empty">(nothing printed yet)</span>';
+        const cc = document.getElementById("console-card");
+        cc.scrollTop = cc.scrollHeight;
+
+        document.getElementById("info-panel").innerHTML = st.msg;
+        document.getElementById("progress-bar").style.width = ((cur + 1) / steps.length) * 100 + "%";
+        document.getElementById("step-ctr").textContent = "Step " + (cur + 1) + " / " + steps.length;
+        document.getElementById("btn-prev").disabled = cur === 0;
+        document.getElementById("btn-next").disabled = cur === steps.length - 1;
+      }
+
+      /* Chips under the table: [{t: "label =", v: "value", c: "c-a"}] or a string separator */
+      function chipsHtml(list) {
+        return list
+          .map((c) =>
+            typeof c === "string"
+              ? '<span class="arrow-sep">' + c + "</span>"
+              : '<span class="var-chip ' + (c.c || "") + '"><span>' + c.t + "</span> <b>" + c.v + "</b></span>"
+          )
+          .join("");
+      }
+
+      /* Largest cell size at which the whole table fits its card (no scrolling). */
+      function fitTable() {
+        const wrap = document.getElementById("tbl-wrap"),
+          t = document.getElementById("dpt");
+        if (!t || !t.rows.length || !wrap.clientWidth) return;
+        const W = wrap.clientWidth - 6,
+          H = wrap.clientHeight - 6;
+        const stacked = window.matchMedia("(max-width: 979px)").matches;
+        const fits = () => t.offsetWidth <= W && (stacked || H <= 40 || t.offsetHeight <= H);
+        const now = parseFloat(t.style.getPropertyValue("--cell")) || 0;
+        if (now && fits() && !fitTable.dirty) return;      /* still fits: keep the size steady */
+        fitTable.dirty = false;
+        let cell = 58;
+        t.style.setProperty("--wide", "1");
+        for (; cell > 22; cell -= 2) {
+          t.style.setProperty("--cell", cell + "px");
+          if (fits()) break;
+        }
+        /* height was the limit: let the cells grow sideways (up to 1.5x) */
+        for (let k = 1.1; k <= 1.51; k += 0.1) {
+          t.style.setProperty("--wide", k.toFixed(1));
+          if (!fits()) {
+            t.style.setProperty("--wide", (k - 0.1).toFixed(1));
+            break;
+          }
+        }
+      }
+      let fitTimer = null;
+      window.addEventListener("resize", () => {
+        clearTimeout(fitTimer);
+        fitTimer = setTimeout(() => {
+          fitTable.dirty = true;
+          fitTable();
+        }, 80);
+      });
+
+      /* Keep a commented data line's comment in its column when the data changes. */
+      function withComment(orig, code, comment) {
+        const c = orig.indexOf("//");
+        return code.length < c ? code.padEnd(c) + comment : code + "  " + comment;
+      }
+
+      /* Small Java highlighter using the shared Catppuccin token classes. */
+      const KW = new Set(["public", "static", "class", "import", "new", "for", "if", "else", "return",
+                          "break", "continue", "true", "false", "null", "final"]);
+      const TY = new Set(["int", "void", "boolean", "String", "List", "ArrayList", "StringBuilder", "Integer"]);
+      const escH = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      function hl(line) {
+        let out = "",
+          i = 0;
+        while (i < line.length) {
+          const rest = line.slice(i);
+          let m;
+          if (rest.startsWith("//")) {
+            out += '<span class="cm">' + escH(rest) + "</span>";
+            break;
+          } else if (rest[0] === '"') {
+            let j = 1;
+            while (j < rest.length && rest[j] !== '"') j += rest[j] === "\\" ? 2 : 1;
+            out += '<span class="str">' + escH(rest.slice(0, j + 1)) + "</span>";
+            i += j + 1;
+          } else if ((m = rest.match(/^\d+/))) {
+            out += '<span class="nu">' + m[0] + "</span>";
+            i += m[0].length;
+          } else if ((m = rest.match(/^[A-Za-z_]\w*/))) {
+            const w = m[0],
+              after = rest.slice(w.length).trimStart();
+            if (KW.has(w)) out += '<span class="kw">' + w + "</span>";
+            else if (TY.has(w)) out += '<span class="ty">' + w + "</span>";
+            else if (after[0] === "(") out += '<span class="fn">' + w + "</span>";
+            else out += w;
+            i += w.length;
+          } else {
+            out += escH(rest[0]);
+            i += 1;
+          }
+        }
+        return out;
+      }
+
+      function renderCode(L) {
+        document.getElementById("code-body").innerHTML = L.map(
+          (l, k) => '<span class="cl" id="cl' + k + '">' + hl(l) + "</span>"
+        ).join("");
+      }
+
+
+      /* Scroll the code card (never the page) so the highlighted block near the
+         step's focus line is fully visible — centred when it fits. */
+      function keepInView(st) {
+        const card = document.getElementById("code-card");
+        const lines = st.codeLine || [];
+        if (!lines.length) return;
+        const focus = st.focus != null ? st.focus : lines[0];
+        const near = lines.filter((k) => Math.abs(k - focus) <= 14);
+        const first = document.getElementById("cl" + Math.min(...near)),
+          last = document.getElementById("cl" + Math.max(...near));
+        if (!first || !last) return;
+        const view = card.clientHeight,
+          top = first.offsetTop,
+          bot = last.offsetTop + last.offsetHeight;
+        const fits = bot - top + 24 <= view;
+        if (top < card.scrollTop + 12 || bot > card.scrollTop + view - 12) {
+          card.scrollTop = fits ? Math.max(0, top - (view - (bot - top)) / 2) : Math.max(0, top - 12);
+        }
+      }
+
+      function move(d) {
+        cur = Math.max(0, Math.min(steps.length - 1, cur + d));
+        renderStep();
+      }
+
+      function toggleAuto() {
+        const btn = document.getElementById("btn-auto");
+        if (autoTimer) {
+          clearAuto();
+          return;
+        }
+        if (!steps.length) buildSteps();
+        btn.textContent = "⏸ Pause";
+        btn.classList.add("auto-on");
+        autoTimer = setInterval(() => {
+          if (cur >= steps.length - 1) {
+            clearAuto();
+            return;
+          }
+          cur++;
+          renderStep();
+        }, autoDelay);
+      }
+
+      function clearAuto() {
+        if (autoTimer) {
+          clearInterval(autoTimer);
+          autoTimer = null;
+        }
+        const btn = document.getElementById("btn-auto");
+        btn.textContent = "⏵ Auto";
+        btn.classList.remove("auto-on");
+      }
+
+      function updateSpeed(v) {
+        const sl = document.getElementById("speed-sl");
+        autoDelay = parseInt(sl.max) + parseInt(sl.min) - parseInt(v);
+        document.getElementById("speed-label").textContent = (v / 1000).toFixed(1) + "s";
+        if (autoTimer) {
+          clearAuto();
+          toggleAuto();
+        }
+      }
+
+      document.addEventListener("keydown", (e) => {
+        if (["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName)) {
+          if (e.key === "Enter" && e.target.classList.contains("arr-input")) buildSteps();
+          return;
+        }
+        if (e.key === "ArrowRight") move(1);
+        else if (e.key === "ArrowLeft") move(-1);
+        else if (e.key === " ") {
+          e.preventDefault();
+          toggleAuto();
+        } else if (e.key === "r" || e.key === "R") buildSteps();
+        else if (e.key === "t" || e.key === "T") toggleTheme();
+      });
+
+      /* ── Light / dark switch ── */
+      const darkQuery = window.matchMedia("(prefers-color-scheme: dark)");
+      function currentTheme() {
+        const t = document.documentElement.getAttribute("data-theme");
+        return t === "light" || t === "dark" ? t : darkQuery.matches ? "dark" : "light";
+      }
+      function paintThemeButton() {
+        const btn = document.getElementById("theme-btn");
+        const dark = currentTheme() === "dark";
+        btn.textContent = dark ? "☀ Light mode" : "☾ Dark mode";
+        btn.title = (dark ? "Switch to light mode" : "Switch to dark mode") + " (T)";
+      }
+      function toggleTheme() {
+        const next = currentTheme() === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", next);
+        try { localStorage.setItem("dv-theme", next); } catch (e) {}
+        paintThemeButton();
+      }
+      darkQuery.addEventListener("change", paintThemeButton);
+      paintThemeButton();
+
+      window.addEventListener("load", buildSteps);
+    </script>
+  </body>
+</html>

@@ -637,14 +637,26 @@
           <button class="nav-group-btn" data-target="sec-dp" onclick="toggleGroup(this)">
             <span class="ngb-dot"></span>
             <span class="ngb-title">Dynamic Programming</span>
-            <span class="ngb-badge">coming soon</span>
+            <span class="ngb-badge">3 done</span>
             <span class="ngb-chevron">▸</span>
           </button>
           <div class="nav-items">
-            <span class="nav-item soon" style="--c: var(--accent2)"><span class="ni-dot"></span><span class="ni-label">0/1 Knapsack</span><span class="ni-cpx">Θ(nW)</span></span>
-            <span class="nav-item soon" style="--c: var(--accent2)"><span class="ni-dot"></span><span class="ni-label">Longest Common Subseq.</span></span>
+            <a class="nav-item live" href="./knapsack_01.html" style="--c: var(--accent2)">
+              <span class="ni-dot"></span>
+              <span class="ni-label">0/1 Knapsack</span>
+              <span class="ni-cpx">Θ(nW)</span>
+            </a>
+            <a class="nav-item live" href="./lcs.html" style="--c: var(--accent2)">
+              <span class="ni-dot"></span>
+              <span class="ni-label">Longest Common Subseq.</span>
+              <span class="ni-cpx">Θ(mn)</span>
+            </a>
+            <a class="nav-item live" href="./floyd_warshall.html" style="--c: var(--accent2)">
+              <span class="ni-dot"></span>
+              <span class="ni-label">Floyd-Warshall APSP</span>
+              <span class="ni-cpx">Θ(V³)</span>
+            </a>
             <span class="nav-item soon" style="--c: var(--accent2)"><span class="ni-dot"></span><span class="ni-label">Matrix Chain Multiply</span></span>
-            <span class="nav-item soon" style="--c: var(--accent2)"><span class="ni-dot"></span><span class="ni-label">Floyd-Warshall APSP</span><span class="ni-cpx">Θ(V³)</span></span>
             <span class="nav-item soon" style="--c: var(--accent2)"><span class="ni-dot"></span><span class="ni-label">Edit Distance</span></span>
           </div>
         </div>
@@ -669,11 +681,11 @@
 
       <div class="sidebar-footer">
         <div class="sf-row">
-          <span>10 of 22 visualizations</span>
-          <strong>45%</strong>
+          <span>13 of 22 visualizations</span>
+          <strong>59%</strong>
         </div>
         <!-- update width % above as you add pages -->
-        <div class="sf-track"><div class="sf-fill" style="width:45%"></div></div>
+        <div class="sf-track"><div class="sf-fill" style="width:59%"></div></div>
       </div>
 
     </aside><!-- /sidebar -->
@@ -703,7 +715,7 @@
         <!-- ── Stats ── -->
         <div class="stats-row">
           <div class="stat">
-            <div class="stat-val" style="color:var(--good)">10</div>
+            <div class="stat-val" style="color:var(--good)">13</div>
             <div class="stat-lbl">Available now</div>
           </div>
           <div class="stat">
@@ -715,7 +727,7 @@
             <div class="stat-lbl">Technique modules</div>
           </div>
           <div class="stat">
-            <div class="stat-val" style="color:var(--amber)">4</div>
+            <div class="stat-val" style="color:var(--amber)">5</div>
             <div class="stat-lbl">Modules active</div>
           </div>
         </div>
@@ -930,17 +942,32 @@
           <div class="sec-head">
             <div class="sec-pip" style="background:var(--accent2)"></div>
             <h2>Dynamic Programming</h2>
-            <span class="sec-badge soon">Coming soon</span>
+            <span class="sec-badge live">● 3 available</span>
           </div>
           <p class="sec-desc">
             Decompose into overlapping subproblems, store each solution, reuse instead of recomputing.
             Transforms exponential brute-force search into polynomial time.
           </p>
           <div class="cards">
-            <div class="card locked"><div class="card-tags"><span class="tag">Optimization</span></div><h3>0/1 Knapsack</h3><p>Maximize total item value within a weight capacity; each item is either included or excluded.</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">Θ(nW)</span></div></div>
-            <div class="card locked"><div class="card-tags"><span class="tag">Strings</span></div><h3>Longest Common Subsequence</h3><p>Find the longest subsequence present in both strings by filling a 2D DP table.</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">Θ(mn)</span></div></div>
+            <a class="card live" href="./knapsack_01.html">
+              <div class="card-tags"><span class="tag" style="color:var(--accent2);border-color:rgba(167,139,250,0.28);background:rgba(167,139,250,0.07)">Dynamic Programming</span><span class="tag">Optimization</span></div>
+              <h3>0/1 Knapsack</h3>
+              <p>Fill the dp[i][w] table one cell at a time — skip or take each item — then trace back to find which items give the best value.</p>
+              <div class="card-foot"><span class="open-btn">Open →</span><span class="cpx">Θ(nW)</span></div>
+            </a>
+            <a class="card live" href="./lcs.html">
+              <div class="card-tags"><span class="tag" style="color:var(--accent2);border-color:rgba(167,139,250,0.28);background:rgba(167,139,250,0.07)">Dynamic Programming</span><span class="tag">Strings</span></div>
+              <h3>Longest Common Subsequence</h3>
+              <p>Compare last letters: diagonal + 1 on a match, max of up and left otherwise. Watch the table fill, then trace the LCS back out.</p>
+              <div class="card-foot"><span class="open-btn">Open →</span><span class="cpx">Θ(mn)</span></div>
+            </a>
             <div class="card locked"><div class="card-tags"><span class="tag">Matrix</span></div><h3>Matrix Chain Multiplication</h3><p>Determine the optimal parenthesization to minimize the total number of scalar multiplications.</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">Θ(n³)</span></div></div>
-            <div class="card locked"><div class="card-tags"><span class="tag">Graph · APSP</span></div><h3>Floyd-Warshall</h3><p>All-pairs shortest paths via a 3-loop DP relaxing through each intermediate vertex.</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">Θ(V³)</span></div></div>
+            <a class="card live" href="./floyd_warshall.html">
+              <div class="card-tags"><span class="tag" style="color:var(--accent2);border-color:rgba(167,139,250,0.28);background:rgba(167,139,250,0.07)">Dynamic Programming</span><span class="tag">Graph · APSP</span></div>
+              <h3>Floyd-Warshall &amp; Warshall</h3>
+              <p>All-pairs shortest paths: allow one more stop-over vertex each round. Switch to Warshall for transitive closure — who can reach whom.</p>
+              <div class="card-foot"><span class="open-btn">Open →</span><span class="cpx">Θ(V³)</span></div>
+            </a>
             <div class="card locked"><div class="card-tags"><span class="tag">Strings</span></div><h3>Edit Distance</h3><p>Minimum insertions, deletions, and substitutions needed to transform one string into another.</p><div class="card-foot"><span class="soon-lbl">Coming soon</span><span class="cpx">Θ(mn)</span></div></div>
           </div>
         </section>
